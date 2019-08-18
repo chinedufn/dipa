@@ -1,0 +1,13 @@
+[package]
+name = "dipa"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bincode = "1"
+
+[dev-dependencies]
+serde = {version = "1", features = ['derive']}
