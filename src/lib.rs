@@ -1,3 +1,4 @@
+mod bool;
 mod integer;
 
 pub trait DiffPatch {
