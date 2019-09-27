@@ -1,4 +1,10 @@
+#[cfg(test)]
+#[macro_use]
+#[cfg(test)]
+extern crate serde;
+
 mod bool;
+mod float;
 mod integer;
 
 pub trait DiffPatch {
