@@ -1,33 +1,37 @@
 use crate::DiffPatch;
 
-impl DiffPatch for f32 {
-    type Patch = Option<f32>;
+impl<'p> DiffPatch<'p> for f32 {
+    // TODO: Option<&f32>
+    type Diff = Option<f32>;
+    type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Patch {
+    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
         match *self == *end_state {
             true => None,
             false => Some(*end_state),
         }
     }
 
-    fn apply_patch(&mut self, patch: Self::Patch) {
+    fn apply_patch(&mut self, patch: Self::Diff) {
         if let Some(patch) = patch {
             *self = patch;
         }
     }
 }
 
-impl DiffPatch for f64 {
-    type Patch = Option<f64>;
+impl<'p> DiffPatch<'p> for f64 {
+    // TODO: Option<&f64>
+    type Diff = Option<f64>;
+    type OwnedDiff = Option<f64>;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Patch {
+    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
         match *self == *end_state {
             true => None,
             false => Some(*end_state),
         }
     }
 
-    fn apply_patch(&mut self, patch: Self::Patch) {
+    fn apply_patch(&mut self, patch: Self::Diff) {
         if let Some(patch) = patch {
             *self = patch;
         }
@@ -46,26 +50,28 @@ mod tests {
     #[derive(Debug, Deserialize, Serialize, Copy, Clone)]
     struct F64TestWrapper(f64);
 
-    impl DiffPatch for F32TestWrapper {
-        type Patch = Option<f32>;
+    impl<'p> DiffPatch<'p> for F32TestWrapper {
+        type Diff = Option<f32>;
+        type OwnedDiff = Option<f32>;
 
-        fn create_patch_towards(&self, end_state: &Self) -> Self::Patch {
+        fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
             self.0.create_patch_towards(&end_state.0)
         }
 
-        fn apply_patch(&mut self, patch: Self::Patch) {
+        fn apply_patch(&mut self, patch: Self::Diff) {
             self.0.apply_patch(patch)
         }
     }
 
-    impl DiffPatch for F64TestWrapper {
-        type Patch = Option<f64>;
+    impl<'p> DiffPatch<'p> for F64TestWrapper {
+        type Diff = Option<f64>;
+        type OwnedDiff = Option<f64>;
 
-        fn create_patch_towards(&self, end_state: &Self) -> Self::Patch {
+        fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
             self.0.create_patch_towards(&end_state.0)
         }
 
-        fn apply_patch(&mut self, patch: Self::Patch) {
+        fn apply_patch(&mut self, patch: Self::Diff) {
             self.0.apply_patch(patch)
         }
     }
@@ -88,9 +94,10 @@ mod tests {
     #[test]
     fn f32_unchanged() {
         DiffPatchTestCase {
-            desc: "Diff patch same f32",
+            label: Some("Diff patch same f32"),
             start: F32TestWrapper(0.),
-            end: F32TestWrapper(0.),
+            end: &F32TestWrapper(0.),
+            expected_diff: None,
             expected_serialized_patch_size: 1,
         }
         .test();
@@ -99,9 +106,10 @@ mod tests {
     #[test]
     fn f32_changed() {
         DiffPatchTestCase {
-            desc: "Diff patch different f32",
+            label: Some("Diff patch different f32"),
             start: F32TestWrapper(0.),
-            end: F32TestWrapper(5.),
+            end: &F32TestWrapper(5.),
+            expected_diff: Some(5.),
             expected_serialized_patch_size: 5,
         }
         .test();
@@ -110,9 +118,10 @@ mod tests {
     #[test]
     fn f64_unchanged() {
         DiffPatchTestCase {
-            desc: "Diff patch different f64",
+            label: Some("Diff patch different f64"),
             start: F64TestWrapper(0.),
-            end: F64TestWrapper(0.),
+            end: &F64TestWrapper(0.),
+            expected_diff: None,
             expected_serialized_patch_size: 1,
         }
         .test();
@@ -121,9 +130,10 @@ mod tests {
     #[test]
     fn f64_changed() {
         DiffPatchTestCase {
-            desc: "Diff patch different f64",
+            label: Some("Diff patch different f64"),
             start: F64TestWrapper(0.),
-            end: F64TestWrapper(5.),
+            end: &F64TestWrapper(5.),
+            expected_diff: Some(5.),
             expected_serialized_patch_size: 9,
         }
         .test();

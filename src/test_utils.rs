@@ -1,49 +1,53 @@
 use super::*;
 use std::fmt::Debug;
 
+use bincode::Options;
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-pub struct DiffPatchTestCase<
-    T: Debug + Clone + DiffPatch + Eq + PartialEq + Serialize + DeserializeOwned,
-> {
-    pub desc: &'static str,
+/// Diff/patch from start -> end, then also from end -> state. Useful when both directions
+/// should have the same expected_serialized_patch_size.
+///
+/// For more complex diff/patches where start -> end could be different from end -> start, use
+/// the OneDirectionalDiffPatchTestCase
+///
+/// TODO: Remove 'p so we can test references
+pub struct DiffPatchTestCase<'p, T: Debug + DiffPatch<'p> + Eq + PartialEq + Serialize> {
+    pub label: Option<&'p str>,
     pub start: T,
-    pub end: T,
+    pub end: &'p T,
+    pub expected_diff: T::Diff,
     /// The size of the patch in bytes
     pub expected_serialized_patch_size: usize,
 }
 
-impl<T: Debug + Clone + DiffPatch + Eq + PartialEq + Serialize + DeserializeOwned>
-    DiffPatchTestCase<T>
+impl<'p, T: 'p + Debug + DiffPatch<'p> + Eq + PartialEq + Serialize> DiffPatchTestCase<'p, T>
 where
-    <T as DiffPatch>::Patch: Serialize + Debug,
+    <T as DiffPatch<'p>>::Diff: Serialize + Debug + PartialEq,
+    <T as DiffPatch<'p>>::OwnedDiff: DeserializeOwned + Debug + PartialEq,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start
     pub fn test(self) {
-        let mut start = self.start.clone();
-        let start_clone = start.clone();
-
-        let end = self.end.clone();
-
-        // Start to end
-        self.patch(&mut start, &self.end);
-
-        // End to start
-        self.patch(&mut end.clone(), &start_clone)
-    }
-
-    fn patch(&self, start: &mut T, end: &T) {
         let expected_serialized_patch_size = self.expected_serialized_patch_size;
 
-        let patch = start.create_patch_towards(&end);
+        let patch = self.start.create_patch_towards(self.end);
 
-        let patch_bytes = bincode::serialize(&patch).unwrap();
+        assert_eq!(patch, self.expected_diff);
 
-        start.apply_patch(patch);
+        let patch_bytes = bincode::options()
+            .with_varint_encoding()
+            .serialize(&patch)
+            .unwrap();
 
-        assert_eq!(start, end, "{}", self.desc);
+        let patch = bincode::options()
+            .with_varint_encoding()
+            .deserialize(&patch_bytes[..])
+            .unwrap();
+        let mut patched_start = self.start;
+        patched_start.apply_patch(patch);
+
+        assert_eq!(&patched_start, self.end, "{:?}", self.label);
 
         assert_eq!(
             patch_bytes.len(),
