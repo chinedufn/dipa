@@ -1,16 +1,20 @@
 use crate::vec::longest_common_subsequence::get_longest_common_subsequence;
 use crate::vec::SequenceModificationDiff;
+use crate::MacroOptimizationHints;
 
 // Tests are in the parent module.
 pub(super) fn patch_towards<'p, T: PartialEq>(
     before: &Vec<T>,
     target_state: &'p Vec<T>,
-) -> Vec<SequenceModificationDiff<'p, T>>
+) -> (Vec<SequenceModificationDiff<'p, T>>, MacroOptimizationHints)
 where
     &'p T: serde::Serialize,
 {
     if target_state.len() == 0 && before.len() > 0 {
-        return vec![SequenceModificationDiff::DeleteAll];
+        return (
+            vec![SequenceModificationDiff::DeleteAll],
+            MacroOptimizationHints { did_change: true },
+        );
     }
 
     let mut modifications = vec![];
@@ -162,7 +166,9 @@ where
     }
 
     modifications.reverse();
-    modifications
+
+    let did_change = modifications.len() > 0;
+    (modifications, MacroOptimizationHints { did_change })
 }
 
 #[derive(Copy, Clone)]

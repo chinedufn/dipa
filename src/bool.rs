@@ -1,12 +1,15 @@
-use crate::DiffPatch;
+use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints};
 
-impl<'p> DiffPatch<'p> for bool {
+impl<'p> Diffable<'p> for bool {
     // TODO: &bool
     type Diff = bool;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        *end_state
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let did_change = *self != *end_state;
+        let hint = MacroOptimizationHints { did_change };
+
+        (*end_state, hint)
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -16,7 +19,10 @@ impl<'p> DiffPatch<'p> for bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::DiffPatchTestCase;
+    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::test_utils::{
+        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
+    };
 
     #[test]
     fn bool_unchanged() {
@@ -26,6 +32,7 @@ mod tests {
             end: &true,
             expected_diff: true,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -38,6 +45,7 @@ mod tests {
             end: &false,
             expected_diff: false,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }

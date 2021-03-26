@@ -1,12 +1,15 @@
-use crate::DiffPatch;
+use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints};
 
-impl<'p> DiffPatch<'p> for u8 {
-    // TODO: &u8
+impl<'p> Diffable<'p> for u8 {
     type Diff = u8;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        *end_state
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (*end_state, hint)
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -14,16 +17,22 @@ impl<'p> DiffPatch<'p> for u8 {
     }
 }
 
-impl<'p> DiffPatch<'p> for u16 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for u16 {
     type Diff = Option<u16>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -33,16 +42,22 @@ impl<'p> DiffPatch<'p> for u16 {
     }
 }
 
-impl<'p> DiffPatch<'p> for u32 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for u32 {
     type Diff = Option<u32>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -52,16 +67,23 @@ impl<'p> DiffPatch<'p> for u32 {
     }
 }
 
-impl<'p> DiffPatch<'p> for u64 {
+impl<'p> Diffable<'p> for u64 {
     // TODO: &u16
     type Diff = Option<u64>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -71,16 +93,22 @@ impl<'p> DiffPatch<'p> for u64 {
     }
 }
 
-impl<'p> DiffPatch<'p> for u128 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for u128 {
     type Diff = Option<u128>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -90,13 +118,16 @@ impl<'p> DiffPatch<'p> for u128 {
     }
 }
 
-impl<'p> DiffPatch<'p> for i8 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for i8 {
     type Diff = i8;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        *end_state
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (*end_state, hint)
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -104,16 +135,22 @@ impl<'p> DiffPatch<'p> for i8 {
     }
 }
 
-impl<'p> DiffPatch<'p> for i16 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for i16 {
     type Diff = Option<i16>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -123,16 +160,22 @@ impl<'p> DiffPatch<'p> for i16 {
     }
 }
 
-impl<'p> DiffPatch<'p> for i32 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for i32 {
     type Diff = Option<i32>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -142,16 +185,22 @@ impl<'p> DiffPatch<'p> for i32 {
     }
 }
 
-impl<'p> DiffPatch<'p> for i64 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for i64 {
     type Diff = Option<i64>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -161,16 +210,22 @@ impl<'p> DiffPatch<'p> for i64 {
     }
 }
 
-impl<'p> DiffPatch<'p> for i128 {
-    // TODO: &u16
+impl<'p> Diffable<'p> for i128 {
     type Diff = Option<i128>;
     type OwnedDiff = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> Self::Diff {
-        match *self == *end_state {
-            true => None,
-            false => Some(*end_state),
-        }
+    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
+        let hint = MacroOptimizationHints {
+            did_change: self != end_state,
+        };
+
+        (
+            match *self == *end_state {
+                true => None,
+                false => Some(*end_state),
+            },
+            hint,
+        )
     }
 
     fn apply_patch(&mut self, patch: Self::Diff) {
@@ -183,7 +238,10 @@ impl<'p> DiffPatch<'p> for i128 {
 #[cfg(test)]
 mod tests_signed {
 
-    use crate::test_utils::DiffPatchTestCase;
+    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::test_utils::{
+        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
+    };
 
     #[test]
     fn diff_patch_u8_same() {
@@ -193,6 +251,7 @@ mod tests_signed {
             end: &0u8,
             expected_diff: 0,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -205,6 +264,7 @@ mod tests_signed {
             end: &2u8,
             expected_diff: 2,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -217,6 +277,7 @@ mod tests_signed {
             end: &0u16,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -229,6 +290,7 @@ mod tests_signed {
             end: &2u16,
             expected_diff: Some(2),
             expected_serialized_patch_size: 3,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -241,6 +303,7 @@ mod tests_signed {
             end: &0u32,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -253,6 +316,7 @@ mod tests_signed {
             end: &1u32,
             expected_diff: Some(1),
             expected_serialized_patch_size: 5,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -265,6 +329,7 @@ mod tests_signed {
             end: &0u64,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -277,6 +342,7 @@ mod tests_signed {
             end: &1u64,
             expected_diff: Some(1),
             expected_serialized_patch_size: 9,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -289,6 +355,7 @@ mod tests_signed {
             end: &0u128,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -301,6 +368,7 @@ mod tests_signed {
             end: &1u128,
             expected_diff: Some(1),
             expected_serialized_patch_size: 17,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -309,7 +377,10 @@ mod tests_signed {
 #[cfg(test)]
 mod tests_unsigned {
 
-    use crate::test_utils::DiffPatchTestCase;
+    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::test_utils::{
+        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
+    };
 
     #[test]
     fn diff_patch_i8_same() {
@@ -319,6 +390,7 @@ mod tests_unsigned {
             end: &0i8,
             expected_diff: 0,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -331,6 +403,7 @@ mod tests_unsigned {
             end: &1i8,
             expected_diff: 1,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -343,6 +416,7 @@ mod tests_unsigned {
             end: &0i16,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -355,6 +429,7 @@ mod tests_unsigned {
             end: &2i16,
             expected_diff: Some(2),
             expected_serialized_patch_size: 3,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -367,6 +442,7 @@ mod tests_unsigned {
             end: &0i32,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -379,6 +455,7 @@ mod tests_unsigned {
             end: &1i32,
             expected_diff: Some(1),
             expected_serialized_patch_size: 5,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -391,6 +468,7 @@ mod tests_unsigned {
             end: &0i64,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -403,6 +481,7 @@ mod tests_unsigned {
             end: &1i64,
             expected_diff: Some(1),
             expected_serialized_patch_size: 9,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
@@ -415,6 +494,7 @@ mod tests_unsigned {
             end: &0i128,
             expected_diff: None,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }
@@ -427,6 +507,7 @@ mod tests_unsigned {
             end: &1i128,
             expected_diff: Some(1),
             expected_serialized_patch_size: 17,
+            expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
     }
