@@ -8,6 +8,30 @@ You can annotate your types with `#[derive(DiffPatch)]` in order to automaticall
 highly space optimized diffing and patching types and functions, or in the most sensitive cases
 you can decide to go even further and implement the `Diffable` trait yourself.
 
+## TODO BOOK CHAPTERS BEFORE RELEASE
+
+- Background on the problems that this solves
+  - State synchronization
+  - Traditionally inflexible and difficult. Dipa makes it flexible and easy.
+
+- Typical approach
+  - Use the derive macro on your state type. For many applications you can stop here.
+  - When the most extreme limits of diff size optimization are necessary, lean on custom `DiffPatch` implementations to tune the
+    diffing and patching of your most sensitive data structure. This should be guided by knowledge about your application. You
+    should very rarely need to do this since the derive macro is packed with optimiations such as guaranteeing that any data structure
+    that has not changed will only diff to `1 byte`, even if the data structure contains other nested data structures.
+
+- Chapter on high performance diffing
+   (mention dirty bit wrappers, talk about LCS implementation and how it should be fine for small vectors, but is O(m * n)).
+
+- Chapter with examples of saving space (pulling in code from a real directory in the repo so that we know it compiles)
+  - Wrapper types that deref to the inner type using a dirty bit that gets flipped when mutated
+    and flipped again whenever the patch function is called.
+  - Wrapper type to use an i8 to store deltas. Basically the hair example from below.
+
+- Implementing `Diffable` yourself
+  - Using `DiffPatchTestCase` with `#[cfg_attr(test, derive(PartialEq, Eq))]`
+
 ## Quickstart
 
 <details>
@@ -66,7 +90,7 @@ fn main() {
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
     let serialized = bincode::options().with_varint_encoding().serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable>::OwnedDiff = bincode::options()
+    let deserialized: <MyClientState as dipa::Diffable>::Patch = bincode::options()
         .with_varint_encoding()
         .deserialize(&serialized)
         .unwrap();
@@ -123,7 +147,7 @@ struct OnlySmallChanges(num_128);
 
 impl<'p> Diffable<'p> for OnlySmallChanges {
     type Diff = i8;
-    type OwnedDiff = Self::Diff;
+    type Patch = Self::Diff;
 
     fn create_patch_towards(&self, end_state: &Self) -> dipa::CreatePatchTowardsReturn<Self::Diff> {
         let hints = MacroOptimizationHints {

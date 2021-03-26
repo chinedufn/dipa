@@ -1,239 +1,33 @@
-use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints};
+use crate::{
+    number_diff_impl_option_wrapped, number_diff_impl_u8_or_i8, number_patch_impl_option_wrapped,
+    number_patch_impl_u8_or_i8,
+};
+use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
-impl<'p> Diffable<'p> for u8 {
-    type Diff = u8;
-    type OwnedDiff = Self::Diff;
+number_diff_impl_u8_or_i8!(u8);
+number_patch_impl_u8_or_i8!(u8);
+number_diff_impl_u8_or_i8!(i8);
+number_patch_impl_u8_or_i8!(i8);
 
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
+number_diff_impl_option_wrapped!(u16);
+number_patch_impl_option_wrapped!(u16);
+number_diff_impl_option_wrapped!(i16);
+number_patch_impl_option_wrapped!(i16);
 
-        (*end_state, hint)
-    }
+number_diff_impl_option_wrapped!(u32);
+number_patch_impl_option_wrapped!(u32);
+number_diff_impl_option_wrapped!(i32);
+number_patch_impl_option_wrapped!(i32);
 
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        *self = patch;
-    }
-}
+number_diff_impl_option_wrapped!(u64);
+number_patch_impl_option_wrapped!(u64);
+number_diff_impl_option_wrapped!(i64);
+number_patch_impl_option_wrapped!(i64);
 
-impl<'p> Diffable<'p> for u16 {
-    type Diff = Option<u16>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for u32 {
-    type Diff = Option<u32>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for u64 {
-    // TODO: &u16
-    type Diff = Option<u64>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for u128 {
-    type Diff = Option<u128>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for i8 {
-    type Diff = i8;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (*end_state, hint)
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        *self = patch;
-    }
-}
-
-impl<'p> Diffable<'p> for i16 {
-    type Diff = Option<i16>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for i32 {
-    type Diff = Option<i32>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for i64 {
-    type Diff = Option<i64>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for i128 {
-    type Diff = Option<i128>;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
+number_diff_impl_option_wrapped!(u128);
+number_patch_impl_option_wrapped!(u128);
+number_diff_impl_option_wrapped!(i128);
+number_patch_impl_option_wrapped!(i128);
 
 #[cfg(test)]
 mod tests_signed {
@@ -315,7 +109,7 @@ mod tests_signed {
             start: 0u32,
             end: &1u32,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 5,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -341,7 +135,7 @@ mod tests_signed {
             start: 0u64,
             end: &1u64,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 9,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -367,7 +161,7 @@ mod tests_signed {
             start: 0u128,
             end: &1u128,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 17,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -428,7 +222,7 @@ mod tests_unsigned {
             start: 0i16,
             end: &2i16,
             expected_diff: Some(2),
-            expected_serialized_patch_size: 3,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -454,7 +248,7 @@ mod tests_unsigned {
             start: 0i32,
             end: &1i32,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 5,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -480,7 +274,7 @@ mod tests_unsigned {
             start: 0i64,
             end: &1i64,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 9,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();
@@ -506,7 +300,7 @@ mod tests_unsigned {
             start: 0i128,
             end: &1i128,
             expected_diff: Some(1),
-            expected_serialized_patch_size: 17,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
         .test();

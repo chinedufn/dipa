@@ -1,6 +1,6 @@
 use crate::vec::vec_apply_patch::apply_patch;
 use crate::vec::vec_create_patch_towards::patch_towards;
-use crate::{CreatePatchTowardsReturn, Diffable};
+use crate::{CreatePatchTowardsReturn, Diffable, Patchable};
 
 mod longest_common_subsequence;
 mod vec_apply_patch;
@@ -14,14 +14,16 @@ where
     /// Option so that it's only 1 byte if nothing has changed.
     type Diff = Vec<SequenceModificationDiff<'p, T>>;
 
-    /// Option so that it's only 1 byte if nothing has changed.
-    type OwnedDiff = Vec<OwnedSequenceModificationDiff<T>>;
-
     fn create_patch_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Diff> {
         patch_towards(self, end_state)
     }
+}
 
-    fn apply_patch(&mut self, patch: Self::OwnedDiff) {
+impl<T> Patchable for Vec<T> {
+    /// Option so that it's only 1 byte if nothing has changed.
+    type Patch = Vec<OwnedSequenceModificationDiff<T>>;
+
+    fn apply_patch(&mut self, patch: Self::Patch) {
         apply_patch(self, patch)
     }
 }

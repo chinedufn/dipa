@@ -13,7 +13,7 @@ pub(super) fn generate_single_field_struct_impl(
         <#field_type as dipa::Diffable<'p>>::Diff
         },
         quote! {
-        <#field_type as dipa::Diffable<'p>>::OwnedDiff
+        <#field_type as dipa::Diffable<'p>>::Patch
         },
         quote! {
         self.#field_name.create_patch_towards(&end_state.#field_name)

@@ -1,7 +1,7 @@
 use super::Diffable;
 use std::fmt::Debug;
 
-use crate::MacroOptimizationHints;
+use crate::{MacroOptimizationHints, Patchable};
 use bincode::Options;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -10,7 +10,7 @@ use serde::Serialize;
 /// has the expected bincode serialized size (with varint encoding enabled).
 ///
 /// Useful for verifying that custom implementations of the [DiffPatch] trait work as expected.
-pub struct DiffPatchTestCase<'p, T: Debug + Diffable<'p> + Eq + PartialEq + Serialize> {
+pub struct DiffPatchTestCase<'p, T: Debug + Diffable<'p> + Patchable + Eq + PartialEq + Serialize> {
     pub label: Option<&'p str>,
     pub start: T,
     pub end: &'p T,
@@ -20,10 +20,11 @@ pub struct DiffPatchTestCase<'p, T: Debug + Diffable<'p> + Eq + PartialEq + Seri
     pub expected_macro_hints: MacroOptimizationHints,
 }
 
-impl<'p, T: 'p + Debug + Diffable<'p> + Eq + PartialEq + Serialize> DiffPatchTestCase<'p, T>
+impl<'p, T: 'p + Debug + Diffable<'p> + Patchable + Eq + PartialEq + Serialize>
+    DiffPatchTestCase<'p, T>
 where
     <T as Diffable<'p>>::Diff: Serialize + Debug + PartialEq,
-    <T as Diffable<'p>>::OwnedDiff: DeserializeOwned + Debug + PartialEq,
+    <T as Patchable>::Patch: DeserializeOwned + Debug + PartialEq,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start

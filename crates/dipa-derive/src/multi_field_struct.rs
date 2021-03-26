@@ -31,14 +31,14 @@ pub(super) fn generate_multi_field_struct_impl(
         })
         .collect();
 
-    // i.e. u8::OwnedDiff, Option<f64>::OwnedDiff, ...
+    // i.e. u8::Patch, Option<f64>::Patch, ...
     let field_owned_diff_types: Vec<TokenStream2> = fields
         .iter()
         .map(|field| {
             let ty = &field.ty;
 
             quote! {
-            <#ty as dipa::Diffable<'p>>::OwnedDiff
+            <#ty as dipa::Diffable<'p>>::Patch
             }
         })
         .collect();

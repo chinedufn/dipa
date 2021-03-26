@@ -1,4 +1,5 @@
 use crate::multi_field_struct::{generate_multi_field_struct_impl, StructField};
+use crate::single_field_enum::generate_single_variant_enum_single_struct_field_impl;
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::zst_impl::create_zst_impl;
 use proc_macro::TokenStream;
@@ -11,6 +12,7 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields};
 extern crate quote;
 
 mod multi_field_struct;
+mod single_field_enum;
 mod single_field_struct;
 mod zst_impl;
 
@@ -94,7 +96,33 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
         },
         Data::Enum(enum_data) => {
             if enum_data.variants.len() == 1 {
-                zero_sized_diff
+                let variant = &enum_data.variants[0];
+
+                let fields = &variant.fields;
+
+                if fields.len() == 0 {
+                    zero_sized_diff
+                } else {
+                    match &fields {
+                        Fields::Named(fields) => {
+                            let field = &fields.named[0];
+                            let field_name = field.ident.as_ref().unwrap();
+
+                            generate_single_variant_enum_single_struct_field_impl(
+                                enum_or_struct_name,
+                                &variant.ident,
+                                quote_spanned! {field.span() => #field_name},
+                                &field.ty,
+                            )
+                        }
+                        Fields::Unnamed(_) => {
+                            unimplemented!()
+                        }
+                        Fields::Unit => {
+                            unimplemented!()
+                        }
+                    }
+                }
             } else {
                 todo_quote()
             }
@@ -126,14 +154,14 @@ fn impl_dipa(
      impl<'p> dipa::Diffable<'p> for #enum_or_struct_name {
         type Diff = #diff_type;
 
-        type OwnedDiff = #owned_diff_type;
+        type Patch = #owned_diff_type;
 
         fn create_patch_towards (&self, end_state: &'p Self)
           -> dipa::CreatePatchTowardsReturn<Self::Diff> {
             #create_patch_towards_inner
         }
 
-        fn apply_patch (&mut self, patch: Self::OwnedDiff) {
+        fn apply_patch (&mut self, patch: Self::Patch) {
             #apply_patch_inner
         }
      }

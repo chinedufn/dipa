@@ -1,55 +1,11 @@
-use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints};
+use crate::{number_diff_impl_option_wrapped, number_patch_impl_option_wrapped};
+use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints, Patchable};
 
-impl<'p> Diffable<'p> for f32 {
-    type Diff = Option<f32>;
-    type OwnedDiff = Self::Diff;
+number_diff_impl_option_wrapped!(f32);
+number_patch_impl_option_wrapped!(f32);
 
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
-
-impl<'p> Diffable<'p> for f64 {
-    // TODO: Option<&f64>
-    type Diff = Option<f64>;
-    type OwnedDiff = Option<f64>;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let hint = MacroOptimizationHints {
-            did_change: self != end_state,
-        };
-
-        (
-            match *self == *end_state {
-                true => None,
-                false => Some(*end_state),
-            },
-            hint,
-        )
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        if let Some(patch) = patch {
-            *self = patch;
-        }
-    }
-}
+number_diff_impl_option_wrapped!(f64);
+number_patch_impl_option_wrapped!(f64);
 
 #[cfg(test)]
 mod tests {
@@ -68,26 +24,32 @@ mod tests {
 
     impl<'p> Diffable<'p> for F32TestWrapper {
         type Diff = Option<f32>;
-        type OwnedDiff = Option<f32>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
             self.0.create_patch_towards(&end_state.0)
         }
+    }
 
-        fn apply_patch(&mut self, patch: Self::Diff) {
+    impl Patchable for F32TestWrapper {
+        type Patch = Option<f32>;
+
+        fn apply_patch(&mut self, patch: Self::Patch) {
             self.0.apply_patch(patch)
         }
     }
 
     impl<'p> Diffable<'p> for F64TestWrapper {
         type Diff = Option<f64>;
-        type OwnedDiff = Option<f64>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
             self.0.create_patch_towards(&end_state.0)
         }
+    }
 
-        fn apply_patch(&mut self, patch: Self::Diff) {
+    impl Patchable for F64TestWrapper {
+        type Patch = Option<f64>;
+
+        fn apply_patch(&mut self, patch: Self::Patch) {
             self.0.apply_patch(patch)
         }
     }

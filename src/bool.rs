@@ -1,21 +1,8 @@
-use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints};
+use crate::{number_diff_impl_u8_or_i8, number_patch_impl_u8_or_i8};
+use crate::{CreatePatchTowardsReturn, MacroOptimizationHints, Patchable};
 
-impl<'p> Diffable<'p> for bool {
-    // TODO: &bool
-    type Diff = bool;
-    type OwnedDiff = Self::Diff;
-
-    fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-        let did_change = *self != *end_state;
-        let hint = MacroOptimizationHints { did_change };
-
-        (*end_state, hint)
-    }
-
-    fn apply_patch(&mut self, patch: Self::Diff) {
-        *self = patch;
-    }
-}
+number_diff_impl_u8_or_i8!(bool);
+number_patch_impl_u8_or_i8!(bool);
 
 #[cfg(test)]
 mod tests {
