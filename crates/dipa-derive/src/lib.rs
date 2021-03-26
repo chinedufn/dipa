@@ -1,9 +1,10 @@
-use crate::multi_field_struct::generate_multi_field_struct_impl;
+use crate::multi_field_struct::{generate_multi_field_struct_impl, StructField};
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::zst_impl::create_zst_impl;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::__private::TokenStream2;
+use syn::spanned::Spanned;
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 #[macro_use]
@@ -21,25 +22,83 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
 
     let enum_or_struct_name = input.ident;
 
+    let zero_sized_diff = create_zst_impl(&enum_or_struct_name);
+
     // Generate:
     // impl<'p> DiffPatch<'p> for MyType { ... }
     let dipa_impl = match input.data {
         Data::Struct(struct_data) => match struct_data.fields {
             Fields::Named(fields) => {
                 if fields.named.len() == 0 {
-                    create_zst_impl(&enum_or_struct_name)
+                    zero_sized_diff
                 } else if fields.named.len() == 1 {
                     let field = &fields.named[0];
+                    let field_name = field.ident.as_ref().unwrap();
 
-                    generate_single_field_struct_impl(&enum_or_struct_name, field)
+                    generate_single_field_struct_impl(
+                        &enum_or_struct_name,
+                        quote_spanned! {field.span() => #field_name},
+                        &field.ty,
+                    )
                 } else {
-                    generate_multi_field_struct_impl(&enum_or_struct_name, fields)
+                    generate_multi_field_struct_impl(
+                        &enum_or_struct_name,
+                        fields
+                            .named
+                            .iter()
+                            .map(|f| {
+                                let field_name = f.ident.as_ref().unwrap();
+
+                                StructField {
+                                    name: quote! {#field_name},
+                                    ty: &f.ty,
+                                    span: f.span(),
+                                }
+                            })
+                            .collect(),
+                    )
                 }
             }
-            Fields::Unnamed(_) => todo_quote(),
-            Fields::Unit => create_zst_impl(&enum_or_struct_name),
+            Fields::Unnamed(struct_data) => {
+                if struct_data.unnamed.len() == 0 {
+                    zero_sized_diff
+                } else if struct_data.unnamed.len() == 1 {
+                    generate_single_field_struct_impl(
+                        &enum_or_struct_name,
+                        quote_spanned! {struct_data.unnamed[0].span() => 0},
+                        &struct_data.unnamed[0].ty,
+                    )
+                } else {
+                    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
+
+                    generate_multi_field_struct_impl(
+                        &enum_or_struct_name,
+                        struct_data
+                            .unnamed
+                            .iter()
+                            .enumerate()
+                            .map(|(idx, f)| {
+                                let field_name = &tuple_field_names[idx];
+
+                                StructField {
+                                    name: quote_spanned! {f.span() => #field_name},
+                                    ty: &f.ty,
+                                    span: f.span(),
+                                }
+                            })
+                            .collect(),
+                    )
+                }
+            }
+            Fields::Unit => zero_sized_diff,
         },
-        Data::Enum(_) => todo_quote(),
+        Data::Enum(enum_data) => {
+            if enum_data.variants.len() == 1 {
+                zero_sized_diff
+            } else {
+                todo_quote()
+            }
+        }
         Data::Union(_) => todo_quote(),
     };
 

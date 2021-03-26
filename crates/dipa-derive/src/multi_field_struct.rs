@@ -1,9 +1,15 @@
 use crate::impl_dipa;
-use syn::__private::TokenStream2;
+use syn::__private::{Span, TokenStream2};
 use syn::spanned::Spanned;
-use syn::{FieldsNamed, Ident};
+use syn::{Ident, Type};
 
 const FALSE_TRUE: [bool; 2] = [false, true];
+
+pub struct StructField<'a> {
+    pub name: TokenStream2,
+    pub ty: &'a Type,
+    pub span: Span,
+}
 
 /// Generate an implementation of Diffable for a struct with 2 or more fields.
 ///
@@ -11,11 +17,10 @@ const FALSE_TRUE: [bool; 2] = [false, true];
 ///  get the test suite passing, then we can clean up later.
 pub(super) fn generate_multi_field_struct_impl(
     struct_name: &syn::Ident,
-    fields: FieldsNamed,
+    fields: Vec<StructField>,
 ) -> TokenStream2 {
     // i.e. u8::Diff, Option<f64>::Diff, ...
     let field_diff_types: Vec<TokenStream2> = fields
-        .named
         .iter()
         .map(|field| {
             let ty = &field.ty;
@@ -28,7 +33,6 @@ pub(super) fn generate_multi_field_struct_impl(
 
     // i.e. u8::OwnedDiff, Option<f64>::OwnedDiff, ...
     let field_owned_diff_types: Vec<TokenStream2> = fields
-        .named
         .iter()
         .map(|field| {
             let ty = &field.ty;
@@ -42,11 +46,10 @@ pub(super) fn generate_multi_field_struct_impl(
     // let diff_0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
     // let diff_1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
     let field_diffs: Vec<TokenStream2> = fields
-        .named
         .iter()
         .enumerate()
         .map(|(field_idx, field)| {
-            let field_name = field.ident.as_ref().unwrap();
+            let field_name = &field.name;
 
             let diff_idx_ident = Ident::new(&format!("diff_{}", field_idx), field_name.span());
 
@@ -59,11 +62,10 @@ pub(super) fn generate_multi_field_struct_impl(
     // let field0_mut_ref = &mut self.some_field_name;
     // let field1_mut_ref = &mut self.another_field_name;
     let field_mut_refs: Vec<TokenStream2> = fields
-        .named
         .iter()
         .enumerate()
         .map(|(field_idx, field)| {
-            let field_name = field.ident.as_ref().unwrap();
+            let field_name = &field.name;
 
             let mut_ref_ident =
                 Ident::new(&format!("field{}_mut_ref", field_idx), field_name.span());
@@ -75,11 +77,12 @@ pub(super) fn generate_multi_field_struct_impl(
         .collect();
 
     // dipa::private::{Diff2, Diff3, ... etc}
-    let diff_n = Ident::new(&format!("Diff{}", fields.named.len()), fields.span());
+    let diff_n = Ident::new(&format!("Diff{}", fields.len()), struct_name.span());
 
-    let bool_combinations = match fields.named.len() {
+    let bool_combinations = match fields.len() {
         2 => make_bool_combinations_2(),
         3 => make_bool_combinations_3(),
+        4 => make_bool_combinations_4(),
         _ => panic!(
             r#"
 TODO: Support larger structs.
@@ -95,7 +98,7 @@ TODO: Support larger structs.
     // (false, false, false) => Diff3::NoChange,
     // (true, false, true) => Diff3::Change_0_2(diff_0.0, diff_2.0),
     for bools in bool_combinations {
-        let bools = &bools[0..fields.named.len()];
+        let bools = &bools[0..fields.len()];
 
         let left_side: Vec<Ident> = bools
             .iter()
@@ -168,14 +171,14 @@ TODO: Support larger structs.
 
     // false, false, false
     let mut all_false = vec![];
-    for _ in 0..fields.named.len() {
+    for _ in 0..fields.len() {
         all_false.push(Ident::new("false", struct_name.span()));
     }
 
     // (diff_0.1.did_change, diff_1.1.did_change)
     let mut did_change_tokens = vec![];
-    for (idx, f) in fields.named.iter().enumerate() {
-        let diff_ident = Ident::new(&format!("diff_{}", idx), f.span());
+    for (idx, f) in fields.iter().enumerate() {
+        let diff_ident = Ident::new(&format!("diff_{}", idx), f.span);
         did_change_tokens.push(quote! { #diff_ident.1.did_change });
     }
 
@@ -267,6 +270,23 @@ fn make_bool_combinations_3() -> Vec<Vec<bool>> {
             for field2 in FALSE_TRUE.iter() {
                 let bools = vec![*field0, *field1, *field2];
                 bool_combinations.push(bools);
+            }
+        }
+    }
+
+    bool_combinations
+}
+
+fn make_bool_combinations_4() -> Vec<Vec<bool>> {
+    let mut bool_combinations = Vec::with_capacity(8);
+
+    for field0 in FALSE_TRUE.iter() {
+        for field1 in FALSE_TRUE.iter() {
+            for field2 in FALSE_TRUE.iter() {
+                for field3 in FALSE_TRUE.iter() {
+                    let bools = vec![*field0, *field1, *field2, *field3];
+                    bool_combinations.push(bools);
+                }
             }
         }
     }

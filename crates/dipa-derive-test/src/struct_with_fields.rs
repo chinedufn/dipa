@@ -1,7 +1,19 @@
+//! We test every combination of changing/not-changing for the fields in structs with one, two
+//! and three fields.
+//!
+//! That gives us confident that our logic applies to `n` fields, so we don't test every
+//! possible change/no-change combination for structs with 4+ fields. Instead, for structs with
+//! 4+ fields we simply verify that they compile when annotated with `#[derive(Dipa)]`.
+
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct OneField {
     field1: u8,
 }
+
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct OneFieldTuple(u8);
+
+//
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct TwoFields {
@@ -10,20 +22,35 @@ struct TwoFields {
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct TwoFieldsTuple(u8, u16);
+
+//
+
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct ThreeFields {
     field1: u8,
     field2: u16,
     field3: u32,
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct ThreeFieldsTuple(u8, u16, u32);
+
+//
+
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct FourFields {
+    field1: u8,
+    field2: u16,
+    field3: u32,
+    field4: u64,
+}
+
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct FourFieldsTuple(u8, u16, u32, u64);
+
 #[cfg(test)]
 mod tests {
-    //! We test every combination of changing/not-changing for the fields in structs with one, two
-    //! and three fields.
-    //!
-    //! That gives us confident that our logic applies to `n` fields, so we don't test every
-    //! possible change/no-change combination for structs with 4+ fields. Instead, for structs with
-    //! 4+ fields we simply verify that they compile when annotated with `#[derive(Dipa)]`.
 
     use super::*;
     use dipa::private::{Diff2, Diff3};
@@ -48,7 +75,27 @@ mod tests {
             end: &OneField { field1: 1 },
             expected_diff: 1,
             expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: OneFieldTuple(1),
+            end: &OneFieldTuple(30),
+            expected_diff: 30,
+            expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: OneFieldTuple(1),
+            end: &OneFieldTuple(1),
+            expected_diff: 1,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
         }
         .test();
     }
@@ -114,6 +161,48 @@ mod tests {
                 field1: 10,
                 field2: 50,
             },
+            expected_diff: Diff2::Change_0_1(10, Some(50)),
+            expected_serialized_patch_size: 4,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+        }
+        .test();
+
+        //
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoFieldsTuple(2, 2),
+            end: &TwoFieldsTuple(2, 2),
+            expected_diff: Diff2::NoChange,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoFieldsTuple(2, 2),
+            end: &TwoFieldsTuple(50, 2),
+            expected_diff: Diff2::Change_0(50),
+            expected_serialized_patch_size: 2,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoFieldsTuple(2, 2),
+            end: &TwoFieldsTuple(2, 50),
+            expected_diff: Diff2::Change_1(Some(50)),
+            expected_serialized_patch_size: 3,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoFieldsTuple(2, 2),
+            end: &TwoFieldsTuple(10, 50),
             expected_diff: Diff2::Change_0_1(10, Some(50)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },

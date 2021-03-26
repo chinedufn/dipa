@@ -1,14 +1,12 @@
 use crate::impl_dipa;
 use syn::__private::TokenStream2;
-use syn::{Field, Ident};
+use syn::{Ident, Type};
 
 pub(super) fn generate_single_field_struct_impl(
     struct_name: &Ident,
-    field: &Field,
+    field_name: TokenStream2,
+    field_type: &Type,
 ) -> TokenStream2 {
-    let field_name = field.ident.as_ref().unwrap();
-    let field_type = &field.ty;
-
     impl_dipa(
         &struct_name,
         quote! {
