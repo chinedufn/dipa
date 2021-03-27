@@ -1,5 +1,8 @@
 use crate::multi_field_struct::{generate_multi_field_struct_impl, StructField};
-use crate::single_field_enum::generate_single_variant_enum_single_struct_field_impl;
+use crate::single_field_enum::{
+    generate_single_variant_enum_single_struct_field_impl,
+    generate_single_variant_enum_single_tuple_field_impl,
+};
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::zst_impl::create_zst_impl;
 use proc_macro::TokenStream;
@@ -25,6 +28,8 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
     let enum_or_struct_name = input.ident;
 
     let zero_sized_diff = create_zst_impl(&enum_or_struct_name);
+
+    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
 
     // Generate:
     // impl<'p> DiffPatch<'p> for MyType { ... }
@@ -71,8 +76,6 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
                         &struct_data.unnamed[0].ty,
                     )
                 } else {
-                    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
-
                     generate_multi_field_struct_impl(
                         &enum_or_struct_name,
                         struct_data
@@ -115,8 +118,15 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
                                 &field.ty,
                             )
                         }
-                        Fields::Unnamed(_) => {
-                            unimplemented!()
+                        Fields::Unnamed(fields) => {
+                            let field = &fields.unnamed[0];
+
+                            generate_single_variant_enum_single_tuple_field_impl(
+                                enum_or_struct_name,
+                                &variant.ident,
+                                quote_spanned! {field.span() => 0},
+                                &field.ty,
+                            )
                         }
                         Fields::Unit => {
                             unimplemented!()

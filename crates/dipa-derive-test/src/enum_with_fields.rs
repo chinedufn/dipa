@@ -3,7 +3,7 @@ enum OneVariantStructOneField {
     One { foo: u8 },
 }
 
-// #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 enum OneVariantOneTuple {
     One(u8),
 }
@@ -71,24 +71,26 @@ mod tests {
         }
         .test();
 
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantOneTuple::One(2),
-        //     end: &OneVariantOneTuple::One(2),
-        //     expected_diff: 2,
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: false },
-        // }
-        // .test();
-        //
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantOneTuple::One(1),
-        //     end: &OneVariantOneTuple::One(5),
-        //     expected_diff: 5,
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: true },
-        // }
-        // .test();
+        DiffPatchTestCase {
+            label: None,
+            start: OneVariantOneTuple::One(2),
+            end: &OneVariantOneTuple::One(2),
+            expected_diff: 2,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<u8>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: OneVariantOneTuple::One(1),
+            end: &OneVariantOneTuple::One(5),
+            expected_diff: 5,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<u8>(),
+        }
+        .test();
     }
 }
