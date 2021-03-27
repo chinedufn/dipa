@@ -11,7 +11,7 @@ you can decide to go even further and implement the `Diffable` trait yourself.
 ## TODO BOOK CHAPTERS BEFORE RELEASE
 
 - Background on the problems that this solves
-  - State synchronization
+  - Make state synchronization easy
   - Traditionally inflexible and difficult. Dipa makes it flexible and easy.
 
 - Typical approach
