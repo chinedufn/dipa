@@ -6,6 +6,8 @@ macro_rules! number_diff_impl_option_wrapped {
         impl<'p> crate::Diffable<'p, $other> for $num_ty {
             type Diff = Option<$num_ty>;
 
+            type Patch = Option<$num_ty>;
+
             fn create_patch_towards(
                 &self,
                 end_state: &$other,
@@ -47,6 +49,8 @@ macro_rules! number_diff_impl_u8_or_i8 {
         impl<'p> crate::Diffable<'p, $other> for $num_ty {
             type Diff = $num_ty;
 
+            type Patch = $num_ty;
+
             fn create_patch_towards(
                 &self,
                 end_state: &$other,
@@ -66,6 +70,17 @@ macro_rules! number_patch_impl_u8_or_i8 {
         impl crate::Patchable<$patch> for $num_ty {
             fn apply_patch(&mut self, patch: $patch) {
                 *self = patch;
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! number_patch_impl_mut_u8_or_i8 {
+    ($num_ty:ty, $patch: ty) => {
+        impl crate::Patchable<$patch> for $num_ty {
+            fn apply_patch(&mut self, patch: $patch) {
+                **self = patch;
             }
         }
     };

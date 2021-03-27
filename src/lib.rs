@@ -15,7 +15,7 @@ pub mod private;
 #[cfg(any(test, feature = "dipa-impl-tester"))]
 mod dipa_impl_tester;
 #[cfg(feature = "dipa-impl-tester")]
-pub use self::dipa_impl_tester::DiffPatchTestCase;
+pub use self::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
 
 /// The type returned by [Diffable.create_patch_towards].
 pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
@@ -24,6 +24,9 @@ pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
 pub trait Diffable<'p, Other> {
     /// This will typically hold references to data from the structs that are being diffed.
     type Diff;
+
+    /// This will typically be an owned version of [`Self::Diff`].
+    type Patch;
 
     /// Diff self with some target end state, generating a patch that would convert
     ///  self -> end_state.

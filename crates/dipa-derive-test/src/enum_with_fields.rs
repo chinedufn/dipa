@@ -44,7 +44,7 @@ enum StructVariantTwoFields {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dipa::{DiffPatchTestCase, MacroOptimizationHints};
+    use dipa::{patch_ty, DiffPatchTestCase, MacroOptimizationHints};
 
     /// Verify that we properly handle an enum with a single field and one piece of data
     #[test]
@@ -56,6 +56,7 @@ mod tests {
             expected_diff: 2,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -66,6 +67,7 @@ mod tests {
             expected_diff: 5,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<u8>(),
         }
         .test();
 

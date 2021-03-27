@@ -146,22 +146,24 @@ fn todo_quote() -> TokenStream2 {
 fn impl_dipa(
     enum_or_struct_name: &syn::Ident,
     diff_type: TokenStream2,
-    owned_diff_type: TokenStream2,
+    patch_type: TokenStream2,
     create_patch_towards_inner: TokenStream2,
     apply_patch_inner: TokenStream2,
 ) -> TokenStream2 {
     quote! {
-     impl<'p> dipa::Diffable<'p> for #enum_or_struct_name {
+     impl<'p> dipa::Diffable<'p, #enum_or_struct_name> for #enum_or_struct_name {
         type Diff = #diff_type;
 
-        type Patch = #owned_diff_type;
+        type Patch = #patch_type;
 
-        fn create_patch_towards (&self, end_state: &'p Self)
+        fn create_patch_towards (&self, end_state: &'p #enum_or_struct_name)
           -> dipa::CreatePatchTowardsReturn<Self::Diff> {
             #create_patch_towards_inner
         }
+     }
 
-        fn apply_patch (&mut self, patch: Self::Patch) {
+     impl<'p> dipa::Patchable<#patch_type> for #enum_or_struct_name {
+        fn apply_patch (&mut self, patch: #patch_type) {
             #apply_patch_inner
         }
      }

@@ -1,5 +1,5 @@
 use crate::{number_diff_impl_option_wrapped, number_patch_impl_option_wrapped};
-use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints, Patchable};
+use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
 number_diff_impl_option_wrapped!(f32, f32);
 number_patch_impl_option_wrapped!(f32, Option<f32>);
@@ -14,6 +14,7 @@ mod tests {
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
+    use crate::{Diffable, Patchable};
 
     /// We wrap f32 so that we can impl Eq and PartialEq
     #[derive(Debug, Deserialize, Serialize, Copy, Clone)]
@@ -24,6 +25,7 @@ mod tests {
 
     impl<'p> Diffable<'p, F32TestWrapper> for F32TestWrapper {
         type Diff = Option<f32>;
+        type Patch = Option<f32>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
             self.0.create_patch_towards(&end_state.0)
@@ -38,6 +40,7 @@ mod tests {
 
     impl<'p> Diffable<'p, F64TestWrapper> for F64TestWrapper {
         type Diff = Option<f64>;
+        type Patch = Option<f64>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
             self.0.create_patch_towards(&end_state.0)

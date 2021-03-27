@@ -11,10 +11,10 @@ pub(super) fn generate_single_variant_enum_single_struct_field_impl(
     impl_dipa(
         &enum_name,
         quote! {
-        <#field_type as dipa::Diffable<'p>>::Diff
+        <#field_type as dipa::Diffable<'p, #field_type>>::Diff
         },
         quote! {
-        <#field_type as dipa::Diffable<'p>>::Patch
+        <#field_type as dipa::Diffable<'p, #field_type>>::Patch
         },
         // match (self, end_state) {
         //     (Self::OnlyVariant { only_field: start }, Self::OnlyVariant { only_field: end }) => {
@@ -36,7 +36,7 @@ pub(super) fn generate_single_variant_enum_single_struct_field_impl(
         quote! {
           match self {
              Self::#variant_name { #field_name } => {
-                 #field_name.patch(patch)
+                 #field_name.apply_patch(patch)
              }
           }
         },

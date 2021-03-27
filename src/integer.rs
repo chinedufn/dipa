@@ -1,14 +1,16 @@
 use crate::{
-    number_diff_impl_option_wrapped, number_diff_impl_u8_or_i8, number_patch_impl_option_wrapped,
-    number_patch_impl_u8_or_i8,
+    number_diff_impl_option_wrapped, number_diff_impl_u8_or_i8, number_patch_impl_mut_u8_or_i8,
+    number_patch_impl_option_wrapped, number_patch_impl_u8_or_i8,
 };
 use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
 number_diff_impl_u8_or_i8!(u8, u8);
 number_patch_impl_u8_or_i8!(u8, u8);
+number_patch_impl_mut_u8_or_i8!(&mut u8, u8);
 
 number_diff_impl_u8_or_i8!(i8, i8);
 number_patch_impl_u8_or_i8!(i8, i8);
+number_patch_impl_mut_u8_or_i8!(&mut i8, i8);
 
 number_diff_impl_option_wrapped!(u16, u16);
 number_patch_impl_option_wrapped!(u16, Option<u16>);
@@ -87,7 +89,7 @@ mod tests_signed {
             start: 0u16,
             end: &2u16,
             expected_diff: Some(2),
-            expected_serialized_patch_size: 3,
+            expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
             patch_type: patch_ty::<Option<u16>>(),
         }

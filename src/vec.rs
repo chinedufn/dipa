@@ -11,8 +11,9 @@ where
     T: PartialEq,
     &'p T: serde::Serialize,
 {
-    /// Option so that it's only 1 byte if nothing has changed.
     type Diff = Vec<SequenceModificationDiff<'p, T>>;
+
+    type Patch = Vec<OwnedSequenceModificationDiff<T>>;
 
     fn create_patch_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Diff> {
         patch_towards(self, end_state)

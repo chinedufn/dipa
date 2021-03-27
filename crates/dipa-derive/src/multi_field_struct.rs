@@ -26,7 +26,7 @@ pub(super) fn generate_multi_field_struct_impl(
             let ty = &field.ty;
 
             quote! {
-            <#ty as dipa::Diffable<'p>>::Diff
+            <#ty as dipa::Diffable<'p, #ty>>::Diff
             }
         })
         .collect();
@@ -38,7 +38,7 @@ pub(super) fn generate_multi_field_struct_impl(
             let ty = &field.ty;
 
             quote! {
-            <#ty as dipa::Diffable<'p>>::Patch
+            <#ty as dipa::Diffable<'p, #ty>>::Patch
             }
         })
         .collect();

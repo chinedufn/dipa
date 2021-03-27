@@ -10,10 +10,10 @@ pub(super) fn generate_single_field_struct_impl(
     impl_dipa(
         &struct_name,
         quote! {
-        <#field_type as dipa::Diffable<'p>>::Diff
+        <#field_type as dipa::Diffable<'p, #field_type>>::Diff
         },
         quote! {
-        <#field_type as dipa::Diffable<'p>>::Patch
+        <#field_type as dipa::Diffable<'p, #field_type>>::Patch
         },
         quote! {
         self.#field_name.create_patch_towards(&end_state.#field_name)
