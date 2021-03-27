@@ -5,12 +5,17 @@ use crate::{MacroOptimizationHints, Patchable};
 use bincode::Options;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::__private::PhantomData;
 
 /// Diff/patch from start -> end, asserting that the patching was successful and that the patch
 /// has the expected bincode serialized size (with varint encoding enabled).
 ///
 /// Useful for verifying that custom implementations of the [DiffPatch] trait work as expected.
-pub struct DiffPatchTestCase<'p, T: Debug + Diffable<'p> + Patchable + Eq + PartialEq + Serialize> {
+pub struct DiffPatchTestCase<
+    'p,
+    T: Debug + Diffable<'p, T> + Patchable<P> + Eq + PartialEq + Serialize,
+    P,
+> {
     pub label: Option<&'p str>,
     pub start: T,
     pub end: &'p T,
@@ -18,13 +23,14 @@ pub struct DiffPatchTestCase<'p, T: Debug + Diffable<'p> + Patchable + Eq + Part
     /// The size of the patch in bytes
     pub expected_serialized_patch_size: usize,
     pub expected_macro_hints: MacroOptimizationHints,
+    pub patch_type: PhantomData<P>,
 }
 
-impl<'p, T: 'p + Debug + Diffable<'p> + Patchable + Eq + PartialEq + Serialize>
-    DiffPatchTestCase<'p, T>
+impl<'p, P, T: 'p + Debug + Diffable<'p, T> + Patchable<P> + Eq + PartialEq + Serialize>
+    DiffPatchTestCase<'p, T, P>
 where
-    <T as Diffable<'p>>::Diff: Serialize + Debug + PartialEq,
-    <T as Patchable>::Patch: DeserializeOwned + Debug + PartialEq,
+    <T as Diffable<'p, T>>::Diff: Serialize + Debug + PartialEq,
+    P: DeserializeOwned + Debug + PartialEq,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start
@@ -70,4 +76,9 @@ Test Label: {:?}
 
         assert_eq!(macro_hints, self.expected_macro_hints);
     }
+}
+
+/// Create PhantomData<P>
+pub fn patch_ty<P>() -> PhantomData<P> {
+    PhantomData::<P>::default()
 }

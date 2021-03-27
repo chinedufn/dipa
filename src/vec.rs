@@ -6,7 +6,7 @@ mod longest_common_subsequence;
 mod vec_apply_patch;
 mod vec_create_patch_towards;
 
-impl<'p, T: 'p + Diffable<'p>> Diffable<'p> for Vec<T>
+impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, Vec<T>> for Vec<T>
 where
     T: PartialEq,
     &'p T: serde::Serialize,
@@ -19,11 +19,8 @@ where
     }
 }
 
-impl<T> Patchable for Vec<T> {
-    /// Option so that it's only 1 byte if nothing has changed.
-    type Patch = Vec<OwnedSequenceModificationDiff<T>>;
-
-    fn apply_patch(&mut self, patch: Self::Patch) {
+impl<T> Patchable<Vec<OwnedSequenceModificationDiff<T>>> for Vec<T> {
+    fn apply_patch(&mut self, patch: Vec<OwnedSequenceModificationDiff<T>>) {
         apply_patch(self, patch)
     }
 }
@@ -151,11 +148,12 @@ pub enum OwnedSequenceModificationDiff<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
     use bincode::Options;
+    use serde::__private::PhantomData;
 
     /// 1 byte for the u8 length of the Vec that holds all of the patch operations
     const BASE_PATCH_BYTES: usize = 1;
@@ -171,6 +169,7 @@ mod tests {
             // No change, none variant is one byte
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -188,6 +187,7 @@ mod tests {
             expected_diff: vec![SequenceModificationDiff::DeleteLast],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -208,6 +208,7 @@ mod tests {
             }],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -225,6 +226,7 @@ mod tests {
             expected_diff: vec![SequenceModificationDiff::DeleteFirst],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -245,6 +247,7 @@ mod tests {
             }],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -267,6 +270,7 @@ mod tests {
             ],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -286,6 +290,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -310,6 +315,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -329,6 +335,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -350,6 +357,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -374,6 +382,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -399,6 +408,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -418,6 +428,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -439,6 +450,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -459,6 +471,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -484,6 +497,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -504,6 +518,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -529,6 +544,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -550,6 +566,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -577,6 +594,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -605,6 +623,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -624,6 +643,7 @@ mod tests {
             expected_diff: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -644,5 +664,9 @@ mod tests {
                 .len(),
             1
         );
+    }
+
+    fn vec_u8_patch_type() -> PhantomData<Vec<OwnedSequenceModificationDiff<u8>>> {
+        patch_ty::<Vec<OwnedSequenceModificationDiff<u8>>>()
     }
 }

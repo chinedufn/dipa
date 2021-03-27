@@ -21,25 +21,24 @@ pub use self::dipa_impl_tester::DiffPatchTestCase;
 pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
 
 /// Allows a type to be diffed with another type.
-pub trait Diffable<'p> {
+pub trait Diffable<'p, Other> {
     /// This will typically hold references to data from the structs that are being diffed.
     type Diff;
 
     /// Diff self with some target end state, generating a patch that would convert
     ///  self -> end_state.
-    fn create_patch_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Diff>;
+    fn create_patch_towards(&self, end_state: &'p Other) -> CreatePatchTowardsReturn<Self::Diff>;
 }
 
-/// Allows a type to be patched with a `[Diffable::Patch]`.
-pub trait Patchable {
-    /// Usually the same as [Diffable::Diff], but with owned data instead of references.
-    ///
-    /// You'll typically serialize to a [Diffable::Diff] and then deserialize to Self::Patch,
-    /// then apply the Self::Patch via [Self.apply_patch].
-    type Patch;
-
+/// Allows a type to be patched.
+///
+/// A patch is usually the same as [Diffable::Diff], but with owned data instead of references.
+///
+/// You'll typically serialize to a [Diffable::Diff] and then deserialize the patch type,
+/// then apply the patch via [Self.apply_patch].
+pub trait Patchable<P> {
     /// Apply a patch.
-    fn apply_patch(&mut self, patch: Self::Patch);
+    fn apply_patch(&mut self, patch: P);
 }
 
 /// Information about the diff that the derive macro can use in order to optimize the diff functions

@@ -4,35 +4,36 @@ use crate::{
 };
 use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
-number_diff_impl_u8_or_i8!(u8);
-number_patch_impl_u8_or_i8!(u8);
-number_diff_impl_u8_or_i8!(i8);
-number_patch_impl_u8_or_i8!(i8);
+number_diff_impl_u8_or_i8!(u8, u8);
+number_patch_impl_u8_or_i8!(u8, u8);
 
-number_diff_impl_option_wrapped!(u16);
-number_patch_impl_option_wrapped!(u16);
-number_diff_impl_option_wrapped!(i16);
-number_patch_impl_option_wrapped!(i16);
+number_diff_impl_u8_or_i8!(i8, i8);
+number_patch_impl_u8_or_i8!(i8, i8);
 
-number_diff_impl_option_wrapped!(u32);
-number_patch_impl_option_wrapped!(u32);
-number_diff_impl_option_wrapped!(i32);
-number_patch_impl_option_wrapped!(i32);
+number_diff_impl_option_wrapped!(u16, u16);
+number_patch_impl_option_wrapped!(u16, Option<u16>);
+number_diff_impl_option_wrapped!(i16, i16);
+number_patch_impl_option_wrapped!(i16, Option<i16>);
 
-number_diff_impl_option_wrapped!(u64);
-number_patch_impl_option_wrapped!(u64);
-number_diff_impl_option_wrapped!(i64);
-number_patch_impl_option_wrapped!(i64);
+number_diff_impl_option_wrapped!(u32, u32);
+number_patch_impl_option_wrapped!(u32, Option<u32>);
+number_diff_impl_option_wrapped!(i32, i32);
+number_patch_impl_option_wrapped!(i32, Option<i32>);
 
-number_diff_impl_option_wrapped!(u128);
-number_patch_impl_option_wrapped!(u128);
-number_diff_impl_option_wrapped!(i128);
-number_patch_impl_option_wrapped!(i128);
+number_diff_impl_option_wrapped!(u64, u64);
+number_patch_impl_option_wrapped!(u64, Option<u64>);
+number_diff_impl_option_wrapped!(i64, i64);
+number_patch_impl_option_wrapped!(i64, Option<i64>);
+
+number_diff_impl_option_wrapped!(u128, u128);
+number_patch_impl_option_wrapped!(u128, Option<u128>);
+number_diff_impl_option_wrapped!(i128, i128);
+number_patch_impl_option_wrapped!(i128, Option<i128>);
 
 #[cfg(test)]
 mod tests_signed {
 
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -46,6 +47,7 @@ mod tests_signed {
             expected_diff: 0,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<u8>(),
         }
         .test();
     }
@@ -59,6 +61,7 @@ mod tests_signed {
             expected_diff: 2,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<u8>(),
         }
         .test();
     }
@@ -72,6 +75,7 @@ mod tests_signed {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<u16>>(),
         }
         .test();
     }
@@ -85,6 +89,7 @@ mod tests_signed {
             expected_diff: Some(2),
             expected_serialized_patch_size: 3,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<u16>>(),
         }
         .test();
     }
@@ -98,6 +103,7 @@ mod tests_signed {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<u32>>(),
         }
         .test();
     }
@@ -111,6 +117,7 @@ mod tests_signed {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<u32>>(),
         }
         .test();
     }
@@ -124,6 +131,7 @@ mod tests_signed {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<u64>>(),
         }
         .test();
     }
@@ -137,6 +145,7 @@ mod tests_signed {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<u64>>(),
         }
         .test();
     }
@@ -150,6 +159,7 @@ mod tests_signed {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<u128>>(),
         }
         .test();
     }
@@ -163,6 +173,7 @@ mod tests_signed {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<u128>>(),
         }
         .test();
     }
@@ -171,7 +182,7 @@ mod tests_signed {
 #[cfg(test)]
 mod tests_unsigned {
 
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -185,6 +196,7 @@ mod tests_unsigned {
             expected_diff: 0,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<i8>(),
         }
         .test();
     }
@@ -198,6 +210,7 @@ mod tests_unsigned {
             expected_diff: 1,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<i8>(),
         }
         .test();
     }
@@ -211,6 +224,7 @@ mod tests_unsigned {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<i16>>(),
         }
         .test();
     }
@@ -224,6 +238,7 @@ mod tests_unsigned {
             expected_diff: Some(2),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<i16>>(),
         }
         .test();
     }
@@ -237,6 +252,7 @@ mod tests_unsigned {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<i32>>(),
         }
         .test();
     }
@@ -250,6 +266,7 @@ mod tests_unsigned {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<i32>>(),
         }
         .test();
     }
@@ -263,6 +280,7 @@ mod tests_unsigned {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<i64>>(),
         }
         .test();
     }
@@ -276,6 +294,7 @@ mod tests_unsigned {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<i64>>(),
         }
         .test();
     }
@@ -289,6 +308,7 @@ mod tests_unsigned {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<i128>>(),
         }
         .test();
     }
@@ -302,6 +322,7 @@ mod tests_unsigned {
             expected_diff: Some(1),
             expected_serialized_patch_size: 2,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<i128>>(),
         }
         .test();
     }

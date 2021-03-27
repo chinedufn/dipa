@@ -1,16 +1,16 @@
 use crate::{number_diff_impl_option_wrapped, number_patch_impl_option_wrapped};
 use crate::{CreatePatchTowardsReturn, Diffable, MacroOptimizationHints, Patchable};
 
-number_diff_impl_option_wrapped!(f32);
-number_patch_impl_option_wrapped!(f32);
+number_diff_impl_option_wrapped!(f32, f32);
+number_patch_impl_option_wrapped!(f32, Option<f32>);
 
-number_diff_impl_option_wrapped!(f64);
-number_patch_impl_option_wrapped!(f64);
+number_diff_impl_option_wrapped!(f64, f64);
+number_patch_impl_option_wrapped!(f64, Option<f64>);
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -22,7 +22,7 @@ mod tests {
     #[derive(Debug, Deserialize, Serialize, Copy, Clone)]
     struct F64TestWrapper(f64);
 
-    impl<'p> Diffable<'p> for F32TestWrapper {
+    impl<'p> Diffable<'p, F32TestWrapper> for F32TestWrapper {
         type Diff = Option<f32>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
@@ -30,15 +30,13 @@ mod tests {
         }
     }
 
-    impl Patchable for F32TestWrapper {
-        type Patch = Option<f32>;
-
-        fn apply_patch(&mut self, patch: Self::Patch) {
+    impl Patchable<Option<f32>> for F32TestWrapper {
+        fn apply_patch(&mut self, patch: Option<f32>) {
             self.0.apply_patch(patch)
         }
     }
 
-    impl<'p> Diffable<'p> for F64TestWrapper {
+    impl<'p> Diffable<'p, F64TestWrapper> for F64TestWrapper {
         type Diff = Option<f64>;
 
         fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
@@ -46,10 +44,8 @@ mod tests {
         }
     }
 
-    impl Patchable for F64TestWrapper {
-        type Patch = Option<f64>;
-
-        fn apply_patch(&mut self, patch: Self::Patch) {
+    impl Patchable<Option<f64>> for F64TestWrapper {
+        fn apply_patch(&mut self, patch: Option<f64>) {
             self.0.apply_patch(patch)
         }
     }
@@ -78,6 +74,7 @@ mod tests {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: patch_ty::<Option<f32>>(),
         }
         .test();
     }
@@ -91,6 +88,7 @@ mod tests {
             expected_diff: Some(5.),
             expected_serialized_patch_size: 5,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<f32>>(),
         }
         .test();
     }
@@ -104,6 +102,7 @@ mod tests {
             expected_diff: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<f64>>(),
         }
         .test();
     }
@@ -117,6 +116,7 @@ mod tests {
             expected_diff: Some(5.),
             expected_serialized_patch_size: 9,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: patch_ty::<Option<f64>>(),
         }
         .test();
     }

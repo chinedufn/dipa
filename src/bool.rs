@@ -1,8 +1,8 @@
 use crate::{number_diff_impl_u8_or_i8, number_patch_impl_u8_or_i8};
-use crate::{CreatePatchTowardsReturn, MacroOptimizationHints, Patchable};
+use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
-number_diff_impl_u8_or_i8!(bool);
-number_patch_impl_u8_or_i8!(bool);
+number_diff_impl_u8_or_i8!(bool, bool);
+number_patch_impl_u8_or_i8!(bool, bool);
 
 #[cfg(test)]
 mod tests {
@@ -10,6 +10,7 @@ mod tests {
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
+    use std::marker::PhantomData;
 
     #[test]
     fn bool_unchanged() {
@@ -20,6 +21,7 @@ mod tests {
             expected_diff: true,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
+            patch_type: PhantomData::<bool>::default(),
         }
         .test();
     }
@@ -33,6 +35,7 @@ mod tests {
             expected_diff: false,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
+            patch_type: PhantomData::<bool>::default(),
         }
         .test();
     }
