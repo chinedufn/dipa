@@ -8,11 +8,12 @@ enum OneVariantOneTuple {
     One(u8),
 }
 
-// #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 enum OneVariantStructTwoFields {
     One { foo: u8, bar: u16 },
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 enum OneVariantTwoTuple {
     One(u8, u16),
 }
@@ -99,54 +100,48 @@ mod tests {
     /// Verify that we properly handle an enum with a single variant and two pieces of data.
     #[test]
     fn single_variant_enum_with_two_data() {
-        unimplemented!(
-            r#"
-TODO: Split out internals of multi_field_struct.rs, then have single_variant_enum make use of them
-when dealing with a variant that has multiple fields.        
-        "#
-        );
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
-        //     end: &OneVariantStructTwoFields::One { foo: 0, bar: 0 },
-        //     expected_diff: 2,
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: false },
-        //     patch_type: patch_ty::<Diff2<u8, u8>>(),
-        // }
-        // .test();
-        //
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantTwoTuple::One(2, 2),
-        //     end: &OneVariantTwoTuple::One(5, 2),
-        //     expected_diff: Diff2::Change_0(5),
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: true },
-        //     patch_type: patch_ty::<Diff2<u8, u8>>(),
-        // }
-        // .test();
-        //
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantTwoTuple::One(2, 2),
-        //     end: &OneVariantTwoTuple::One(2, 5),
-        //     expected_diff: Diff2::Change_1(5),
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: true },
-        //     patch_type: patch_ty::<Diff2<u8, u8>>(),
-        // }
-        // .test();
-        //
-        // DiffPatchTestCase {
-        //     label: None,
-        //     start: OneVariantTwoTuple::One(2, 2),
-        //     end: &OneVariantTwoTuple::One(5, 6),
-        //     expected_diff: Diff2::Change_0_1(5, 6),
-        //     expected_serialized_patch_size: 1,
-        //     expected_macro_hints: MacroOptimizationHints { did_change: true },
-        //     patch_type: patch_ty::<Diff2<u8, u8>>(),
-        // }
-        // .test();
+        DiffPatchTestCase {
+            label: Some("Struct no change"),
+            start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
+            end: &OneVariantStructTwoFields::One { foo: 0, bar: 0 },
+            expected_diff: Diff2::NoChange,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: Some("Struct Change_0"),
+            start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
+            end: &OneVariantStructTwoFields::One { foo: 5, bar: 0 },
+            expected_diff: Diff2::Change_0(5),
+            expected_serialized_patch_size: 2,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: Some("Struct Change_1"),
+            start: OneVariantTwoTuple::One(2, 2),
+            end: &OneVariantTwoTuple::One(2, 5),
+            expected_diff: Diff2::Change_1(Some(5)),
+            expected_serialized_patch_size: 3,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: Some("Struct Change_0_1"),
+            start: OneVariantTwoTuple::One(2, 2),
+            end: &OneVariantTwoTuple::One(5, 6),
+            expected_diff: Diff2::Change_0_1(5, Some(6)),
+            expected_serialized_patch_size: 4,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
+        }
+        .test();
     }
 }

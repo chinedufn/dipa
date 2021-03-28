@@ -4,7 +4,7 @@
 use quote::__private::TokenStream;
 use syn::__private::{Span, TokenStream2};
 use syn::spanned::Spanned;
-use syn::{FieldsNamed, Ident, Type};
+use syn::{FieldsNamed, FieldsUnnamed, Ident, Type};
 
 const FALSE_TRUE: [bool; 2] = [false, true];
 
@@ -25,6 +25,25 @@ pub fn fields_named_to_vec_fields(fields: &FieldsNamed) -> Vec<StructOrTupleFiel
 
             StructOrTupleField {
                 name: quote! {#field_name},
+                ty: &f.ty,
+                span: f.span(),
+            }
+        })
+        .collect()
+}
+
+pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTupleField> {
+    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
+
+    fields
+        .unnamed
+        .iter()
+        .enumerate()
+        .map(|(idx, f)| {
+            let field_name = &tuple_field_names[idx];
+
+            StructOrTupleField {
+                name: quote_spanned! {f.span() => #field_name},
                 ty: &f.ty,
                 span: f.span(),
             }
@@ -56,20 +75,8 @@ pub fn make_diff_n_ident(field_count: usize, span: Span) -> Ident {
 ///     _ => true
 /// };
 /// ```
-pub fn make_match_diff_tokens(
-    struct_name: &Ident,
-    fields: &[StructOrTupleField],
-    start_field_prefix: TokenStream2,
-    end_field_prefix: TokenStream2,
-) -> TokenStream2 {
+pub fn make_match_diff_tokens(struct_name: &Ident, fields: &[StructOrTupleField]) -> TokenStream2 {
     let bool_combinations = make_bool_combinations(fields.len());
-
-    let field_diffs_statements = field_diff_statements(
-        &Ident::new("end_state", struct_name.span()),
-        &fields,
-        start_field_prefix,
-        end_field_prefix,
-    );
 
     // (diff_0.1.did_change, diff_1.1.did_change)
     let mut did_change_tokens = vec![];
@@ -84,8 +91,6 @@ pub fn make_match_diff_tokens(
     let all_false = all_false_idents(fields.len(), struct_name.span());
 
     quote! {
-        #(#field_diffs_statements)*
-
         let diff = match (#(#did_change_tokens),*) {
             #(#match_diff_inner_tokens)*
         };
@@ -115,14 +120,15 @@ pub fn make_match_diff_tokens(
 ///         field1_mut_ref.apply_patch(field1_patch);
 ///     }
 /// };
-pub fn make_match_patch_tokens(struct_name: &Ident, fields: &[StructOrTupleField]) -> TokenStream2 {
-    let self_ident = Ident::new("self", struct_name.span());
+pub fn make_match_patch_tokens(
+    struct_name: &Ident,
+    fields: &[StructOrTupleField],
+    field_mut_refs: Vec<TokenStream2>,
+) -> TokenStream2 {
     let bool_combinations = make_bool_combinations(fields.len());
 
     // dipa::private::{Diff2, Diff3, ... etc}
     let diff_n = Ident::new(&format!("Diff{}", fields.len()), struct_name.span());
-
-    let field_mut_refs = field_mutable_references(&self_ident, &fields);
 
     let match_patch_inner_tokens =
         make_match_patch_inner_tokens(&struct_name, &bool_combinations, fields.len());
@@ -162,51 +168,6 @@ pub fn field_associated_patch_types(fields: &[StructOrTupleField]) -> Vec<TokenS
 
             quote! {
             <#ty as dipa::Diffable<'p, #ty>>::Patch
-            }
-        })
-        .collect()
-}
-
-/// let diff_0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
-/// let diff_1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
-fn field_diff_statements(
-    target_ident: &Ident,
-    fields: &[StructOrTupleField],
-    start_field_prefix: TokenStream2,
-    end_field_prefix: TokenStream2,
-) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .enumerate()
-        .map(|(field_idx, field)| {
-            let field_name = &field.name;
-
-            let diff_idx_ident = Ident::new(&format!("diff_{}", field_idx), field_name.span());
-
-            quote! {
-            let #diff_idx_ident = #start_field_prefix#field_name.create_patch_towards(&#end_field_prefix#field_name);
-            }
-        })
-        .collect()
-}
-
-/// let field0_mut_ref = &mut self.some_field_name;
-/// let field1_mut_ref = &mut self.another_field_name;
-fn field_mutable_references(
-    host_ident: &Ident,
-    fields: &[StructOrTupleField],
-) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .enumerate()
-        .map(|(field_idx, field)| {
-            let field_name = &field.name;
-
-            let mut_ref_ident =
-                Ident::new(&format!("field{}_mut_ref", field_idx), field_name.span());
-
-            quote! {
-            let #mut_ref_ident = &mut self.#field_name;
             }
         })
         .collect()
@@ -263,14 +224,6 @@ fn make_match_diff_inner_tokens(
         // vec![diff_0.0, diff_2.0, diff_5.0]
         let mut changed_diffs = vec![];
 
-        // field0_mut_ref.apply_patch(field0_patch);
-        // field2_mut_ref.apply_patch(field2_patch);
-        // field5_mut_ref.apply_patch(field5_patch);
-        let mut patch_expressions = vec![];
-
-        // field0_patch, field2_patch field5_patch
-        let mut incoming_fields = vec![];
-
         for (idx, _bool) in bools
             .iter()
             .enumerate()
@@ -280,13 +233,6 @@ fn make_match_diff_inner_tokens(
 
             let diff_ident = Ident::new(&format!("diff_{}", idx), struct_name.span());
             changed_diffs.push(quote! {#diff_ident.0});
-
-            let patch_expression_ident =
-                Ident::new(&format!("field{}_mut_ref", idx), struct_name.span());
-            let patch_ident = Ident::new(&format!("field{}_patch", idx), struct_name.span());
-            patch_expressions.push(quote! {#patch_expression_ident.apply_patch(#patch_ident);});
-
-            incoming_fields.push(patch_ident);
         }
 
         let changed_keys = Ident::new(&format!("{}", changed_keys), struct_name.span());

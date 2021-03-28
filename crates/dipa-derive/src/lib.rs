@@ -1,8 +1,9 @@
 use crate::multi_field_struct::generate_multi_field_struct_impl;
-use crate::multi_field_utils::{fields_named_to_vec_fields, StructOrTupleField};
+use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::single_variant_enum::{
     generate_single_variant_enum_multi_struct_field_impl,
+    generate_single_variant_enum_multi_tuple_impl,
     generate_single_variant_enum_single_struct_field_impl,
     generate_single_variant_enum_single_tuple_field_impl,
 };
@@ -33,8 +34,6 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
 
     let zero_sized_diff = create_zst_impl(&enum_or_struct_name);
 
-    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
-
     // Generate:
     // impl<'p> DiffPatch<'p> for MyType { ... }
     let dipa_impl = match input.data {
@@ -58,32 +57,19 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
                     )
                 }
             }
-            Fields::Unnamed(struct_data) => {
-                if struct_data.unnamed.len() == 0 {
+            Fields::Unnamed(fields) => {
+                if fields.unnamed.len() == 0 {
                     zero_sized_diff
-                } else if struct_data.unnamed.len() == 1 {
+                } else if fields.unnamed.len() == 1 {
                     generate_single_field_struct_impl(
                         &enum_or_struct_name,
-                        quote_spanned! {struct_data.unnamed[0].span() => 0},
-                        &struct_data.unnamed[0].ty,
+                        quote_spanned! {fields.unnamed[0].span() => 0},
+                        &fields.unnamed[0].ty,
                     )
                 } else {
                     generate_multi_field_struct_impl(
                         &enum_or_struct_name,
-                        struct_data
-                            .unnamed
-                            .iter()
-                            .enumerate()
-                            .map(|(idx, f)| {
-                                let field_name = &tuple_field_names[idx];
-
-                                StructOrTupleField {
-                                    name: quote_spanned! {f.span() => #field_name},
-                                    ty: &f.ty,
-                                    span: f.span(),
-                                }
-                            })
-                            .collect(),
+                        fields_unnamed_to_vec_fields(&fields),
                     )
                 }
             }
@@ -125,11 +111,14 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
                                 generate_single_variant_enum_single_tuple_field_impl(
                                     enum_or_struct_name,
                                     &variant.ident,
-                                    quote_spanned! {field.span() => 0},
                                     &field.ty,
                                 )
                             } else {
-                                unimplemented!(r#"Enum one variant with fields unnamed"#)
+                                generate_single_variant_enum_multi_tuple_impl(
+                                    enum_or_struct_name,
+                                    &variant.ident,
+                                    fields_unnamed_to_vec_fields(fields),
+                                )
                             }
                         }
                         Fields::Unit => {
