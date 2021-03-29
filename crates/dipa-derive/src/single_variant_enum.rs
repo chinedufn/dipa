@@ -1,3 +1,7 @@
+use crate::enum_utils::{
+    field_diff_statements, make_enum_variant_comparison_match_block,
+    make_two_enums_match_statement, EnumVariant, EnumVariantFields,
+};
 use crate::impl_dipa;
 use crate::multi_field_utils::{
     field_associated_diff_types, field_associated_patch_types, make_diff_n_ident,
@@ -5,7 +9,6 @@ use crate::multi_field_utils::{
 };
 use quote::__private::TokenStream;
 use syn::__private::TokenStream2;
-use syn::spanned::Spanned;
 use syn::{Ident, Type};
 
 /// #[derive(Dipa)] for an enum with one struct variant that has one field.
@@ -127,52 +130,39 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
     let diff_n = make_diff_n_ident(fields.len(), enum_name.span());
 
     let mut field_mut_ref_names = vec![];
-    let mut start_fields = vec![];
-    let mut end_fields = vec![];
+
+    for (idx, field) in fields.iter().enumerate() {
+        let field_name = &field.name;
+
+        let span = field.span;
+
+        let field_mut_ref_name = Ident::new(&format!("field{}_mut_ref", idx), span);
+        field_mut_ref_names.push(quote! {#field_name: #field_mut_ref_name});
+    }
 
     let mut start_idents = vec![];
     let mut end_idents = vec![];
 
-    for (idx, field) in fields.iter().enumerate() {
+    for field in fields.iter() {
         let field_name = &field.name;
         let span = field.span;
 
-        let start_ident = Ident::new(&format!("start{}", idx), span);
-        let end_ident = Ident::new(&format!("end{}", idx), span);
+        let field_name_trimmed = field_name.to_string();
+        let field_name_trimmed = field_name_trimmed.trim();
 
-        let field_mut_ref_name = Ident::new(&format!("field{}_mut_ref", idx), span);
-        field_mut_ref_names.push(quote! {#field_name: #field_mut_ref_name});
-
-        start_fields.push(quote_spanned! {span =>
-        #field_name: #start_ident
-        });
-
-        end_fields.push(quote_spanned! {span =>
-        #field_name: #end_ident
-        });
+        let start_ident = Ident::new(&format!("start_{}", field_name_trimmed), span);
+        let end_ident = Ident::new(&format!("end_{}", field_name_trimmed), span);
 
         start_idents.push(start_ident);
         end_idents.push(end_ident);
     }
 
-    let field_diff_statements = field_diff_statements(&fields, &start_idents, &end_idents);
-    let match_diff_tokens = make_match_diff_tokens(
-        &enum_name,
-        &fields
-            .iter()
-            .enumerate()
-            .map(|(idx, f)| {
-                let start_ident = &start_idents[idx];
-                StructOrTupleField {
-                    name: quote! {#start_ident},
-                    ty: &f.ty,
-                    span: f.span,
-                }
-            })
-            .collect::<Vec<StructOrTupleField>>(),
-    );
+    // dipa::private::{Diff2, Diff3, ... etc}
+    let diff_ty = Type::Verbatim(quote! {#diff_n});
+
     let match_patch_tokens = make_match_patch_tokens(
-        &enum_name,
+        enum_name.span(),
+        &diff_ty,
         &fields
             .iter()
             .enumerate()
@@ -180,12 +170,22 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
                 let end_ident = &end_idents[idx];
                 StructOrTupleField {
                     name: quote! {#end_ident},
-                    ty: &f.ty,
+                    ty: f.ty.clone(),
                     span: f.span,
                 }
             })
             .collect::<Vec<StructOrTupleField>>(),
         vec![],
+    );
+
+    let fields = EnumVariantFields::Struct(fields);
+
+    let diff_fn_tokens = make_diff_fn_tokens(
+        &enum_name,
+        &variant_name,
+        &fields,
+        &start_idents,
+        &end_idents,
     );
 
     impl_dipa(
@@ -200,26 +200,7 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
         //         // ...
         //     }
         // }
-        quote! {
-           use dipa::private::#diff_n;
-           use dipa::MacroOptimizationHints;
-
-          match (self, end_state) {
-              (
-               Self::#variant_name { #(#start_fields),* },
-               Self::#variant_name { #(#end_fields),* },
-              ) => {
-                  #(#field_diff_statements)*
-                  #match_diff_tokens
-
-                  let macro_hints = MacroOptimizationHints {
-                      did_change
-                  };
-
-                  (diff, macro_hints)
-              }
-          }
-        },
+        diff_fn_tokens,
         // match self {
         //     Self::OnlyVariant { field0, field1 } => {
         //         field0.patch(patch);
@@ -259,8 +240,13 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
     let diff_n = make_diff_n_ident(fields.len(), enum_name.span());
 
     let mut field_mut_ref_names = vec![];
-    let mut start_fields = vec![];
-    let mut end_fields = vec![];
+
+    for (idx, field) in fields.iter().enumerate() {
+        let span = field.span;
+
+        let field_mut_ref_name = Ident::new(&format!("field{}_mut_ref", idx), span);
+        field_mut_ref_names.push(quote! {#field_mut_ref_name});
+    }
 
     let mut start_idents = vec![];
     let mut end_idents = vec![];
@@ -268,42 +254,18 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
     for (idx, field) in fields.iter().enumerate() {
         let span = field.span;
 
-        let start_ident = Ident::new(&format!("start{}", idx), span);
-        let end_ident = Ident::new(&format!("end{}", idx), span);
-
-        let field_mut_ref_name = Ident::new(&format!("field{}_mut_ref", idx), span);
-        field_mut_ref_names.push(quote! {#field_mut_ref_name});
-
-        start_fields.push(quote_spanned! {span =>
-        #start_ident
-        });
-
-        end_fields.push(quote_spanned! {span =>
-        #end_ident
-        });
+        let start_ident = Ident::new(&format!("start_{}", idx), span);
+        let end_ident = Ident::new(&format!("end_{}", idx), span);
 
         start_idents.push(start_ident);
         end_idents.push(end_ident);
     }
 
-    let field_diff_statements = field_diff_statements(&fields, &start_idents, &end_idents);
-    let match_diff_tokens = make_match_diff_tokens(
-        &enum_name,
-        &fields
-            .iter()
-            .enumerate()
-            .map(|(idx, f)| {
-                let start_ident = &start_idents[idx];
-                StructOrTupleField {
-                    name: quote! {#start_ident},
-                    ty: &f.ty,
-                    span: f.span,
-                }
-            })
-            .collect::<Vec<StructOrTupleField>>(),
-    );
+    let diff_ty = Type::Verbatim(quote! {#diff_n});
+
     let match_patch_tokens = make_match_patch_tokens(
-        &enum_name,
+        enum_name.span(),
+        &diff_ty,
         &fields
             .iter()
             .enumerate()
@@ -311,7 +273,7 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
                 let end_ident = &end_idents[idx];
                 StructOrTupleField {
                     name: quote! {#end_ident},
-                    ty: &f.ty,
+                    ty: f.ty.clone(),
                     span: f.span,
                 }
             })
@@ -319,38 +281,19 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
         vec![],
     );
 
+    let fields = EnumVariantFields::Tuple(fields);
+
     impl_dipa(
         &enum_name,
         quote! {dipa::private::#diff_n<#(#field_diff_types),*>},
         quote! {dipa::private::#diff_n<#(#field_patch_types),*>},
-        // match (self, end_state) {
-        //     (
-        //         Self::OnlyVariant ( start0, start1 ),
-        //         Self::OnlyVariant ( end0, end1 },
-        //     ) => {
-        //         // ...
-        //     }
-        // }
-        quote! {
-           use dipa::private::#diff_n;
-           use dipa::MacroOptimizationHints;
-
-          match (self, end_state) {
-              (
-               Self::#variant_name ( #(#start_fields),* ),
-               Self::#variant_name ( #(#end_fields),* ),
-              ) => {
-                  #(#field_diff_statements)*
-                  #match_diff_tokens
-
-                  let macro_hints = MacroOptimizationHints {
-                      did_change
-                  };
-
-                  (diff, macro_hints)
-              }
-          }
-        },
+        make_diff_fn_tokens(
+            &enum_name,
+            variant_name,
+            &fields,
+            &start_idents,
+            &end_idents,
+        ),
         // match self {
         //     Self::OnlyVariant ( field0, field1 ) => {
         //         field0.patch(patch);
@@ -358,7 +301,7 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
         //     }
         // }
         quote! {
-           use dipa::private::#diff_n;
+          use dipa::private::#diff_n;
 
           match self {
              Self::#variant_name ( #(#field_mut_ref_names),* ) => {
@@ -369,27 +312,74 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
     )
 }
 
-/// let diff_0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
-/// let diff_1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
-fn field_diff_statements(
-    fields: &[StructOrTupleField],
+// match (self, end_state) {
+//     (
+//         Self::OnlyVariant ( start0, start1 ),
+//         Self::OnlyVariant ( end0, end1 },
+//     ) => {
+//         // ...
+//     }
+// }
+fn make_diff_fn_tokens(
+    enum_name: &Ident,
+    variant_name: &Ident,
+    fields: &EnumVariantFields,
     start_idents: &[Ident],
     end_idents: &[Ident],
-) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .enumerate()
-        .map(|(field_idx, field)| {
-            let field_name = &field.name;
+) -> TokenStream2 {
+    let diff_n = make_diff_n_ident(fields.len(), enum_name.span());
 
-            let diff_idx_ident = Ident::new(&format!("diff_{}", field_idx), field_name.span());
+    let field_diff_statements = field_diff_statements(&fields, &start_idents, &end_idents);
 
-            let start_ident = &start_idents[field_idx];
-            let end_ident = &end_idents[field_idx];
+    let match_diff_tokens = make_match_diff_tokens(
+        Type::Verbatim(quote! {#diff_n}),
+        "",
+        enum_name.span(),
+        &fields
+            .iter()
+            .enumerate()
+            .map(|(idx, f)| {
+                let start_ident = &start_idents[idx];
+                StructOrTupleField {
+                    name: quote! {#start_ident},
+                    ty: f.ty.clone(),
+                    span: f.span,
+                }
+            })
+            .collect::<Vec<StructOrTupleField>>(),
+    );
 
-            quote! {
-            let #diff_idx_ident = #start_ident.create_patch_towards(&#end_ident);
-            }
-        })
-        .collect()
+    let match_block_tokens = make_enum_variant_comparison_match_block(
+        "start_",
+        &EnumVariant {
+            name: variant_name.clone(),
+            fields: fields.clone(),
+        },
+        "end_",
+        &EnumVariant {
+            name: variant_name.clone(),
+            fields: fields.clone(),
+        },
+        quote! {
+         #(#field_diff_statements)*
+         #match_diff_tokens
+
+         let macro_hints = dipa::MacroOptimizationHints {
+             did_change
+         };
+
+         (diff, macro_hints)
+        },
+    );
+    let match_start_end = make_two_enums_match_statement(
+        &Ident::new("self", enum_name.span()),
+        &Ident::new("end_state", enum_name.span()),
+        quote! {#match_block_tokens},
+    );
+
+    quote! {
+     use dipa::private::#diff_n;
+
+     #match_start_end
+    }
 }

@@ -8,6 +8,8 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = "1.0"
+# extra-traits used to #[derive(Debug)] on syn::Lit. Can be removed after we're doing iterating on
+# getting things working.
+syn = {version = "1.0", features = ["extra-traits"] }
 quote = "1.0"
 

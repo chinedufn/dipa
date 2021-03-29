@@ -1,3 +1,4 @@
+use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
 use crate::multi_field_struct::generate_multi_field_struct_impl;
 use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
 use crate::multi_variant_enum::generate_multi_variant_enum_impl;
@@ -27,13 +28,29 @@ mod single_field_struct;
 mod single_variant_enum;
 mod zst_impl;
 
+mod dipa_attribute;
+
+mod enum_utils;
 mod multi_field_utils;
 
+#[cfg(test)]
+mod test_utils;
+
 /// #[derive(DiffPatch)]
-// cargo test -p dipa-derive-test
-#[proc_macro_derive(DiffPatch)]
+// cargo test -p dipa-derive      # Unit tests of the macro's implementation
+// cargo test -p dipa-derive-test # Testing real usage of the macro
+#[proc_macro_derive(DiffPatch, attributes(dipa))]
 pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
+
+    let dipa_attribs = match maybe_parse_raw_dipa_attribute(input.attrs) {
+        Some(attrib) => {
+            let attrib_tokens = attrib.tokens.into();
+
+            Some(parse_macro_input!(attrib_tokens as DipaAttrs))
+        }
+        None => None,
+    };
 
     let enum_or_struct_name = input.ident;
 
@@ -135,7 +152,11 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                     }
                 }
             } else {
-                generate_multi_variant_enum_impl(enum_or_struct_name, enum_data.variants)
+                generate_multi_variant_enum_impl(
+                    enum_or_struct_name,
+                    enum_data.variants,
+                    dipa_attribs,
+                )
             }
         }
         Data::Union(_) => unimplemented!(),
@@ -152,7 +173,7 @@ fn impl_dipa(
     enum_or_struct_name: &syn::Ident,
     diff_type: TokenStream2,
     patch_type: TokenStream2,
-    create_patch_towards_inner: TokenStream2,
+    create_patch_inner: TokenStream2,
     apply_patch_inner: TokenStream2,
 ) -> TokenStream2 {
     quote! {
@@ -163,7 +184,7 @@ fn impl_dipa(
 
         fn create_patch_towards (&self, end_state: &'p #enum_or_struct_name)
           -> dipa::CreatePatchTowardsReturn<Self::Diff> {
-            #create_patch_towards_inner
+            #create_patch_inner
         }
      }
 

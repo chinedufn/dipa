@@ -28,6 +28,7 @@ you can decide to go even further and implement the `Diffable` trait yourself.
   - Wrapper types that deref to the inner type using a dirty bit that gets flipped when mutated
     and flipped again whenever the patch function is called.
   - Wrapper type to use an i8 to store deltas. Basically the hair example from below.
+  - Single byte diffs for unit variants
 
 - Implementing `Diffable` yourself
   - Using `DiffPatchTestCase` with `#[cfg_attr(test, derive(PartialEq, Eq))]`

@@ -5,7 +5,7 @@ use crate::multi_field_utils::{
 };
 use syn::__private::TokenStream2;
 use syn::spanned::Spanned;
-use syn::Ident;
+use syn::{Ident, Type};
 
 /// Generate an implementation of Diffable for a struct with 2 or more fields.
 pub(super) fn generate_multi_field_struct_impl(
@@ -18,17 +18,26 @@ pub(super) fn generate_multi_field_struct_impl(
     let diff_n = make_diff_n_ident(fields.len(), struct_name.span());
 
     let field_diffs_statements = field_diff_statements(&fields);
-    let match_diff_tokens = make_match_diff_tokens(&struct_name, &fields);
+    let match_diff_tokens = make_match_diff_tokens(
+        Type::Verbatim(quote! {#diff_n}),
+        "",
+        struct_name.span(),
+        &fields,
+    );
 
     let field_mut_refs = field_mutable_references(&fields);
-    let match_patch_tokens = make_match_patch_tokens(&struct_name, &fields, field_mut_refs);
+
+    let diff_ty = Type::Verbatim(quote! {#diff_n});
+
+    let match_patch_tokens =
+        make_match_patch_tokens(struct_name.span(), &diff_ty, &fields, field_mut_refs);
 
     impl_dipa(
         struct_name,
-        quote! {dipa::private::#diff_n<#(#field_diff_types),*>},
-        quote! {dipa::private::#diff_n<#(#field_patch_types),*>},
+        quote! {dipa::private::#diff_ty<#(#field_diff_types),*>},
+        quote! {dipa::private::#diff_ty<#(#field_patch_types),*>},
         quote! {
-           use dipa::private::#diff_n;
+           use dipa::private::#diff_ty;
            use dipa::MacroOptimizationHints;
 
            #(#field_diffs_statements)*;
@@ -41,7 +50,7 @@ pub(super) fn generate_multi_field_struct_impl(
           (diff, macro_hints)
         },
         quote! {
-           use dipa::private::#diff_n;
+           use dipa::private::#diff_ty;
 
            #match_patch_tokens
         },
@@ -67,8 +76,8 @@ fn field_mutable_references(fields: &[StructOrTupleField]) -> Vec<TokenStream2> 
         .collect()
 }
 
-/// let diff_0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
-/// let diff_1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
+/// let diff0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
+/// let diff1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
 fn field_diff_statements(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
     fields
         .iter()
@@ -76,7 +85,7 @@ fn field_diff_statements(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
         .map(|(field_idx, field)| {
             let field_name = &field.name;
 
-            let diff_idx_ident = Ident::new(&format!("diff_{}", field_idx), field_name.span());
+            let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
 
             quote! {
             let #diff_idx_ident = self.#field_name.create_patch_towards(&end_state.#field_name);

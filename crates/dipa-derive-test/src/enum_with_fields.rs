@@ -24,18 +24,9 @@ enum TwoVariants {
     Two,
 }
 
-// FIXME: Delete.. Just sketching out the API
-enum MyEnumDiff {
-    Same(MyEnumDiffSameVariants),
-    Different(TwoVariants),
-}
-
-// FIXME: Delete.. Just sketching out the API
-enum MyEnumDiffSameVariants {
-    One(u8),
-    Two(Option<u16>),
-}
-
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize, Deserialize)]
+#[dipa(patch_derive = "Debug, PartialEq")]
+#[dipa(diff_derive = "Debug, PartialEq")]
 enum TwoVariantsOneTuple {
     One(u8),
     Two,
@@ -180,6 +171,65 @@ mod tests {
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
             patch_type: patch_ty::<TwoVariants>(),
+        }
+        .test();
+    }
+
+    /// Verify that we can diff an enum with two variants, one of which contains data.
+    #[test]
+    fn two_variants_one_tuple() {
+        DiffPatchTestCase {
+            label: None,
+            start: TwoVariantsOneTuple::One(5),
+            end: &TwoVariantsOneTuple::One(5),
+            expected_diff: TwoVariantsOneTupleDiff::OneNoChange,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoVariantsOneTuple::Two,
+            end: &TwoVariantsOneTuple::Two,
+            expected_diff: TwoVariantsOneTupleDiff::TwoNoChange,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoVariantsOneTuple::One(5),
+            end: &TwoVariantsOneTuple::Two,
+            expected_diff: TwoVariantsOneTupleDiff::ChangedToVariantTwo,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoVariantsOneTuple::Two,
+            end: &TwoVariantsOneTuple::One(5),
+            expected_diff: TwoVariantsOneTupleDiff::ChangedToVariantOne(&5),
+            expected_serialized_patch_size: 2,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: None,
+            start: TwoVariantsOneTuple::One(5),
+            end: &TwoVariantsOneTuple::One(10),
+            expected_diff: TwoVariantsOneTupleDiff::OneChange_0(10),
+            expected_serialized_patch_size: 2,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
     }
