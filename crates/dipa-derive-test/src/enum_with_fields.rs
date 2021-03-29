@@ -18,9 +18,22 @@ enum OneVariantTwoTuple {
     One(u8, u16),
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize, Deserialize)]
 enum TwoVariants {
     One,
     Two,
+}
+
+// FIXME: Delete.. Just sketching out the API
+enum MyEnumDiff {
+    Same(MyEnumDiffSameVariants),
+    Different(TwoVariants),
+}
+
+// FIXME: Delete.. Just sketching out the API
+enum MyEnumDiffSameVariants {
+    One(u8),
+    Two(Option<u16>),
 }
 
 enum TwoVariantsOneTuple {
@@ -33,12 +46,12 @@ enum TwoVariantsOneStruct {
     Two,
 }
 
-enum TupleVariantTwoFields {
+enum TwoVariantsTupleTwoFields {
     One,
     Two(u8, u16),
 }
 
-enum StructVariantTwoFields {
+enum TwoVariantsStructTwoFields {
     One,
     Two { buzz: u8, bazz: u16 },
 }
@@ -141,6 +154,32 @@ mod tests {
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
             patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
+        }
+        .test();
+    }
+
+    /// Verify that enum diffs are one byte if none of the variants of an enum contain any data.
+    #[test]
+    fn empty_variants_single_byte_diffs() {
+        DiffPatchTestCase {
+            label: Some("Enum no data same"),
+            start: TwoVariants::One,
+            end: &TwoVariants::One,
+            expected_diff: TwoVariants::One,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            patch_type: patch_ty::<TwoVariants>(),
+        }
+        .test();
+
+        DiffPatchTestCase {
+            label: Some("Enum no data different"),
+            start: TwoVariants::One,
+            end: &TwoVariants::Two,
+            expected_diff: TwoVariants::Two,
+            expected_serialized_patch_size: 1,
+            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            patch_type: patch_ty::<TwoVariants>(),
         }
         .test();
     }

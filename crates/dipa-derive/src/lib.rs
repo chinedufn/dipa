@@ -1,5 +1,6 @@
 use crate::multi_field_struct::generate_multi_field_struct_impl;
 use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
+use crate::multi_variant_enum::generate_multi_variant_enum_impl;
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::single_variant_enum::{
     generate_single_variant_enum_multi_struct_field_impl,
@@ -17,7 +18,11 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields};
 #[macro_use]
 extern crate quote;
 
+#[macro_use]
+extern crate syn;
+
 mod multi_field_struct;
+mod multi_variant_enum;
 mod single_field_struct;
 mod single_variant_enum;
 mod zst_impl;
@@ -25,9 +30,9 @@ mod zst_impl;
 mod multi_field_utils;
 
 /// #[derive(DiffPatch)]
-// Tested in dipa-derive-test crate
+// cargo test -p dipa-derive-test
 #[proc_macro_derive(DiffPatch)]
-pub fn diff_patch(input: TokenStream) -> TokenStream {
+pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let enum_or_struct_name = input.ident;
@@ -35,7 +40,8 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
     let zero_sized_diff = create_zst_impl(&enum_or_struct_name);
 
     // Generate:
-    // impl<'p> DiffPatch<'p> for MyType { ... }
+    // impl<'p, Other> Diffable<'p, Other> for MyType { ... }
+    // impl Patchable<Patch> for MyType { ... }
     let dipa_impl = match input.data {
         Data::Struct(struct_data) => match struct_data.fields {
             Fields::Named(fields) => {
@@ -76,7 +82,9 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
             Fields::Unit => zero_sized_diff,
         },
         Data::Enum(enum_data) => {
-            if enum_data.variants.len() == 1 {
+            if enum_data.variants.len() == 0 {
+                zero_sized_diff
+            } else if enum_data.variants.len() == 1 {
                 let variant = &enum_data.variants[0];
 
                 let fields = &variant.fields;
@@ -127,10 +135,10 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
                     }
                 }
             } else {
-                todo_quote()
+                generate_multi_variant_enum_impl(enum_or_struct_name, enum_data.variants)
             }
         }
-        Data::Union(_) => todo_quote(),
+        Data::Union(_) => unimplemented!(),
     };
 
     let expanded = quote! {
@@ -138,12 +146,6 @@ pub fn diff_patch(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
-}
-
-fn todo_quote() -> TokenStream2 {
-    quote! {
-    // TODO
-    }
 }
 
 fn impl_dipa(
