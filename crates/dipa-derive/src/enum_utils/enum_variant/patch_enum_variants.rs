@@ -101,13 +101,15 @@ impl EnumVariant {
         let patch_name = patch_type_name(enum_name);
 
         let change_to_variant = self.changed_to_variant();
-        let field_patterns = self.fields.to_pattern_match_tokens("patch_");
+
+        let patches = self.fields.to_field_value_tokens_parenthesized("patch_");
+        let set_fields = self.fields.to_pattern_match_tokens("patch_");
 
         let variant_name = &self.name;
 
         quote! {
-            #patch_name::#change_to_variant#field_patterns => {
-                *self = #enum_name::#variant_name#field_patterns;
+            #patch_name::#change_to_variant#patches => {
+                *self = #enum_name::#variant_name#set_fields;
             }
         }
     }
@@ -281,9 +283,7 @@ get that working.
         let tokens = variant_b().generate_changed_to_variant_block_with_fields(&enum_name());
 
         let expected = quote! {
-            MyEnumPatch::ChangedToVariantVariantB {
-                some_field: patch_some_field, another_field: patch_another_field
-            } => {
+            MyEnumPatch::ChangedToVariantVariantB(patch_some_field, patch_another_field) => {
                 *self = MyEnum::VariantB {
                     some_field: patch_some_field,
                     another_field: patch_another_field

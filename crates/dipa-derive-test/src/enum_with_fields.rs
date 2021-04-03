@@ -32,16 +32,25 @@ enum TwoVariantsOneTuple {
     Two,
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize, Deserialize)]
+#[dipa(patch_derive = "Debug, PartialEq")]
+#[dipa(diff_derive = "Debug, PartialEq")]
 enum TwoVariantsOneStruct {
     One { foo: u8 },
     Two,
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize, Deserialize)]
+#[dipa(patch_derive = "Debug, PartialEq")]
+#[dipa(diff_derive = "Debug, PartialEq")]
 enum TwoVariantsTupleTwoFields {
     One,
     Two(u8, u16),
 }
 
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize, Deserialize)]
+#[dipa(patch_derive = "Debug, PartialEq")]
+#[dipa(diff_derive = "Debug, PartialEq")]
 enum TwoVariantsStructTwoFields {
     One,
     Two { buzz: u8, bazz: u16 },
