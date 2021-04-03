@@ -1,37 +1,12 @@
 # dipa [![Actions Status](https://github.com/chinedufn/dipa/workflows/test/badge.svg)](https://github.com/chinedufn/dipa/actions) [![docs](https://docs.rs/dipa/badge.svg)](https://docs.rs/dipa)
 
-> dipa lets you diff and patch Rust data structures.
+> dipa makes it easy to efficiently delta encode Rust data structures.
 
 dipa is designed to generate **very small diffs** between two instances of a data structure.
 
 You can annotate your types with `#[derive(DiffPatch)]` in order to automatically generate
 highly space optimized diffing and patching types and functions, or in the most sensitive cases
-you can decide to go even further and implement the `Diffable` trait yourself.
-
-## TODO BOOK CHAPTERS BEFORE RELEASE
-
-- Background on the problems that this solves
-  - Make state synchronization easy
-  - Traditionally inflexible and difficult. Dipa makes it flexible and easy.
-
-- Typical approach
-  - Use the derive macro on your state type. For many applications you can stop here.
-  - When the most extreme limits of diff size optimization are necessary, lean on custom `DiffPatch` implementations to tune the
-    diffing and patching of your most sensitive data structure. This should be guided by knowledge about your application. You
-    should very rarely need to do this since the derive macro is packed with optimiations such as guaranteeing that any data structure
-    that has not changed will only diff to `1 byte`, even if the data structure contains other nested data structures.
-
-- Chapter on high performance diffing
-   (mention dirty bit wrappers, talk about LCS implementation and how it should be fine for small vectors, but is O(m * n)).
-
-- Chapter with examples of saving space (pulling in code from a real directory in the repo so that we know it compiles)
-  - Wrapper types that deref to the inner type using a dirty bit that gets flipped when mutated
-    and flipped again whenever the patch function is called.
-  - Wrapper type to use an i8 to store deltas. Basically the hair example from below.
-  - Single byte diffs for unit variants
-
-- Implementing `Diffable` yourself
-  - Using `DiffPatchTestCase` with `#[cfg_attr(test, derive(PartialEq, Eq))]`
+where you need custom behavior you can instead implement the `Diffable` and `Patchable` traits yourself.
 
 ## Quickstart
 
@@ -91,7 +66,7 @@ fn main() {
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
     let serialized = bincode::options().with_varint_encoding().serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable>::Patch = bincode::options()
+    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::Patch = bincode::options()
         .with_varint_encoding()
         .deserialize(&serialized)
         .unwrap();
@@ -144,19 +119,19 @@ struct ClientState {
     hair_length: OnlySmallChanges(u128)
 }
 
-struct OnlySmallChanges(num_128);
+struct OnlySmallChanges(u128);
 
-impl<'p> Diffable<'p> for OnlySmallChanges {
-    type Diff = i8;
-    type Patch = Self::Diff;
+impl<'p> Diffable<'p, u128> for OnlySmallChanges {
+    type Delta = i8;
+    type DeltaOwned = Self::Diff;
 
-    fn create_patch_towards(&self, end_state: &Self) -> dipa::CreatePatchTowardsReturn<Self::Diff> {
+    fn create_patch_towards(&self, end_state: &u128) -> dipa::CreatePatchTowardsReturn<Self::Diff> {
         let hints = MacroOptimizationHints {
-            did_change: self != end_state,
+            did_change: self.0 != *end_state,
         };
 
         (
-            self.0 - end_state.0,
+            self.0 - *end_state,
             hints,
         )
     }

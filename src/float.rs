@@ -74,10 +74,9 @@ mod tests {
             label: Some("Diff patch same f32"),
             start: F32TestWrapper(0.),
             end: &F32TestWrapper(0.),
-            expected_diff: None,
+            expected_delta: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
-            patch_type: patch_ty::<Option<f32>>(),
         }
         .test();
     }
@@ -88,10 +87,9 @@ mod tests {
             label: Some("Diff patch different f32"),
             start: F32TestWrapper(0.),
             end: &F32TestWrapper(5.),
-            expected_diff: Some(5.),
+            expected_delta: Some(5.),
             expected_serialized_patch_size: 5,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: patch_ty::<Option<f32>>(),
         }
         .test();
     }
@@ -102,10 +100,9 @@ mod tests {
             label: Some("Diff patch different f64"),
             start: F64TestWrapper(0.),
             end: &F64TestWrapper(0.),
-            expected_diff: None,
+            expected_delta: None,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: patch_ty::<Option<f64>>(),
         }
         .test();
     }
@@ -116,10 +113,9 @@ mod tests {
             label: Some("Diff patch different f64"),
             start: F64TestWrapper(0.),
             end: &F64TestWrapper(5.),
-            expected_diff: Some(5.),
+            expected_delta: Some(5.),
             expected_serialized_patch_size: 9,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: patch_ty::<Option<f64>>(),
         }
         .test();
     }

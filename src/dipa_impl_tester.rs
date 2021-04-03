@@ -13,24 +13,30 @@ use serde::__private::PhantomData;
 /// Useful for verifying that custom implementations of the [DiffPatch] trait work as expected.
 pub struct DiffPatchTestCase<
     'p,
-    T: Debug + Diffable<'p, T> + Patchable<P> + Eq + PartialEq + Serialize,
-    P,
+    T: Debug + Diffable<'p, T> + Patchable<<T as Diffable<'p, T>>::Patch> + Eq + PartialEq + Serialize,
 > {
     pub label: Option<&'p str>,
     pub start: T,
     pub end: &'p T,
-    pub expected_diff: T::Diff,
+    pub expected_delta: T::Diff,
     /// The size of the patch in bytes
     pub expected_serialized_patch_size: usize,
     pub expected_macro_hints: MacroOptimizationHints,
-    pub patch_type: PhantomData<P>,
 }
 
-impl<'p, P, T: 'p + Debug + Diffable<'p, T> + Patchable<P> + Eq + PartialEq + Serialize>
-    DiffPatchTestCase<'p, T, P>
+impl<
+        'p,
+        T: 'p
+            + Debug
+            + Diffable<'p, T>
+            + Patchable<<T as Diffable<'p, T>>::Patch>
+            + Eq
+            + PartialEq
+            + Serialize,
+    > DiffPatchTestCase<'p, T>
 where
     <T as Diffable<'p, T>>::Diff: Serialize + Debug + PartialEq,
-    P: DeserializeOwned + Debug + PartialEq,
+    <T as Diffable<'p, T>>::Patch: DeserializeOwned + Debug + PartialEq,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start
@@ -40,7 +46,7 @@ where
         let (patch, macro_hints) = self.start.create_patch_towards(self.end);
 
         assert_eq!(
-            patch, self.expected_diff,
+            patch, self.expected_delta,
             r#"
 Test Label {:?}
 "#,
@@ -52,7 +58,7 @@ Test Label {:?}
             .serialize(&patch)
             .unwrap();
 
-        let patch = bincode::options()
+        let patch: <T as Diffable<'p, T>>::Patch = bincode::options()
             .with_varint_encoding()
             .deserialize(&patch_bytes[..])
             .unwrap();

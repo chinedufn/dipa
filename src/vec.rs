@@ -166,11 +166,10 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3],
             end: &vec![1u8, 2, 3],
-            expected_diff: vec![],
+            expected_delta: vec![],
             // No change, none variant is one byte
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -185,10 +184,9 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3],
             end: &vec![0u8, 1, 2],
-            expected_diff: vec![SequenceModificationDiff::DeleteLast],
+            expected_delta: vec![SequenceModificationDiff::DeleteLast],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -204,12 +202,11 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3, 4],
             end: &vec![0u8, 1, 2],
-            expected_diff: vec![SequenceModificationDiff::DeleteAllAfterIncluding {
+            expected_delta: vec![SequenceModificationDiff::DeleteAllAfterIncluding {
                 start_index: 3,
             }],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -224,10 +221,9 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2],
             end: &vec![1u8, 2],
-            expected_diff: vec![SequenceModificationDiff::DeleteFirst],
+            expected_delta: vec![SequenceModificationDiff::DeleteFirst],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -243,12 +239,11 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3],
             end: &vec![2u8, 3],
-            expected_diff: vec![SequenceModificationDiff::DeleteAllBeforeIncluding {
+            expected_delta: vec![SequenceModificationDiff::DeleteAllBeforeIncluding {
                 end_index: 1,
             }],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -265,13 +260,12 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3, 4, 5],
             end: &vec![2],
-            expected_diff: vec![
+            expected_delta: vec![
                 SequenceModificationDiff::DeleteAllAfterIncluding { start_index: 3 },
                 SequenceModificationDiff::DeleteAllBeforeIncluding { end_index: 1 },
             ],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -288,10 +282,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3],
             end: &vec![1u8, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -313,10 +306,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4],
             end: &vec![1u8, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -333,10 +325,9 @@ mod tests {
             label: None,
             start: vec![2u8, 3],
             end: &vec![1u8, 2, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -355,10 +346,9 @@ mod tests {
             label: None,
             start: vec![3u8, 4],
             end: &vec![1u8, 2u8, 3, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -380,10 +370,9 @@ mod tests {
             label: None,
             start: vec![1u8, 3],
             end: &vec![1u8, 2, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -406,10 +395,9 @@ mod tests {
             label: None,
             start: vec![1u8, 4],
             end: &vec![1u8, 2, 3, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -426,10 +414,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2],
             end: &vec![1u8, 2, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -448,10 +435,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2],
             end: &vec![1u8, 2, 3, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -469,10 +455,9 @@ mod tests {
             label: None,
             start: vec![1u8, 3],
             end: &vec![2u8, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -495,10 +480,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4],
             end: &vec![5u8, 6, 3, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -516,10 +500,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2],
             end: &vec![1u8, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -542,10 +525,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4],
             end: &vec![1u8, 2, 5, 6],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -564,10 +546,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3],
             end: &vec![1u8, 4, 3],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -592,10 +573,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4, 5],
             end: &vec![1u8, 6, 7, 5],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -621,10 +601,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4],
             end: &vec![1u8, 5, 6, 4],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }
@@ -641,10 +620,9 @@ mod tests {
             label: None,
             start: vec![1u8, 2, 3, 4],
             end: &vec![],
-            expected_diff: expected_patch,
+            expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: vec_u8_patch_type(),
         }
         .test();
     }

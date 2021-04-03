@@ -18,10 +18,9 @@ mod tests {
             label: Some("Diff patch same bool"),
             start: true,
             end: &true,
-            expected_diff: true,
+            expected_delta: true,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_unchanged(),
-            patch_type: PhantomData::<bool>::default(),
         }
         .test();
     }
@@ -32,10 +31,9 @@ mod tests {
             label: Some("Diff patch different bool"),
             start: true,
             end: &false,
-            expected_diff: false,
+            expected_delta: false,
             expected_serialized_patch_size: 1,
             expected_macro_hints: macro_optimization_hint_did_change(),
-            patch_type: PhantomData::<bool>::default(),
         }
         .test();
     }

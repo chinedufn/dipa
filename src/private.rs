@@ -18,7 +18,7 @@
 // TODO: Actually .. just have the derive macro generate enum MyStructDiff { ... }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "dipa-impl-tester", derive(Debug, PartialEq))]
+#[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 #[allow(non_camel_case_types)]
 pub enum Diff2<A, B> {
     NoChange,
@@ -28,7 +28,7 @@ pub enum Diff2<A, B> {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "dipa-impl-tester", derive(Debug, PartialEq))]
+#[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 #[allow(non_camel_case_types)]
 pub enum Diff3<A, B, C> {
     NoChange,
@@ -42,7 +42,7 @@ pub enum Diff3<A, B, C> {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "dipa-impl-tester", derive(Debug, PartialEq))]
+#[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 #[allow(non_camel_case_types)]
 pub enum Diff4<A, B, C, D> {
     NoChange,
