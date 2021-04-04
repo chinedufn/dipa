@@ -2,11 +2,26 @@
 
 > dipa makes it easy to efficiently delta encode Rust data structures.
 
-dipa is designed to generate **very small diffs** between two instances of a data structure.
+dipa's code generation makes it possible to create very tiny diffs between very large data structures
+without the burden of writing and maintaining delta compression code by hand.
 
 You can annotate your types with `#[derive(DiffPatch)]` in order to automatically generate
 highly space optimized diffing and patching types and functions, or in the most sensitive cases
 where you need custom behavior you can instead implement the `Diffable` and `Patchable` traits yourself.
+
+You might make use of dipa as the underlying delta compression machinery in any application where
+clients need to be kept up to date with state from a server such as:
+
+- Multiplayer networked games
+
+- Real time databases
+
+_Note that **dipa does not know anything about networks and has no networking code**.
+It is only focused on delta encoding._
+
+## [The Dipa Book][book]
+
+[The Dipa Book][book] will introduce you to the library and teach you how to use it.
 
 ## Quickstart
 
@@ -146,17 +161,6 @@ This approach would reduce your changed value payload from 17 bytes down to just
 
 \* - _17, not 16, since integers larger than `u8/i8` are wrapped in `Option` by their default `DiffPatch` implementation. This optimizes for the case when the integer does not change since `None` serializes to 1 byte._
 
-## Space Optimizations
-
-Many different approaches are used in order to generate smaller diffs. Here's a non-exhaustive list. We'll want to put together a more complete thoroughly explained list over time.
-
-- The derive macro uses special types when generating code for structs with 7 or fewer fields. These help to save up to 6 bytes when indicating that a struct has changed. In the future we
-  may expand this to larger structs. We need to look into whether or not these would be any compile time impact to doing this.
-
-- The derive macro ensures that if a struct has not changed its diff will be a single byte.
-
-- Standard library types all diff to a single byte when they have not changed. Integers, `Vec<T>`, etc.
-
 ## Contributing
 
 If you have a use case that isn't supported, a question, a patch, or anything else, go right ahead and open an issue or submit a pull request.
@@ -174,4 +178,4 @@ cd dipa
 cargo test --all
 ```
 
-## See Also
+[book]: https://chinedufn.github.io/dipa
