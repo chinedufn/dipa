@@ -72,7 +72,6 @@ mod tests {
             expected_delta: 2,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -83,7 +82,6 @@ mod tests {
             expected_delta: 5,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -94,7 +92,6 @@ mod tests {
             expected_delta: 2,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -105,7 +102,6 @@ mod tests {
             expected_delta: 5,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
     }
@@ -120,7 +116,6 @@ mod tests {
             expected_delta: Diff2::NoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -131,7 +126,6 @@ mod tests {
             expected_delta: Diff2::Change_0(5),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -142,7 +136,6 @@ mod tests {
             expected_delta: Diff2::Change_1(Some(5)),
             expected_serialized_patch_size: 3,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -153,7 +146,6 @@ mod tests {
             expected_delta: Diff2::Change_0_1(5, Some(6)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
     }
@@ -168,7 +160,6 @@ mod tests {
             expected_delta: TwoVariants::One,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<TwoVariants>(),
         }
         .test();
 
@@ -179,7 +170,6 @@ mod tests {
             expected_delta: TwoVariants::Two,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<TwoVariants>(),
         }
         .test();
     }
@@ -194,7 +184,6 @@ mod tests {
             expected_delta: TwoVariantsOneTupleDiff::OneNoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
 
@@ -205,7 +194,6 @@ mod tests {
             expected_delta: TwoVariantsOneTupleDiff::TwoNoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
 
@@ -216,7 +204,6 @@ mod tests {
             expected_delta: TwoVariantsOneTupleDiff::ChangedToVariantTwo,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
 
@@ -227,7 +214,6 @@ mod tests {
             expected_delta: TwoVariantsOneTupleDiff::ChangedToVariantOne(&5),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
 
@@ -238,7 +224,6 @@ mod tests {
             expected_delta: TwoVariantsOneTupleDiff::OneChange_0(10),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<TwoVariantsOneTuplePatch>(),
         }
         .test();
     }

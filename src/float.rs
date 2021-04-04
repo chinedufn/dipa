@@ -102,7 +102,7 @@ mod tests {
             end: &F64TestWrapper(0.),
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_macro_hints: macro_optimization_hint_unchanged(),
         }
         .test();
     }

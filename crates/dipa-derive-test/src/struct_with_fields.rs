@@ -66,7 +66,6 @@ mod tests {
             expected_delta: 30,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -77,7 +76,6 @@ mod tests {
             expected_delta: 1,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -88,7 +86,6 @@ mod tests {
             expected_delta: 30,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
 
@@ -99,7 +96,6 @@ mod tests {
             expected_delta: 1,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<u8>(),
         }
         .test();
     }
@@ -120,7 +116,6 @@ mod tests {
             expected_delta: Diff2::NoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -137,7 +132,6 @@ mod tests {
             expected_delta: Diff2::Change_0(50),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -154,7 +148,6 @@ mod tests {
             expected_delta: Diff2::Change_1(Some(50)),
             expected_serialized_patch_size: 3,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -171,7 +164,6 @@ mod tests {
             expected_delta: Diff2::Change_0_1(10, Some(50)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -184,7 +176,6 @@ mod tests {
             expected_delta: Diff2::NoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -195,7 +186,6 @@ mod tests {
             expected_delta: Diff2::Change_0(50),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -206,7 +196,6 @@ mod tests {
             expected_delta: Diff2::Change_1(Some(50)),
             expected_serialized_patch_size: 3,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
 
@@ -217,7 +206,6 @@ mod tests {
             expected_delta: Diff2::Change_0_1(10, Some(50)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff2<u8, Option<u16>>>(),
         }
         .test();
     }
@@ -240,7 +228,6 @@ mod tests {
             expected_delta: Diff3::NoChange,
             expected_serialized_patch_size: 1,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -259,7 +246,6 @@ mod tests {
             expected_delta: Diff3::Change_0(5),
             expected_serialized_patch_size: 2,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -278,7 +264,6 @@ mod tests {
             expected_delta: Diff3::Change_1(Some(5)),
             expected_serialized_patch_size: 3,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -297,7 +282,6 @@ mod tests {
             expected_delta: Diff3::Change_2(Some(5)),
             expected_serialized_patch_size: 3,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -316,7 +300,6 @@ mod tests {
             expected_delta: Diff3::Change_0_1(5, Some(6)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -335,7 +318,6 @@ mod tests {
             expected_delta: Diff3::Change_0_2(5, Some(6)),
             expected_serialized_patch_size: 4,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
         DiffPatchTestCase {
@@ -353,7 +335,6 @@ mod tests {
             expected_delta: Diff3::Change_1_2(Some(5), Some(6)),
             expected_serialized_patch_size: 5,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
 
@@ -372,7 +353,6 @@ mod tests {
             expected_delta: Diff3::Change_0_1_2(5, Some(6), Some(7)),
             expected_serialized_patch_size: 6,
             expected_macro_hints: MacroOptimizationHints { did_change: true },
-            patch_type: patch_ty::<Diff3<u8, Option<u16>, Option<u32>>>(),
         }
         .test();
     }

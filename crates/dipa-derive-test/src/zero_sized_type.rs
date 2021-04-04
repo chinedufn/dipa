@@ -36,7 +36,6 @@ mod tests {
             expected_delta: expected_diff,
             expected_serialized_patch_size,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty_null(),
         }
         .test();
 
@@ -47,7 +46,6 @@ mod tests {
             expected_delta: expected_diff,
             expected_serialized_patch_size,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty_null(),
         }
         .test();
 
@@ -58,7 +56,6 @@ mod tests {
             expected_delta: expected_diff,
             expected_serialized_patch_size,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty_null(),
         }
         .test();
 
@@ -69,12 +66,7 @@ mod tests {
             expected_delta: expected_diff,
             expected_serialized_patch_size,
             expected_macro_hints: MacroOptimizationHints { did_change: false },
-            patch_type: patch_ty_null(),
         }
         .test();
-    }
-
-    fn patch_ty_null() -> PhantomData<()> {
-        patch_ty::<()>()
     }
 }
