@@ -154,7 +154,6 @@ mod tests {
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
     use bincode::Options;
-    use serde::__private::PhantomData;
 
     /// 1 byte for the u8 length of the Vec that holds all of the patch operations
     const BASE_PATCH_BYTES: usize = 1;

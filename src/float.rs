@@ -10,7 +10,7 @@ number_patch_impl_option_wrapped!(f64, Option<f64>);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
+    use crate::dipa_impl_tester::DiffPatchTestCase;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };

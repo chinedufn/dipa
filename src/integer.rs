@@ -35,7 +35,7 @@ number_patch_impl_option_wrapped!(i128, Option<i128>);
 #[cfg(test)]
 mod tests_signed {
 
-    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
+    use crate::dipa_impl_tester::DiffPatchTestCase;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -174,7 +174,7 @@ mod tests_signed {
 #[cfg(test)]
 mod tests_unsigned {
 
-    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
+    use crate::dipa_impl_tester::DiffPatchTestCase;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };

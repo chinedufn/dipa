@@ -6,6 +6,8 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 keywords = ["delta", "encode", "compress", "network", "state", "client", "server"]
 
+build = "build.rs"
+
 [features]
 impl-tester = ["bincode"]
 

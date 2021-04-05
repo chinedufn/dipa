@@ -51,69 +51,49 @@ impl ChangedFieldIndices {
     }
 }
 
-/// TODO: Refactor to a recursive building of the combinations when we add support for more
-///  fields.
-pub(in super::super) fn make_bool_combinations(bool_count: usize) -> Vec<Vec<bool>> {
-    match bool_count {
-        1 => make_bool_combinations_1(),
-        2 => make_bool_combinations_2(),
-        3 => make_bool_combinations_3(),
-        4 => make_bool_combinations_4(),
-        _ => panic!(
+/// Create every combination of true and false.
+/// There are `2 ^ field_count` combinations.
+///
+/// So for two fields the four combinations are:
+///
+///   [false, false], [true, false], [false, true], [true, true]
+pub(in super::super) fn make_bool_combinations(field_count: usize) -> Vec<Vec<bool>> {
+    if field_count > 5 {
+        panic!(
             r#"
-TODO: Support larger structs.
+TODO: Support larger structs. Need to use multiple `Diff5` types and then use a `Diffn` for the
+ final remaining type. TDD this.
 "#
-        ),
-    }
-}
-
-fn make_bool_combinations_1() -> Vec<Vec<bool>> {
-    vec![vec![false], vec![true]]
-}
-
-fn make_bool_combinations_2() -> Vec<Vec<bool>> {
-    let mut bool_combinations = Vec::with_capacity(4);
-
-    for field0 in FALSE_TRUE.iter() {
-        for field1 in FALSE_TRUE.iter() {
-            let bools = vec![*field0, *field1];
-            bool_combinations.push(bools);
-        }
+        )
     }
 
-    bool_combinations
+    let mut all = vec![];
+    let start = vec![false; field_count];
+
+    bool_combinations_recursive(&mut all, 0, field_count, start);
+
+    all
 }
 
-fn make_bool_combinations_3() -> Vec<Vec<bool>> {
-    let mut bool_combinations = Vec::with_capacity(8);
-
-    for field0 in FALSE_TRUE.iter() {
-        for field1 in FALSE_TRUE.iter() {
-            for field2 in FALSE_TRUE.iter() {
-                let bools = vec![*field0, *field1, *field2];
-                bool_combinations.push(bools);
-            }
-        }
+fn bool_combinations_recursive(
+    all: &mut Vec<Vec<bool>>,
+    start_idx: usize,
+    field_count: usize,
+    current: Vec<bool>,
+) {
+    if start_idx > field_count {
+        return;
     }
 
-    bool_combinations
-}
+    all.push(current.clone());
 
-fn make_bool_combinations_4() -> Vec<Vec<bool>> {
-    let mut bool_combinations = Vec::with_capacity(8);
+    for idx in start_idx..field_count {
+        let mut flipped = current.clone();
 
-    for field0 in FALSE_TRUE.iter() {
-        for field1 in FALSE_TRUE.iter() {
-            for field2 in FALSE_TRUE.iter() {
-                for field3 in FALSE_TRUE.iter() {
-                    let bools = vec![*field0, *field1, *field2, *field3];
-                    bool_combinations.push(bools);
-                }
-            }
-        }
+        flipped[idx] = !flipped[idx];
+
+        bool_combinations_recursive(all, idx + 1, field_count, flipped);
     }
-
-    bool_combinations
 }
 
 #[cfg(test)]
