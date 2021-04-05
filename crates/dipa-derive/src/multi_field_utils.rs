@@ -31,7 +31,19 @@ pub fn fields_named_to_vec_fields(fields: &FieldsNamed) -> Vec<StructOrTupleFiel
 }
 
 pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTupleField> {
-    let tuple_field_names = [quote! {0}, quote! {1}, quote! {2}, quote! {3}];
+    let tuple_field_names = [
+        quote! {0},
+        quote! {1},
+        quote! {2},
+        quote! {3},
+        quote! {4},
+        quote! {5},
+        quote! {6},
+        quote! {7},
+        quote! {8},
+        quote! {9},
+        quote! {10},
+    ];
 
     fields
         .unnamed

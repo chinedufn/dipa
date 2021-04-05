@@ -51,17 +51,17 @@ struct FourFieldsTuple(u8, u16, u32, u64);
 
 //
 
-// #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
-// struct FiveFields {
-//     field1: u8,
-//     field2: u16,
-//     field3: u32,
-//     field4: u64,
-//     field5: u128,
-// }
-//
-// #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
-// struct FiveFieldsTuple(u8, u16, u32, u64, u128);
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct FiveFields {
+    field1: u8,
+    field2: u16,
+    field3: u32,
+    field4: u64,
+    field5: u128,
+}
+
+#[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+struct FiveFieldsTuple(u8, u16, u32, u64, u128);
 
 #[cfg(test)]
 mod tests {
