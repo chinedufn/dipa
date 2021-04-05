@@ -76,15 +76,15 @@ fn main() {
 
     let patch = old_client_state.create_delta_towards(&new_client_state);
 
+	let bin = bincode::options().with_varint_encoding();
+
     // Consider using bincode to serialize your diffs on the server side.
     // You can then send them over the wire and deserialize them on the client side.
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
-    let serialized = bincode::options().with_varint_encoding().serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::DeltaOwned = bincode::options()
-        .with_varint_encoding()
-        .deserialize(&serialized)
-        .unwrap();
+    let serialized = bin.serialize(&patch).unwrap();
+    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::DeltaOwned = 
+        bin.deserialize(&serialized).unwrap();
 
     old_client_state.apply_patch(deserialized);
 
