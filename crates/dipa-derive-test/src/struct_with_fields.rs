@@ -54,7 +54,7 @@ mod tests {
 
     use super::*;
     use dipa::private::{Diff2, Diff3};
-    use dipa::{patch_ty, DiffPatchTestCase, MacroOptimizationHints};
+    use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 
     /// Verify that we can generate a diff/patch for structs with one field.
     #[test]

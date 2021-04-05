@@ -76,8 +76,8 @@ fn field_mutable_references(fields: &[StructOrTupleField]) -> Vec<TokenStream2> 
         .collect()
 }
 
-/// let diff0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
-/// let diff1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
+/// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
+/// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
 fn field_diff_statements(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
     fields
         .iter()
@@ -88,7 +88,7 @@ fn field_diff_statements(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
             let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
 
             quote! {
-            let #diff_idx_ident = self.#field_name.create_patch_towards(&end_state.#field_name);
+            let #diff_idx_ident = self.#field_name.create_delta_towards(&end_state.#field_name);
             }
         })
         .collect()

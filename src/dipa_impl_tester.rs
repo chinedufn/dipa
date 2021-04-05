@@ -5,7 +5,6 @@ use crate::{MacroOptimizationHints, Patchable};
 use bincode::Options;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde::__private::PhantomData;
 
 /// Diff/patch from start -> end, asserting that the patching was successful and that the patch
 /// has the expected bincode serialized size (with varint encoding enabled).
@@ -13,12 +12,17 @@ use serde::__private::PhantomData;
 /// Useful for verifying that custom implementations of the [DiffPatch] trait work as expected.
 pub struct DiffPatchTestCase<
     'p,
-    T: Debug + Diffable<'p, T> + Patchable<<T as Diffable<'p, T>>::Patch> + Eq + PartialEq + Serialize,
+    T: Debug
+        + Diffable<'p, T>
+        + Patchable<<T as Diffable<'p, T>>::DeltaOwned>
+        + Eq
+        + PartialEq
+        + Serialize,
 > {
     pub label: Option<&'p str>,
     pub start: T,
     pub end: &'p T,
-    pub expected_delta: T::Diff,
+    pub expected_delta: T::Delta,
     /// The size of the patch in bytes
     pub expected_serialized_patch_size: usize,
     pub expected_macro_hints: MacroOptimizationHints,
@@ -29,21 +33,21 @@ impl<
         T: 'p
             + Debug
             + Diffable<'p, T>
-            + Patchable<<T as Diffable<'p, T>>::Patch>
+            + Patchable<<T as Diffable<'p, T>>::DeltaOwned>
             + Eq
             + PartialEq
             + Serialize,
     > DiffPatchTestCase<'p, T>
 where
-    <T as Diffable<'p, T>>::Diff: Serialize + Debug + PartialEq,
-    <T as Diffable<'p, T>>::Patch: DeserializeOwned + Debug + PartialEq,
+    <T as Diffable<'p, T>>::Delta: Serialize + Debug + PartialEq,
+    <T as Diffable<'p, T>>::DeltaOwned: DeserializeOwned + Debug + PartialEq,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start
     pub fn test(self) {
         let expected_serialized_patch_size = self.expected_serialized_patch_size;
 
-        let (patch, macro_hints) = self.start.create_patch_towards(self.end);
+        let (patch, macro_hints) = self.start.create_delta_towards(self.end);
 
         assert_eq!(
             patch, self.expected_delta,
@@ -58,7 +62,7 @@ Test Label {:?}
             .serialize(&patch)
             .unwrap();
 
-        let patch: <T as Diffable<'p, T>>::Patch = bincode::options()
+        let patch: <T as Diffable<'p, T>>::DeltaOwned = bincode::options()
             .with_varint_encoding()
             .deserialize(&patch_bytes[..])
             .unwrap();
@@ -82,9 +86,4 @@ Test Label: {:?}
 
         assert_eq!(macro_hints, self.expected_macro_hints);
     }
-}
-
-/// Create PhantomData<P>
-pub fn patch_ty<P>() -> PhantomData<P> {
-    PhantomData::<P>::default()
 }

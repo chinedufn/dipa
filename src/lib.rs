@@ -15,28 +15,22 @@ pub mod private;
 #[cfg(any(test, feature = "impl-tester"))]
 mod dipa_impl_tester;
 #[cfg(feature = "impl-tester")]
-pub use self::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
+pub use self::dipa_impl_tester::DiffPatchTestCase;
 
-/// The type returned by [Diffable.create_patch_towards].
+/// The type returned by [Diffable.create_delta_towards].
 pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
 
 /// Allows a type to be diffed with another type.
 pub trait Diffable<'p, Other> {
     /// This will typically hold references to data from the structs that are being diffed.
-    ///
-    /// TODO: Rename to Delta
-    type Diff;
+    type Delta;
 
-    /// This will typically be an owned version of [`Self::Diff`].
-    ///
-    /// TODO: Rename to DeltaOwned
-    type Patch;
+    /// This will typically be an owned version of [`Self::Delta`].
+    type DeltaOwned;
 
     /// Diff self with some target end state, generating a patch that would convert
     ///  self -> end_state.
-    ///
-    ///  TODO: Rename to create_delta_towards
-    fn create_patch_towards(&self, end_state: &'p Other) -> CreatePatchTowardsReturn<Self::Diff>;
+    fn create_delta_towards(&self, end_state: &'p Other) -> CreatePatchTowardsReturn<Self::Delta>;
 }
 
 /// Allows a type to be patched.

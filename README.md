@@ -12,9 +12,9 @@ where you need custom behavior you can instead implement the `Diffable` and `Pat
 You might make use of dipa as the underlying delta compression machinery in any application where
 clients need to be kept up to date with state from a server such as:
 
-- Multiplayer networked games
+- Multiplayer networked games and simulations
 
-- Real time databases
+- Real time client side views into server side data
 
 _Note that **dipa does not know anything about networks and has no networking code**.
 It is only focused on delta encoding._
@@ -74,14 +74,14 @@ fn main() {
         notifications: vec!["peace".to_string()]
     };
 
-    let patch = old_client_state.create_patch_towards(&new_client_state);
+    let patch = old_client_state.create_delta_towards(&new_client_state);
 
     // Consider using bincode to serialize your diffs on the server side.
     // You can then send them over the wire and deserialize them on the client side.
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
     let serialized = bincode::options().with_varint_encoding().serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::Patch = bincode::options()
+    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::DeltaOwned = bincode::options()
         .with_varint_encoding()
         .deserialize(&serialized)
         .unwrap();
@@ -138,9 +138,9 @@ struct OnlySmallChanges(u128);
 
 impl<'p> Diffable<'p, u128> for OnlySmallChanges {
     type Delta = i8;
-    type DeltaOwned = Self::Diff;
+    type DeltaOwned = Self::Delta;
 
-    fn create_patch_towards(&self, end_state: &u128) -> dipa::CreatePatchTowardsReturn<Self::Diff> {
+    fn create_delta_towards(&self, end_state: &u128) -> dipa::CreatePatchTowardsReturn<Self::Delta> {
         let hints = MacroOptimizationHints {
             did_change: self.0 != *end_state,
         };
@@ -150,8 +150,10 @@ impl<'p> Diffable<'p, u128> for OnlySmallChanges {
             hints,
         )
     }
+}
 
-    fn apply_patch(&mut self, patch: Self::Diff) {
+impl Patchable<i8> for OnlySmallChanges {
+    fn apply_patch(&mut self, patch: i8) {
         self.0 += patch;
     }
 }

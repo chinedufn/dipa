@@ -10,7 +10,6 @@ mod tests {
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
-    use std::marker::PhantomData;
 
     #[test]
     fn bool_unchanged() {

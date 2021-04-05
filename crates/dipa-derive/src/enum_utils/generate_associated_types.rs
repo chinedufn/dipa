@@ -19,7 +19,7 @@ impl ParsedEnum {
     /// enum MyEnumDiff<'p> {
     ///     OneNoChange,
     ///     ChangedToVariantOne(&'p u8),
-    ///     OneChange_0(<u8 as Diffable<'p, u8>>::Diff),
+    ///     OneChange_0(<u8 as Diffable<'p, u8>>::Delta),
     ///     TwoNoChange,
     ///     ChangedToVariantTwo,
     /// }
@@ -47,23 +47,23 @@ impl ParsedEnum {
 
     fn ty_name(&self, associated_type: DipaAssociatedType) -> Ident {
         match associated_type {
-            DipaAssociatedType::Diff => diff_type_name(&self.name),
-            DipaAssociatedType::Patch => patch_type_name(&self.name),
+            DipaAssociatedType::Delta => diff_type_name(&self.name),
+            DipaAssociatedType::DeltaOwned => patch_type_name(&self.name),
         }
     }
 }
 
 #[derive(Copy, Clone)]
 pub enum DipaAssociatedType {
-    Diff,
-    Patch,
+    Delta,
+    DeltaOwned,
 }
 
 impl ToTokens for DipaAssociatedType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            DipaAssociatedType::Diff => tokens.extend(quote! { Diff }),
-            DipaAssociatedType::Patch => tokens.extend(quote! { Patch }),
+            DipaAssociatedType::Delta => tokens.extend(quote! { Delta }),
+            DipaAssociatedType::DeltaOwned => tokens.extend(quote! { DeltaOwned }),
         }
     }
 }
@@ -79,8 +79,8 @@ impl DipaAssociatedType {
 
     pub fn has_lifetime(&self) -> bool {
         match self {
-            DipaAssociatedType::Diff => true,
-            DipaAssociatedType::Patch => false,
+            DipaAssociatedType::Delta => true,
+            DipaAssociatedType::DeltaOwned => false,
         }
     }
 }
@@ -99,13 +99,13 @@ mod tests {
         let parsed_enum = ParsedEnum::new_test_two_variants_one_field();
 
         let tokens =
-            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Diff);
+            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta);
 
         let expected = quote! {
             enum MyEnumDiff<'p> {
                 OneNoChange,
                 ChangedToVariantOne(&'p u16),
-                OneChange_0(<u16 as dipa::Diffable<'p, u16>>::Diff),
+                OneChange_0(<u16 as dipa::Diffable<'p, u16>>::Delta),
                 TwoNoChange,
                 ChangedToVariantTwo,
             }
@@ -120,13 +120,13 @@ mod tests {
         let parsed_enum = ParsedEnum::new_test_two_variants_one_field();
 
         let tokens =
-            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Patch);
+            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::DeltaOwned);
 
         let expected = quote! {
             enum MyEnumPatch {
                 OneNoChange,
                 ChangedToVariantOne(u16),
-                OneChange_0(<u16 as dipa::Diffable<'_, u16>>::Patch),
+                OneChange_0(<u16 as dipa::Diffable<'_, u16>>::DeltaOwned),
                 TwoNoChange,
                 ChangedToVariantTwo,
             }

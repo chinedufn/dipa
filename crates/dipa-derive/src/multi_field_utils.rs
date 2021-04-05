@@ -60,8 +60,8 @@ pub fn make_diff_n_ident(field_count: usize, span: Span) -> Ident {
 ///
 /// ```no_run
 /// // Not included. Just here to illustrate.
-/// let diff0 = self.some_field_name.create_patch_towards(&end_state.some_field_name);
-/// let diff1 = self.another_field_name.create_patch_towards(&end_state.another_field_name);
+/// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
+/// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
 /// // End not included.
 ///
 /// let diff = match (diff0.1.did_change, diff1.1.did_change) {
@@ -146,7 +146,7 @@ pub fn make_match_patch_tokens(
 }
 
 /// Get the Diff associated types for all of the fields.
-/// i.e. vec![<u8::Diff, Option<f64>::Diff, ..]
+/// i.e. vec![<u8::Diff, Option<f64>::Delta, ..]
 pub fn field_associated_diff_types(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
     fields
         .iter()
@@ -154,14 +154,14 @@ pub fn field_associated_diff_types(fields: &[StructOrTupleField]) -> Vec<TokenSt
             let ty = &field.ty;
 
             quote! {
-            <#ty as dipa::Diffable<'p, #ty>>::Diff
+            <#ty as dipa::Diffable<'p, #ty>>::Delta
             }
         })
         .collect()
 }
 
 /// Get the Patch associated types for all of the fields.
-/// i.e. vec![<u8::Diff, Option<f64>::Diff, ..]
+/// i.e. vec![<u8::Diff, Option<f64>::Delta, ..]
 pub fn field_associated_patch_types(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
     fields
         .iter()
@@ -169,7 +169,7 @@ pub fn field_associated_patch_types(fields: &[StructOrTupleField]) -> Vec<TokenS
             let ty = &field.ty;
 
             quote! {
-            <#ty as dipa::Diffable<'p, #ty>>::Patch
+            <#ty as dipa::Diffable<'p, #ty>>::DeltaOwned
             }
         })
         .collect()

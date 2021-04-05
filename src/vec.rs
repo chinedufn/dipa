@@ -1,21 +1,21 @@
 use crate::vec::vec_apply_patch::apply_patch;
-use crate::vec::vec_create_patch_towards::patch_towards;
+use crate::vec::vec_delta_patch_towards::patch_towards;
 use crate::{CreatePatchTowardsReturn, Diffable, Patchable};
 
 mod longest_common_subsequence;
 mod vec_apply_patch;
-mod vec_create_patch_towards;
+mod vec_delta_patch_towards;
 
 impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, Vec<T>> for Vec<T>
 where
     T: PartialEq,
     &'p T: serde::Serialize,
 {
-    type Diff = Vec<SequenceModificationDiff<'p, T>>;
+    type Delta = Vec<SequenceModificationDiff<'p, T>>;
 
-    type Patch = Vec<OwnedSequenceModificationDiff<T>>;
+    type DeltaOwned = Vec<OwnedSequenceModificationDiff<T>>;
 
-    fn create_patch_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Diff> {
+    fn create_delta_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Delta> {
         patch_towards(self, end_state)
     }
 }
@@ -149,7 +149,7 @@ pub enum OwnedSequenceModificationDiff<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::{patch_ty, DiffPatchTestCase};
+    use crate::dipa_impl_tester::DiffPatchTestCase;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -643,9 +643,5 @@ mod tests {
                 .len(),
             1
         );
-    }
-
-    fn vec_u8_patch_type() -> PhantomData<Vec<OwnedSequenceModificationDiff<u8>>> {
-        patch_ty::<Vec<OwnedSequenceModificationDiff<u8>>>()
     }
 }

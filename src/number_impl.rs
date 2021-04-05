@@ -4,14 +4,14 @@
 macro_rules! number_diff_impl_option_wrapped {
     ($num_ty:ty , $other:ty) => {
         impl<'p> crate::Diffable<'p, $other> for $num_ty {
-            type Diff = Option<$num_ty>;
+            type Delta = Option<$num_ty>;
 
-            type Patch = Option<$num_ty>;
+            type DeltaOwned = Option<$num_ty>;
 
-            fn create_patch_towards(
+            fn create_delta_towards(
                 &self,
                 end_state: &$other,
-            ) -> CreatePatchTowardsReturn<Self::Diff> {
+            ) -> CreatePatchTowardsReturn<Self::Delta> {
                 let hint = MacroOptimizationHints {
                     did_change: self != end_state,
                 };
@@ -47,14 +47,14 @@ macro_rules! number_patch_impl_option_wrapped {
 macro_rules! number_diff_impl_u8_or_i8 {
     ($num_ty:ty, $other:ty) => {
         impl<'p> crate::Diffable<'p, $other> for $num_ty {
-            type Diff = $num_ty;
+            type Delta = $num_ty;
 
-            type Patch = $num_ty;
+            type DeltaOwned = $num_ty;
 
-            fn create_patch_towards(
+            fn create_delta_towards(
                 &self,
                 end_state: &$other,
-            ) -> CreatePatchTowardsReturn<Self::Diff> {
+            ) -> CreatePatchTowardsReturn<Self::Delta> {
                 let did_change = *self != *end_state;
                 let hint = MacroOptimizationHints { did_change };
 

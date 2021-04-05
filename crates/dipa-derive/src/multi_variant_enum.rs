@@ -141,7 +141,7 @@ fn generate_multi_variant_enum_with_data_impl(
                 .map(|f| {
                     let ty = &f.ty;
 
-                    Type::Verbatim(quote! { <#ty as dipa::Diffable<'p, #ty>>::Diff })
+                    Type::Verbatim(quote! { <#ty as dipa::Diffable<'p, #ty>>::Delta })
                 })
                 .collect();
 
@@ -170,14 +170,14 @@ fn generate_multi_variant_enum_with_data_impl(
     };
 
     let diff_type_definition =
-        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Diff);
+        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta);
     let diff_type_definition = quote! {
         #[derive(serde::Serialize, #(#patch_derives),*)]
         #diff_type_definition
     };
 
     let patch_type_definition =
-        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Patch);
+        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::DeltaOwned);
     let patch_type_definition = quote! {
         #[derive(serde::Deserialize, #(#patch_derives),*)]
         #patch_type_definition

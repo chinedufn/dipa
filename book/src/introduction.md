@@ -69,7 +69,7 @@ fn main () {
     // ... Pretend we sent the bytes over a network ...
 
     let deserialized:
-      <MyStructDiff as dipa::Diffable<'_, MyStructDiff>>::Patch =
+      <MyStructDiff as dipa::Diffable<'_, MyStructDiff>>::DeltaOwned =
       bincode::options()
         .with_varint_encoding()
         .deserialize(&serialized)

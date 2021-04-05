@@ -24,11 +24,11 @@ mod tests {
     struct F64TestWrapper(f64);
 
     impl<'p> Diffable<'p, F32TestWrapper> for F32TestWrapper {
-        type Diff = Option<f32>;
-        type Patch = Option<f32>;
+        type Delta = Option<f32>;
+        type DeltaOwned = Option<f32>;
 
-        fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-            self.0.create_patch_towards(&end_state.0)
+        fn create_delta_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Delta> {
+            self.0.create_delta_towards(&end_state.0)
         }
     }
 
@@ -39,11 +39,11 @@ mod tests {
     }
 
     impl<'p> Diffable<'p, F64TestWrapper> for F64TestWrapper {
-        type Diff = Option<f64>;
-        type Patch = Option<f64>;
+        type Delta = Option<f64>;
+        type DeltaOwned = Option<f64>;
 
-        fn create_patch_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Diff> {
-            self.0.create_patch_towards(&end_state.0)
+        fn create_delta_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Delta> {
+            self.0.create_delta_towards(&end_state.0)
         }
     }
 

@@ -10,13 +10,13 @@ pub(super) fn generate_single_field_struct_impl(
     impl_dipa(
         &struct_name,
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::Diff
+        <#field_type as dipa::Diffable<'p, #field_type>>::Delta
         },
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::Patch
+        <#field_type as dipa::Diffable<'p, #field_type>>::DeltaOwned
         },
         quote! {
-        self.#field_name.create_patch_towards(&end_state.#field_name)
+        self.#field_name.create_delta_towards(&end_state.#field_name)
         },
         quote! { self.#field_name.apply_patch(patch) },
     )

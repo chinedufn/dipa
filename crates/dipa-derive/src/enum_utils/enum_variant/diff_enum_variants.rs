@@ -92,8 +92,8 @@ impl EnumVariant {
     ///       MyEnum::AnotherVariant { some_field: start_some_field, another: start_another },
     ///       MyEnum::AnotherVariant { some_field: end_some_field, another: end_another },
     ///   ) => {
-    ///       let diff0 = start_some_field.create_patch_towards(&end_some_field);
-    ///       let diff1 = start_another.create_patch_towards(&end_another);
+    ///       let diff0 = start_some_field.create_delta_towards(&end_some_field);
+    ///       let diff1 = start_another.create_delta_towards(&end_another);
     ///
     ///       let diff = match (diff0.1.did_change, diff1.1.did_change) => {
     ///           (false, false) => MyEnumDiff::AnotherVariantNoChange,
@@ -269,8 +269,8 @@ impl EnumVariant {
 
     /// Generate code to diff every field in a struct or tuple variant.
     ///
-    /// let diff_0 = start0.create_patch_towards(&end0);
-    /// let diff_1 = start1.create_patch_towards(&end1);
+    /// let diff_0 = start0.create_delta_towards(&end0);
+    /// let diff_1 = start1.create_delta_towards(&end1);
     fn field_diff_statements(&self, other: &EnumVariant) -> Vec<TokenStream2> {
         self.fields
             .iter()
@@ -284,7 +284,7 @@ impl EnumVariant {
                 let end_ident = &other.fields[field_idx].prefixed_name("end_");
 
                 quote! {
-                let #diff_idx_ident = #start_ident.create_patch_towards(&#end_ident);
+                let #diff_idx_ident = #start_ident.create_delta_towards(&#end_ident);
                 }
             })
             .collect()
@@ -484,8 +484,8 @@ mod tests {
                 MyEnum::Variant2(start_0, start_1),
                 MyEnum::Variant2(end_0, end_1),
             ) => {
-                let diff0 = start_0.create_patch_towards(&end_0);
-                let diff1 = start_1.create_patch_towards(&end_1);
+                let diff0 = start_0.create_delta_towards(&end_0);
+                let diff1 = start_1.create_delta_towards(&end_1);
 
                 let diff = match (diff0.1.did_change, diff1.1.did_change) {
                     (false, false) => MyEnumDiff::Variant2NoChange,
@@ -552,8 +552,8 @@ mod tests {
                 MyEnum::Variant2 { field_a: start_field_a, field_b: start_field_b },
                 MyEnum::Variant2 { field_a: end_field_a, field_b: end_field_b },
             ) => {
-                let diff0 = start_field_a.create_patch_towards(&end_field_a);
-                let diff1 = start_field_b.create_patch_towards(&end_field_b);
+                let diff0 = start_field_a.create_delta_towards(&end_field_a);
+                let diff1 = start_field_b.create_delta_towards(&end_field_b);
 
                 let diff = match (diff0.1.did_change, diff1.1.did_change) {
                     (false, false) => MyEnumDiff::Variant2NoChange,

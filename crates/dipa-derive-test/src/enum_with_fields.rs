@@ -60,7 +60,7 @@ enum TwoVariantsStructTwoFields {
 mod tests {
     use super::*;
     use dipa::private::Diff2;
-    use dipa::{patch_ty, DiffPatchTestCase, MacroOptimizationHints};
+    use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 
     /// Verify that we properly handle an enum with a single variant and one piece of data.
     #[test]

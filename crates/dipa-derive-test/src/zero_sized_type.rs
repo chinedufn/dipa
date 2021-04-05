@@ -20,7 +20,7 @@ enum SingleFieldEnum {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dipa::{patch_ty, DiffPatchTestCase, MacroOptimizationHints};
+    use dipa::{DiffPatchTestCase, MacroOptimizationHints};
     use serde::__private::PhantomData;
 
     /// Verify that the diff for zero sized types has no size.

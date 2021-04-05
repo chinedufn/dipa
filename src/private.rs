@@ -2,21 +2,6 @@
 
 #![allow(missing_docs)]
 
-// TODO: Must structs will have a handful of fields. Let's say <10 or so.
-//  We should have different Diff types that can represent different field changes.
-//  For example, if a struct has 5 fields there might be some sort of type to represent that
-//  fields 1-4 have not changed but field 5 has.
-//  We can support every combination of possibly enabled/disabled fields up to structs with 15
-//  variants (225 possible combinations)
-//  Create a build script to auto generate these types
-//
-//  TODO: For field counts larger than what we generate enums for we can have our proc macro
-//   generate the diff type on the fly.
-
-// TODO: Build script to auto generate up until maybe Diff8 or so
-
-// TODO: Actually .. just have the derive macro generate enum MyStructDiff { ... }
-
 #[derive(serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 #[allow(non_camel_case_types)]

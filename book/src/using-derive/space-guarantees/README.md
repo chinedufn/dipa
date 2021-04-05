@@ -4,8 +4,8 @@
 
 Given a type that is either
 
-- A struct with 7 or fewer fields.
-- An enum where every variant has 7 or fewer fields.
+- A struct with 5 or fewer fields.
+- An enum where every variant has 5 or fewer fields.
 - A type from the standard library that we've implemented `Diffable` for.
 
 Its unchanged delta encoding is guaranteed to be serialize-able to a single byte.
@@ -37,6 +37,7 @@ MyStruct {
 
 // If this type has not changed its delta can be serialized to
 // a single byte.
+// Remember: this rule applies to fields, not variants.
 #[derive(DiffPatch, Hash, Eq, Ord)]
 enum MyEnum {
     A,
@@ -87,13 +88,22 @@ fn make_my_struct () -> MyStruct {
 }
 ```
 
-### Why 7 fields?
+### Why 5 fields?
 
 The derive macro generates a `Diffable::Delta` associated type that is an enum containing every possible combination of changed fields.
 
 This means that there are `2<super>n</super>` enum variants that get generated, where `n` is the number of fields in your struct or within an
 enum variant. Since this is exponential, it grows quickly.
 
-For now we choose `7` as as starting point for the maximum number of fields that we combine into a single `Delta` enum in this way, but in the future we
+For now we choose `5` as as starting point for the maximum number of fields that we combine into a single `Delta` enum in this way, but in the future we
 will experiment with larger numbers in order to find the sweet spot where the number is as high as it can be before the potential impact on compile
 times becomes non-negligible.
+
+We will take real applications that use `#[derive(DiffPatch)]` on non trivial data structures and benchmark the fresh and incremental compile times as `n`
+increases.
+
+Or, perhaps we'll expose feature flags that allow you to increase `n` yourself.
+
+Note that your structs can still have more than 5 fields. They'll just diff to `(field_count / 5.0).ceil()` bytes when unchanged.
+
+So, currently, if you have 9 fields in a struct it will diff to 2 bytes when unchanged.

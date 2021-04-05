@@ -178,12 +178,12 @@ fn impl_dipa(
 ) -> TokenStream2 {
     quote! {
      impl<'p> dipa::Diffable<'p, #enum_or_struct_name> for #enum_or_struct_name {
-        type Diff = #diff_type;
+        type Delta = #diff_type;
 
-        type Patch = #patch_type;
+        type DeltaOwned = #patch_type;
 
-        fn create_patch_towards (&self, end_state: &'p #enum_or_struct_name)
-          -> dipa::CreatePatchTowardsReturn<Self::Diff> {
+        fn create_delta_towards (&self, end_state: &'p #enum_or_struct_name)
+          -> dipa::CreatePatchTowardsReturn<Self::Delta> {
             #create_patch_inner
         }
      }

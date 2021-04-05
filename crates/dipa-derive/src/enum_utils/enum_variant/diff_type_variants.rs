@@ -20,7 +20,7 @@ impl EnumVariant {
     /// vec![
     ///     quote!{ OneNoChange },
     ///     quote!{ ChangedToVariantOne(&'p u16) },
-    ///     quote!{ OneChange_0(<u16 as Diffable<'p, u16>::Diff) }
+    ///     quote!{ OneChange_0(<u16 as Diffable<'p, u16>::Delta) }
     /// ];
     /// ```
     pub fn diff_type_variants(&self, associated_type: DipaAssociatedType) -> Vec<TokenStream2> {
@@ -73,7 +73,7 @@ impl EnumVariant {
         }
     }
 
-    /// quote!(OneChanged_0(<u16 as dipa::Diffable<'p, u16>::Diff))
+    /// quote!(OneChanged_0(<u16 as dipa::Diffable<'p, u16>::Delta))
     fn change_same_variant(&self, associated_type: DipaAssociatedType) -> Vec<TokenStream2> {
         let change_combinations =
             ChangedFieldIndices::all_changed_index_combinations(self.fields.len());
@@ -93,10 +93,10 @@ impl EnumVariant {
                 let ty = &field.ty;
 
                 let lifetime = match associated_type {
-                    DipaAssociatedType::Diff => {
+                    DipaAssociatedType::Delta => {
                         quote! {'p}
                     }
-                    DipaAssociatedType::Patch => {
+                    DipaAssociatedType::DeltaOwned => {
                         quote! {'static}
                     }
                 };
@@ -129,7 +129,7 @@ mod tests {
     fn no_fields_variant() {
         let variant = EnumVariant::no_field_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Diff);
+        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
         let expected = vec![quote! {TwoNoChange}, quote! {ChangedToVariantTwo}];
 
         assert_eq!(diff_variants.len(), expected.len());
@@ -144,12 +144,12 @@ mod tests {
     fn one_field_variant() {
         let variant = EnumVariant::one_field_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Diff);
+        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
         let expected = vec![
             quote! {OneNoChange},
             quote! {
             ChangedToVariantOne(&'p u16)},
-            quote! { OneChange_0(<u16 as dipa::Diffable<'p, u16>>::Diff) },
+            quote! { OneChange_0(<u16 as dipa::Diffable<'p, u16>>::Delta) },
         ];
 
         assert_eq!(diff_variants.len(), expected.len());
@@ -164,17 +164,17 @@ mod tests {
     fn two_field_variant() {
         let variant = EnumVariant::two_fields_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Diff);
+        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
         let expected = vec![
             quote! {TwoNoChange},
             quote! {
             ChangedToVariantTwo(&'p u16, &'p u32)},
-            quote! { TwoChange_0(<u16 as dipa::Diffable<'p, u16>>::Diff) },
-            quote! { TwoChange_1(<u32 as dipa::Diffable<'p, u32>>::Diff) },
+            quote! { TwoChange_0(<u16 as dipa::Diffable<'p, u16>>::Delta) },
+            quote! { TwoChange_1(<u32 as dipa::Diffable<'p, u32>>::Delta) },
             quote! {
                 TwoChange_0_1(
-                    <u16 as dipa::Diffable<'p, u16>>::Diff,
-                    <u32 as dipa::Diffable<'p, u32>>::Diff
+                    <u16 as dipa::Diffable<'p, u16>>::Delta,
+                    <u32 as dipa::Diffable<'p, u32>>::Delta
                 )
             },
         ];

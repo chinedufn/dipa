@@ -24,8 +24,8 @@ pub struct ParsedEnum {
 
 /// Generate code to diff every field in a struct or tuple variant.
 ///
-/// let diff0 = start0.create_patch_towards(&end0);
-/// let diff1 = start1.create_patch_towards(&end1);
+/// let diff0 = start0.create_delta_towards(&end0);
+/// let diff1 = start1.create_delta_towards(&end1);
 pub fn field_diff_statements(
     fields: &[StructOrTupleField],
     start_idents: &[Ident],
@@ -43,7 +43,7 @@ pub fn field_diff_statements(
             let end_ident = &end_idents[field_idx];
 
             quote! {
-            let #diff_idx_ident = #start_ident.create_patch_towards(&#end_ident);
+            let #diff_idx_ident = #start_ident.create_delta_towards(&#end_ident);
             }
         })
         .collect()
