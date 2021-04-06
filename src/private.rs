@@ -17,4 +17,4 @@
 //     Change_0_2(A, C),
 //     Change_0_1_2(A, B, C),
 // }
-include!(concat!(env!("OUT_DIR"), "/diff_n_types.rs"));
+include!(concat!(env!("OUT_DIR"), "/delta_n_types.rs"));

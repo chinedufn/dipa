@@ -2,6 +2,8 @@ use std::ops::Deref;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::{Attribute, Ident, Lit};
 
+mod max_delta_batch;
+
 /// example: #[dipa(patch_derive = "Debug, Copy", ...)]
 pub fn maybe_parse_raw_dipa_attribute(attrs: Vec<Attribute>) -> Option<Attribute> {
     attrs
@@ -36,13 +38,18 @@ pub enum DipaAttr {
     /// Used to add #[derive(...)] to the `MyTypeDiff` type that is generated for enums and
     /// structs.
     ///
-    /// example: `diff_derive = "Debug, Copy, Clone"`
+    /// example: `dipa(diff_derive = "Debug, Copy, Clone")`
     DiffDerive(Lit),
     /// Used to add #[derive(...)] to the `MyTypePatch` type that is generated for enums and
     /// structs.
     ///
-    /// example: `patch_derive = "Debug, Copy, Clone"`
+    /// example: `dipa(patch_derive = "Debug, Copy, Clone")`
     PatchDerive(Lit),
+    /// Used enable larger enums to be used to batch a struct's fields into Delta types.
+    /// Larger batch sizes allow for even smaller diffs at the cost of some compile time.
+    ///
+    /// example: `dipa(max_delta_batch = 6)`
+    MaxDeltaBatch(u8),
 }
 
 impl Parse for DipaAttr {
@@ -56,17 +63,22 @@ impl Parse for DipaAttr {
         let _equals = content.parse::<Token![=]>()?;
 
         // diff_derive = "Debug, Copy"
-        if key == "diff_derive" {
+        if key == "diff_derives" {
             let path_val = content.parse::<Lit>()?;
 
             return Ok(DipaAttr::DiffDerive(path_val));
         }
 
         // patch_derive = "Debug, Copy"
-        if key == "patch_derive" {
+        if key == "patch_derives" {
             let path_val = content.parse::<Lit>()?;
 
             return Ok(DipaAttr::PatchDerive(path_val));
+        }
+
+        // max_delta_batch = 6
+        if key == "max_delta_batch" {
+            return Self::parse_max_delta_batch(&content);
         }
 
         Err(original.error("unknown attribute"))

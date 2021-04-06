@@ -172,7 +172,7 @@ fn generate_multi_variant_enum_with_data_impl(
     let diff_type_definition =
         parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta);
     let diff_type_definition = quote! {
-        #[derive(serde::Serialize, #(#patch_derives),*)]
+        #[derive(serde::Serialize, #(#diff_derives),*)]
         #diff_type_definition
     };
 
@@ -259,13 +259,8 @@ fn no_data_diff_match(enum_name: &syn::Ident, variants: &[EnumVariant]) -> Token
 fn diff_match_with_data(enum_name: &syn::Ident, variants: &[EnumVariant]) -> TokenStream2 {
     let mut match_stmt_branches = vec![];
 
-    let diff_ty = diff_type_name(&enum_name);
-
-    for (idx1, variant1) in variants.iter().enumerate() {
-        for (idx2, variant2) in variants.iter().enumerate() {
-            let variant_name_1 = &variant1.name;
-            let variant_name_2 = &variant2.name;
-
+    for variant1 in variants.iter() {
+        for variant2 in variants.iter() {
             let match_block = variant1.diff_match_block_one_or_more_data(variant2, enum_name);
             match_stmt_branches.push(match_block);
         }
@@ -291,6 +286,7 @@ fn parse_diff_and_patch_derives(dipa_attrs: Option<&DipaAttrs>) -> (Vec<Ident>, 
                 DipaAttr::PatchDerive(lit) => {
                     patch_derives = parse_derives(lit);
                 }
+                _ => {}
             }
         }
     }

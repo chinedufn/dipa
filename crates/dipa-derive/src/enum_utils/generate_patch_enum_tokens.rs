@@ -1,4 +1,4 @@
-use crate::enum_utils::{EnumVariant, ParsedEnum};
+use crate::enum_utils::ParsedEnum;
 use syn::__private::TokenStream2;
 
 impl ParsedEnum {

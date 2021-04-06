@@ -102,7 +102,7 @@ times becomes non-negligible.
 We will take real applications that use `#[derive(DiffPatch)]` on non trivial data structures and benchmark the fresh and incremental compile times as `n`
 increases.
 
-Or, perhaps we'll expose feature flags that allow you to increase `n` yourself.
+Or, perhaps we'll expose feature flags that allow you to increase `n` yourself. Or better yet a procedural macro attribute that can configure the `n` value.
 
 Note that your structs can still have more than 5 fields. They'll just diff to `(field_count / 5.0).ceil()` bytes when unchanged.
 

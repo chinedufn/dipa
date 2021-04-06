@@ -7,6 +7,7 @@
 - [Using Derive](./using-derive/README.md)
   - [Attributes](./using-derive/attributes/README.md)
   - [Space Guarantees](./using-derive/space-guarantees/README.md)
+  - [Delta Encoding Optimizations](./using-derive/delta-encoding-optimizations/README.md)
 
   <!-- TOOD: Rename diff -> delta-encode -->
 - [Performance](./diff-performance/README.md)
@@ -22,6 +23,9 @@
 - [Examples](./examples/README.md)
 
 - [Feature Flags](./feature-flags/README.md)
+
+- [Roadmap](./roadmap/README.md)
+  - [Optimizations](./roadmap/optimizations/README.md)
 
 ---
 

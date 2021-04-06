@@ -1,10 +1,11 @@
 //! Various tests for the #[derive(DiffPatch)] macro.
 
-#[macro_use]
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
 extern crate dipa_derive;
-#[macro_use]
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
 extern crate serde;
 
-mod enum_with_fields;
-mod struct_with_fields;
-mod zero_sized_type;
+#[cfg(test)]
+mod all_tests;

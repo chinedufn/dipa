@@ -199,30 +199,6 @@ impl EnumVariant {
             #(#patch_blocks)*
         }
     }
-
-    /// ```
-    /// # use quote::quote;
-    /// quote! {
-    ///     MyEnumPatch::VariantCChange_0(patch0) => {
-    ///         match self {
-    ///             MyEnum::VariantC(field_0) => {
-    ///                 field_0.apply_patch(patch0);
-    ///             }
-    ///             _ => { panic!("TODO: Return Result::Err") }
-    ///         }
-    ///     }
-    /// };
-    /// ```
-    fn generate_tuple_field_changes(&self, enum_name: &Ident) -> TokenStream2 {
-        let patch_name = patch_type_name(enum_name);
-
-        unimplemented!(
-            r#"
-TODO: Might be able to just call the same generate_struct_field_changes above since we have
-functions that handle the difference between struct like and tuple like fields.
-"#
-        )
-    }
 }
 
 #[cfg(test)]

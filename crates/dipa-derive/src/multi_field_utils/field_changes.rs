@@ -3,9 +3,8 @@ use std::ops::{Deref, DerefMut};
 use quote::__private::Span;
 use syn::Ident;
 
-pub use self::all_combinations::*;
-
 mod all_combinations;
+pub(crate) use self::all_combinations::make_bool_combinations;
 
 /// All of the field indices that have changed within a struct/tuple.
 ///

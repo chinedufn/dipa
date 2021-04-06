@@ -8,5 +8,5 @@ publish = []
 [dependencies]
 dipa = {path = "../../", features = ["impl-tester"]}
 dipa-derive = {path = "../dipa-derive"}
-trybuild = "1.0.41"
+trybuild = "1.0"
 serde = {version = "1", features = ["derive"]}

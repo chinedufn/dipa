@@ -6,10 +6,9 @@ use syn::__private::{Span, TokenStream2};
 use syn::spanned::Spanned;
 use syn::{FieldsNamed, FieldsUnnamed, Ident, Type};
 
-use crate::multi_field_utils::field_changes::make_bool_combinations;
-
 pub use self::field_changes::*;
 pub use self::struct_or_tuple_field::*;
+use crate::multi_field_utils::make_bool_combinations;
 
 mod field_changes;
 mod struct_or_tuple_field;
@@ -31,18 +30,12 @@ pub fn fields_named_to_vec_fields(fields: &FieldsNamed) -> Vec<StructOrTupleFiel
 }
 
 pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTupleField> {
+    #[rustfmt::skip]
     let tuple_field_names = [
-        quote! {0},
-        quote! {1},
-        quote! {2},
-        quote! {3},
-        quote! {4},
-        quote! {5},
-        quote! {6},
-        quote! {7},
-        quote! {8},
-        quote! {9},
-        quote! {10},
+        quote! {0}, quote! {1}, quote! {2}, quote! {3},
+        quote! {4}, quote! {5}, quote! {6}, quote! {7},
+        quote! {8}, quote! {9}, quote! {10}, quote! {11},
+        quote! {12}, quote! {13}, quote! {14}, quote! {15},
     ];
 
     fields
@@ -104,8 +97,6 @@ pub fn make_match_diff_tokens(
 
     let match_diff_inner_tokens =
         make_match_diff_inner_tokens(diff_ty, change_prefix, span, &bool_combinations, &fields);
-
-    let all_false = all_false_idents(fields.len(), span);
 
     let tokens = quote! {
         let diff = match (#(#did_change_tokens),*) {
@@ -187,10 +178,6 @@ pub fn field_associated_patch_types(fields: &[StructOrTupleField]) -> Vec<TokenS
         .collect()
 }
 
-fn all_false_idents(count: usize, span: Span) -> Vec<Ident> {
-    vec![Ident::new("false", span); count]
-}
-
 /// Generate the inside of a match statement that returns a diff based on which fields have changed.
 ///
 /// (false, false, false) => Diff3::NoChange,
@@ -205,9 +192,6 @@ fn make_match_diff_inner_tokens(
     let mut match_diff_inner_tokens = vec![];
 
     let mut all_tuple_entries_are_false = true;
-
-    // dipa::private::{Diff2, Diff3, ... etc}
-    let diff_n = Ident::new(&format!("Diff{}", fields.len()), span);
 
     for bools in bool_combinations {
         let bools = &bools[0..fields.len()];

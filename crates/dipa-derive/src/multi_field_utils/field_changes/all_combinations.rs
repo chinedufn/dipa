@@ -1,8 +1,6 @@
 use crate::multi_field_utils::ChangedFieldIndices;
 use std::cmp::Ordering;
 
-const FALSE_TRUE: [bool; 2] = [false, true];
-
 impl ChangedFieldIndices {
     /// Generate all of the combinations of changed indices.
     ///
@@ -57,7 +55,7 @@ impl ChangedFieldIndices {
 /// So for two fields the four combinations are:
 ///
 ///   [false, false], [true, false], [false, true], [true, true]
-pub(in super::super) fn make_bool_combinations(field_count: usize) -> Vec<Vec<bool>> {
+pub(in crate) fn make_bool_combinations(field_count: usize) -> Vec<Vec<bool>> {
     if field_count > 5 {
         panic!(
             r#"

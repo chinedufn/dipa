@@ -2,8 +2,12 @@
 
 > dipa makes it easy to efficiently delta encode Rust data structures.
 
-dipa's code generation makes it possible to create very tiny diffs between very large data structures
-without the burden of writing and maintaining delta compression code by hand.
+dipa's code generation makes it possible to create very tiny diffs between very large data structures.
+
+dipa's generated delta compression code is optimized in ways that would be unfeasible to maintain
+if done by hand, such as generating enums to encode every possible combination of whether or not some set
+of fields has changed (up to a compile time enforced limit since this is approach has exponential complexity) (ADD A LINK TO BOOK),
+or using a single bit flags to delta encode multiple boolean fields (LINK TO ISSUE HERE).
 
 You can annotate your types with `#[derive(DiffPatch)]` in order to automatically generate
 highly space optimized diffing and patching types and functions, or in the most sensitive cases

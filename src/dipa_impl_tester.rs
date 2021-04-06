@@ -40,7 +40,7 @@ impl<
     > DiffPatchTestCase<'p, T>
 where
     <T as Diffable<'p, T>>::Delta: Serialize + Debug + PartialEq,
-    <T as Diffable<'p, T>>::DeltaOwned: DeserializeOwned + Debug + PartialEq,
+    <T as Diffable<'p, T>>::DeltaOwned: DeserializeOwned,
 {
     /// Verify that we can diff/patch from our start to our end as well as
     /// from our end to our start

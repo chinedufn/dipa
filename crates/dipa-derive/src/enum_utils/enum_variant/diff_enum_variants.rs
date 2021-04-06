@@ -116,7 +116,6 @@ impl EnumVariant {
         let macro_hints_based_on_did_change = self.create_macro_hints_based_on_did_change();
 
         let variant = &self.name;
-        let variant_no_change = self.variant_no_change();
 
         let diff_ty = diff_type_name(enum_name);
 
