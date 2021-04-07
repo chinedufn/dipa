@@ -1,4 +1,4 @@
-use crate::dipa_attribute::{DipaAttr, DipaAttrs};
+use crate::dipa_attribute::{DipaAttrs, DipaContainerAttr};
 use crate::enum_utils::{
     diff_type_name, make_two_enums_match_statement, patch_type_name, DipaAssociatedType,
     EnumVariant, EnumVariantFields, ParsedEnum,
@@ -280,10 +280,10 @@ fn parse_diff_and_patch_derives(dipa_attrs: Option<&DipaAttrs>) -> (Vec<Ident>, 
     if let Some(attrs) = dipa_attrs {
         for attr in attrs.iter() {
             match attr {
-                DipaAttr::DiffDerive(lit) => {
+                DipaContainerAttr::DiffDerive(lit) => {
                     diff_derives = parse_derives(lit);
                 }
-                DipaAttr::PatchDerive(lit) => {
+                DipaContainerAttr::PatchDerive(lit) => {
                     patch_derives = parse_derives(lit);
                 }
                 _ => {}

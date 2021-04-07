@@ -1,0 +1,8 @@
+error: delta_strategy must equal "one_batch", "many_batches" or "no_batching".
+
+See: https://chinedufn/github.io/dipa/using-derive/attributes/index.html#container-attributes
+
+ --> $DIR/invalid_field_batching_strategy.rs:4:34
+  |
+4 | #[dipa(field_batching_strategy = "does-not-exist")]
+  |                                  ^^^^^^^^^^^^^^^^

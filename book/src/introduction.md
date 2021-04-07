@@ -1,5 +1,9 @@
 # Introduction
 
+TODO: Use loom's well written introduction as a basis for ours
+https://docs.rs/loom/0.4.1/loom/ . The background then solution
+format is nice.
+
 Dipa is focused on making it easy to delta encode Rust data structures.
 
 Traditionally, efficient delta compression of data structures required a fair bit of

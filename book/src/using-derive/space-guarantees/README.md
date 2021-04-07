@@ -1,12 +1,11 @@
 # Space Guarantees
 
+FIXME: Move this documentation to a subchapter within the optimizations chapter where we talk about the one_batch strategy.
+
 ## Single Byte No Change Rule
 
-Given a type that is either
-
-- A struct with 5 or fewer fields.
-- An enum where every variant has 5 or fewer fields.
-- A type from the standard library that we've implemented `Diffable` for.
+Given a struct or enum type that uses `#[dipa(delta_strategy = "one_batch")]`, or any type in the standard library
+that we've implemented the `Diffable` trait for.
 
 Its unchanged delta encoding is guaranteed to be serialize-able to a single byte.
 
@@ -19,8 +18,10 @@ it has not changed.
 Note that this rule applies to enum **fields** not variants. i.e. in `MyEnum::A(1, 2, 3)`, the
 fields are "1, 2, 3". This rule applies to enums with any number f variants.
 
----
+Your nested types do **not** need to use the `one_batch` strategy. The strategy that they use does
+not matter for this rule.
 
+---
 
 In the following code snippet, all three types can be delta compressed down to a single byte
 when they haven't changed.

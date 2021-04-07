@@ -1,7 +1,11 @@
 use std::ops::Deref;
+
 use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::{Attribute, Ident, Lit};
 
+pub use self::field_batching_strategy::*;
+
+mod field_batching_strategy;
 mod max_delta_batch;
 
 /// example: #[dipa(patch_derive = "Debug, Copy", ...)]
@@ -14,7 +18,7 @@ pub fn maybe_parse_raw_dipa_attribute(attrs: Vec<Attribute>) -> Option<Attribute
 /// A parsed representation of the #[dipa(...)] container attribute.
 #[derive(Debug)]
 pub struct DipaAttrs {
-    attrs: Vec<DipaAttr>,
+    attrs: Vec<DipaContainerAttr>,
 }
 
 impl Parse for DipaAttrs {
@@ -24,7 +28,9 @@ impl Parse for DipaAttrs {
         }
 
         let opts =
-            syn::punctuated::Punctuated::<DipaAttr, syn::token::Comma>::parse_terminated(input)?;
+            syn::punctuated::Punctuated::<DipaContainerAttr, syn::token::Comma>::parse_terminated(
+                input,
+            )?;
 
         Ok(DipaAttrs {
             attrs: opts.into_iter().collect(),
@@ -34,7 +40,7 @@ impl Parse for DipaAttrs {
 
 /// All of the supported attributes within the #[dipa(...)] container attribute.
 #[derive(Debug)]
-pub enum DipaAttr {
+pub enum DipaContainerAttr {
     /// Used to add #[derive(...)] to the `MyTypeDiff` type that is generated for enums and
     /// structs.
     ///
@@ -50,9 +56,11 @@ pub enum DipaAttr {
     ///
     /// example: `dipa(max_delta_batch = 6)`
     MaxDeltaBatch(u8),
+    /// Controls how fields with a struct are batched when generating the delta type.
+    FieldBatchingStrategy(FieldBatchingStrategy),
 }
 
-impl Parse for DipaAttr {
+impl Parse for DipaContainerAttr {
     fn parse(input: ParseStream) -> SynResult<Self> {
         let original = input.fork();
 
@@ -62,18 +70,18 @@ impl Parse for DipaAttr {
         let key = content.parse::<Ident>()?;
         let _equals = content.parse::<Token![=]>()?;
 
-        // diff_derive = "Debug, Copy"
+        // diff_derives = "Debug, Copy"
         if key == "diff_derives" {
             let path_val = content.parse::<Lit>()?;
 
-            return Ok(DipaAttr::DiffDerive(path_val));
+            return Ok(DipaContainerAttr::DiffDerive(path_val));
         }
 
-        // patch_derive = "Debug, Copy"
+        // patch_derives = "Debug, Copy"
         if key == "patch_derives" {
             let path_val = content.parse::<Lit>()?;
 
-            return Ok(DipaAttr::PatchDerive(path_val));
+            return Ok(DipaContainerAttr::PatchDerive(path_val));
         }
 
         // max_delta_batch = 6
@@ -81,12 +89,17 @@ impl Parse for DipaAttr {
             return Self::parse_max_delta_batch(&content);
         }
 
+        // field_batching_strategy = "no_batching"
+        if key == "field_batching_strategy" {
+            return Self::parse_field_batching_strategy(&content);
+        }
+
         Err(original.error("unknown attribute"))
     }
 }
 
 impl Deref for DipaAttrs {
-    type Target = Vec<DipaAttr>;
+    type Target = Vec<DipaContainerAttr>;
 
     fn deref(&self) -> &Self::Target {
         &self.attrs

@@ -1,4 +1,4 @@
-use crate::dipa_attribute::DipaAttr;
+use crate::dipa_attribute::DipaContainerAttr;
 use syn::parse::ParseBuffer;
 use syn::LitInt;
 use syn::{Error as SynError, Result as SynResult};
@@ -9,7 +9,7 @@ const MIN_MAX_DELTA_BATCH: u8 = 2;
 // The maximum value for the dipa(max_delta_batch = u8) attribute
 const MAX_MAX_DELTA_BATCH: u8 = 7;
 
-impl DipaAttr {
+impl DipaContainerAttr {
     pub(super) fn parse_max_delta_batch(content: &ParseBuffer) -> SynResult<Self> {
         let path_val = content.parse::<LitInt>()?;
 
@@ -41,6 +41,6 @@ compile times grow exponentially."#,
             ));
         }
 
-        Ok(DipaAttr::MaxDeltaBatch(max_delta_batch))
+        Ok(DipaContainerAttr::MaxDeltaBatch(max_delta_batch))
     }
 }

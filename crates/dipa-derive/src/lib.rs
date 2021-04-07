@@ -2,6 +2,7 @@ use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
 use crate::multi_field_struct::generate_multi_field_struct_impl;
 use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
 use crate::multi_variant_enum::generate_multi_variant_enum_impl;
+use crate::parsed_struct::ParsedStruct;
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::single_variant_enum::{
     generate_single_variant_enum_multi_struct_field_impl,
@@ -15,6 +16,7 @@ use quote::quote;
 use syn::__private::TokenStream2;
 use syn::spanned::Spanned;
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use syn::{Error as SynError, Result as SynResult};
 
 #[macro_use]
 extern crate quote;
@@ -32,6 +34,7 @@ mod dipa_attribute;
 
 mod enum_utils;
 mod multi_field_utils;
+mod parsed_struct;
 
 #[cfg(test)]
 mod test_utils;
@@ -60,44 +63,76 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     // impl<'p, Other> Diffable<'p, Other> for MyType { ... }
     // impl Patchable<Patch> for MyType { ... }
     let dipa_impl = match input.data {
-        Data::Struct(struct_data) => match struct_data.fields {
-            Fields::Named(fields) => {
-                if fields.named.len() == 0 {
-                    zero_sized_diff
-                } else if fields.named.len() == 1 {
-                    let field = &fields.named[0];
-                    let field_name = field.ident.as_ref().unwrap();
+        Data::Struct(struct_data) => {
+            let (fields, fields_span) = match &struct_data.fields {
+                Fields::Named(named_fields) => (
+                    fields_named_to_vec_fields(named_fields),
+                    named_fields.span(),
+                ),
+                Fields::Unnamed(unnamed_fields) => (
+                    fields_unnamed_to_vec_fields(unnamed_fields),
+                    unnamed_fields.span(),
+                ),
+                Fields::Unit => (vec![], enum_or_struct_name.span()),
+            };
+            let parsed_struct = ParsedStruct {
+                // FIXME: Remove clone once we move the logic below into generate_dipa_impl()
+                name: enum_or_struct_name.clone(),
+                fields,
+                fields_span,
+            };
 
-                    generate_single_field_struct_impl(
-                        &enum_or_struct_name,
-                        quote_spanned! {field.span() => #field_name},
-                        &field.ty,
-                    )
-                } else {
-                    generate_multi_field_struct_impl(
-                        &enum_or_struct_name,
-                        fields_named_to_vec_fields(&fields),
-                    )
+            if let Some(attrs) = dipa_attribs.as_ref() {
+                if let Err(err) = parsed_struct.validate_struct_container_attributes(attrs) {
+                    return err.into();
                 }
             }
-            Fields::Unnamed(fields) => {
-                if fields.unnamed.len() == 0 {
-                    zero_sized_diff
-                } else if fields.unnamed.len() == 1 {
-                    generate_single_field_struct_impl(
-                        &enum_or_struct_name,
-                        quote_spanned! {fields.unnamed[0].span() => 0},
-                        &fields.unnamed[0].ty,
-                    )
-                } else {
-                    generate_multi_field_struct_impl(
-                        &enum_or_struct_name,
-                        fields_unnamed_to_vec_fields(&fields),
-                    )
+
+            // TODO: Move this logic into ParsedStruct.generate_dipa_impl()
+            let struct_dipa_impl = match struct_data.fields {
+                // struct Foo { field_a: type1, field_b: type2, ... }
+                Fields::Named(fields) => {
+                    if fields.named.len() == 0 {
+                        zero_sized_diff
+                    } else if fields.named.len() == 1 {
+                        let field = &fields.named[0];
+                        let field_name = field.ident.as_ref().unwrap();
+
+                        generate_single_field_struct_impl(
+                            &enum_or_struct_name,
+                            quote_spanned! {field.span() => #field_name},
+                            &field.ty,
+                        )
+                    } else {
+                        generate_multi_field_struct_impl(
+                            &enum_or_struct_name,
+                            fields_named_to_vec_fields(&fields),
+                        )
+                    }
                 }
-            }
-            Fields::Unit => zero_sized_diff,
-        },
+                // struct Foo(type1, type2);
+                Fields::Unnamed(fields) => {
+                    if fields.unnamed.len() == 0 {
+                        zero_sized_diff
+                    } else if fields.unnamed.len() == 1 {
+                        generate_single_field_struct_impl(
+                            &enum_or_struct_name,
+                            quote_spanned! {fields.unnamed[0].span() => 0},
+                            &fields.unnamed[0].ty,
+                        )
+                    } else {
+                        generate_multi_field_struct_impl(
+                            &enum_or_struct_name,
+                            fields_unnamed_to_vec_fields(&fields),
+                        )
+                    }
+                }
+                // struct Foo;
+                Fields::Unit => zero_sized_diff,
+            };
+
+            struct_dipa_impl
+        }
         Data::Enum(enum_data) => {
             if enum_data.variants.len() == 0 {
                 zero_sized_diff
@@ -171,25 +206,25 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
 
 fn impl_dipa(
     enum_or_struct_name: &syn::Ident,
-    diff_type: TokenStream2,
-    patch_type: TokenStream2,
-    create_patch_inner: TokenStream2,
+    delta_type: TokenStream2,
+    delta_owned_type: TokenStream2,
+    create_delta_inner: TokenStream2,
     apply_patch_inner: TokenStream2,
 ) -> TokenStream2 {
     quote! {
      impl<'p> dipa::Diffable<'p, #enum_or_struct_name> for #enum_or_struct_name {
-        type Delta = #diff_type;
+        type Delta = #delta_type;
 
-        type DeltaOwned = #patch_type;
+        type DeltaOwned = #delta_owned_type;
 
         fn create_delta_towards (&self, end_state: &'p #enum_or_struct_name)
           -> dipa::CreatePatchTowardsReturn<Self::Delta> {
-            #create_patch_inner
+            #create_delta_inner
         }
      }
 
-     impl<'p> dipa::Patchable<#patch_type> for #enum_or_struct_name {
-        fn apply_patch (&mut self, patch: #patch_type) {
+     impl<'p> dipa::Patchable<#delta_owned_type> for #enum_or_struct_name {
+        fn apply_patch (&mut self, patch: #delta_owned_type) {
             #apply_patch_inner
         }
      }

@@ -1,0 +1,23 @@
+error: A struct or enum variant must have at least two fields for field delta batching
+to be useful. Try removing the field_batching_strategy attribute.
+ --> $DIR/field_batching_strategy_not_enough_fields.rs:5:8
+  |
+5 | struct Foo;
+  |        ^^^
+
+error: A struct or enum variant must have at least two fields for field delta batching
+to be useful. Try removing the field_batching_strategy attribute.
+ --> $DIR/field_batching_strategy_not_enough_fields.rs:9:11
+  |
+9 | struct Bar(u32);
+  |           ^^^^^
+
+error: A struct or enum variant must have at least two fields for field delta batching
+to be useful. Try removing the field_batching_strategy attribute.
+  --> $DIR/field_batching_strategy_not_enough_fields.rs:13:13
+   |
+13 |   struct Bazz {
+   |  _____________^
+14 | |     field: u64,
+15 | | }
+   | |_^
