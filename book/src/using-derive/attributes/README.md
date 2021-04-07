@@ -15,22 +15,49 @@ struct S {
 #[dipa(patch_derives = "Debug, Serialize")]  // <-- this is a container attribute
 enum E {
     #[dipa(todo_variant_attribute_here)]  // <-- this is a variant attribute
-    A(String),
+    A(
+      #[dipa(todo_field_attribute_here)]  // <-- this is a field attribute
+      String
+    ),
 }
 ```
 
 ## Container Attributes
 
-- `diff_derives = "SomeDerive, AnotherDerive"`
+`diff_derives = "SomeDerive, AnotherDerive"`
    
-Used to add #[derive()]'s for the delta encoded diff type that dipa generates for your struct or enum.
+Used to add #[derive(SomeDerive, AnotherDerive)]'s for the delta encoded diff type that dipa generates for your struct or enum.
 
-One example use case is to derive `Debug` for the generated diff type if for some reason you want to be
-able to print it out.
+This is mainly useful internally so that we can satisfy the necessary trait bounds for using our automatically generated
+`Diffable::Delta`'s' with the `DiffPatchTestCase`.
 
-- `patch_derives = "SomeDerive, AnotherDerive"`
+---
 
-Used to add #[derive()]'s for the delta encoded diff type that dipa generates for your struct or enum.
+`patch_derives = "SomeDerive, AnotherDerive"`
 
-One example use case is to derive `Debug` for the generated patch type if for some reason you want to be
-able to print it out.
+Used to add #[derive(SomeDerive, AnotherDerive)]'s for the associated `Diffable::DeltaOwned` type that dipa generates for your struct or enum.
+
+---
+
+`field_batching_strategy = "..."`
+
+At this time this can either be set to `one_batch`, `no_batching`. There are other batching strategies planned such as being able to use multiple enums
+each responsible for a few fields, or being able to annotate individual fields in order to indicate which batch of deltas that they should belong to.
+
+- `one_batch` - A single enum will be used as the `Diffable::Delta` type. This enum will be able to represent every possible combination of the struct's fields changing.
+  By default this strategy is limited to structs that have 5 fields since as the number of fields grows the number of enum variants grows exponentially.
+  The `max_fields_per_batch` attribute can be used to increase this limit on a per-struct basis.
+
+- `many_batches` - Currently unimplemented, but the idea is to batch the struct's fields' diffs into multiple enums. This allows you to take advantage of
+
+---
+
+`max_fields_per_batch = 5`
+
+This can used when the `field_batching_strateg = "one_batch"`.
+
+By default, the `one_batch` strategy can only be used with structs or enum that have 5 or fewer fields. The `max_fields_per_batch` allows you to increase this limit.
+
+There is a hard cap on how high you can set `max_fields_per_batch` can be set in order to prevent you from accidentally causing unreasonable compile times. Values above
+7 will lead to a compile time error. In the future we will experiment with different values to see how the compile time trade-offs look.
+

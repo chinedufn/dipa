@@ -76,9 +76,9 @@ use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 //
 // 9. (DONE) Add `many_batches` delta strategy but make it unimplemented!
 //
-// 10. Add book documentation to the attributes chapter for `max_fields_per_batch`
+// 10. (DONE) Add book documentation to the attributes chapter for `max_fields_per_batch`
 //
-// 11. Add book documentation to the attributes chapter for `field_batching_strategy` where we discuss each
+// 11. (DONE) Add book documentation to the attributes chapter for `field_batching_strategy` where we discuss each
 //    strategy.
 //
 // 12. Make `max_delta_batch = N` respected in `all_combinations.rs`. Add dipa-derive-test to verify
