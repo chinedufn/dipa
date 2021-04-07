@@ -160,7 +160,11 @@ fn generate_multi_variant_enum_with_data_impl(
         patch_variants.push(quote! {#no_change});
     }
 
-    let (diff_derives, patch_derives) = parse_diff_and_patch_derives(dipa_attrs.as_ref());
+    let (diff_derives, patch_derives) = if let Some(attrs) = dipa_attrs.as_ref() {
+        attrs.parse_diff_and_patch_derives()
+    } else {
+        (vec![], vec![])
+    };
 
     let maybe_lifetime = if needs_lifetime {
         let lifetime = syn::Lifetime::new("'p", enum_name.span());
@@ -271,47 +275,4 @@ fn diff_match_with_data(enum_name: &syn::Ident, variants: &[EnumVariant]) -> Tok
         &Ident::new("end_state", enum_name.span()),
         quote! { #(#match_stmt_branches)* },
     )
-}
-
-fn parse_diff_and_patch_derives(dipa_attrs: Option<&DipaAttrs>) -> (Vec<Ident>, Vec<Ident>) {
-    let mut diff_derives = vec![];
-    let mut patch_derives = vec![];
-
-    if let Some(attrs) = dipa_attrs {
-        for attr in attrs.iter() {
-            match attr {
-                DipaContainerAttr::DiffDerive(lit) => {
-                    diff_derives = parse_derives(lit);
-                }
-                DipaContainerAttr::PatchDerive(lit) => {
-                    patch_derives = parse_derives(lit);
-                }
-                _ => {}
-            }
-        }
-    }
-
-    (diff_derives, patch_derives)
-}
-
-/// "Debug, Copy" -> vec![Debug, Copy]
-fn parse_derives(lit: &syn::Lit) -> Vec<Ident> {
-    let mut derive_idents = vec![];
-
-    // "Debug, Copy"
-    let derives = lit.to_token_stream().to_string();
-
-    // Debug, Copy
-    let derives = derives.trim_start_matches(r#"""#);
-    let derives = derives.trim_end_matches(r#"""#);
-
-    // [Debug, Copy]
-    let derives = derives.split(",");
-
-    for derive in derives.into_iter() {
-        let derive_ident = Ident::new(derive.trim(), lit.span());
-        derive_idents.push(derive_ident);
-    }
-
-    derive_idents
 }

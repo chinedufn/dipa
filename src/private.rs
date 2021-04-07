@@ -7,7 +7,7 @@
 // #[derive(serde::Serialize, serde::Deserialize)]
 // #[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 // #[allow(non_camel_case_types, missing_docs)]
-// pub enum Diff3<A, B, C> {
+// pub(crate) enum Diff3<A, B, C> {
 //     NoChange,
 //     Change_0(A),
 //     Change_1(B),

@@ -24,13 +24,13 @@ impl ParsedStruct {
 
         for attribute in attributes.iter() {
             match attribute {
-                DipaContainerAttr::DiffDerive(_) => {}
-                DipaContainerAttr::PatchDerive(_) => {}
+                DipaContainerAttr::DiffDerives(_) => {}
+                DipaContainerAttr::PatchDerives(_) => {}
                 DipaContainerAttr::MaxDeltaBatch(_) => {}
-                DipaContainerAttr::FieldBatchingStrategy(_field_batching_strat) => {
+                DipaContainerAttr::FieldBatchingStrategy(_field_batching_strategy) => {
                     if let Err(err) = FieldBatchingStrategy::validate_field_count(
                         self.fields.len(),
-                        self.fields_span,
+                        self.fields.span,
                     ) {
                         errs.push(err);
                     }

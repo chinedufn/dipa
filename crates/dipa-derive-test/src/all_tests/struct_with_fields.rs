@@ -5,7 +5,6 @@
 //! possible change/no-change combination for structs with 4+ fields. Instead, for structs with
 //! 4+ fields we simply verify that they compile when annotated with `#[derive(Dipa)]`.
 
-use dipa::private::{Diff2, Diff3};
 use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 
 // We can use `DiffN` types to support up to some max limit of fields. Lets call that 5 for now.
@@ -61,7 +60,7 @@ use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 //
 // 4. (DONE) Add a UI test for a delta_strategy on a struct with less than 2 fields.
 //
-// 5. Make structs generate their own DeltaN types instead of using the generated DeltaN to avoid
+// 5. (DONE) Make structs generate their own DeltaN types instead of using the generated DeltaN to avoid
 //     generics to help compile times.
 //
 // 6. Add dipa derive test in `mod field_batching_strategy` where we add the
@@ -99,6 +98,9 @@ use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 //
 // 16. unimplemented!() for using field batching strategy on enum variants with message linking to
 //     an issue.
+//
+// 17. (DONE) Make enums generate their own DeltaN types instead of using the generated DeltaN
+//     to avoid generics to help compile times.
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct OneField {
@@ -111,17 +113,20 @@ struct OneFieldTuple(u8);
 //
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct TwoFields {
     field1: u8,
     field2: u16,
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct TwoFieldsTuple(u8, u16);
 
 //
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct ThreeFields {
     field1: u8,
     field2: u16,
@@ -129,11 +134,13 @@ struct ThreeFields {
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct ThreeFieldsTuple(u8, u16, u32);
 
 //
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct FourFields {
     field1: u8,
     field2: u16,
@@ -142,11 +149,13 @@ struct FourFields {
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct FourFieldsTuple(u8, u16, u32, u64);
 
 //
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct FiveFields {
     field1: u8,
     field2: u16,
@@ -156,6 +165,7 @@ struct FiveFields {
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 struct FiveFieldsTuple(u8, u16, u32, u64, u128);
 
 /// Verify that we can generate a diff/patch for structs with one field.
@@ -215,7 +225,7 @@ fn structs_with_two_fields() {
             field1: 2,
             field2: 2,
         },
-        expected_delta: Diff2::NoChange,
+        expected_delta: TwoFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -231,7 +241,7 @@ fn structs_with_two_fields() {
             field1: 50,
             field2: 2,
         },
-        expected_delta: Diff2::Change_0(50),
+        expected_delta: TwoFieldsDelta::Change_0(50),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -247,7 +257,7 @@ fn structs_with_two_fields() {
             field1: 2,
             field2: 50,
         },
-        expected_delta: Diff2::Change_1(Some(50)),
+        expected_delta: TwoFieldsDelta::Change_1(Some(50)),
         expected_serialized_patch_size: 3,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -263,7 +273,7 @@ fn structs_with_two_fields() {
             field1: 10,
             field2: 50,
         },
-        expected_delta: Diff2::Change_0_1(10, Some(50)),
+        expected_delta: TwoFieldsDelta::Change_0_1(10, Some(50)),
         expected_serialized_patch_size: 4,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -275,7 +285,7 @@ fn structs_with_two_fields() {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 2),
-        expected_delta: Diff2::NoChange,
+        expected_delta: TwoFieldsTupleDelta::NoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -285,7 +295,7 @@ fn structs_with_two_fields() {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(50, 2),
-        expected_delta: Diff2::Change_0(50),
+        expected_delta: TwoFieldsTupleDelta::Change_0(50),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -295,7 +305,7 @@ fn structs_with_two_fields() {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 50),
-        expected_delta: Diff2::Change_1(Some(50)),
+        expected_delta: TwoFieldsTupleDelta::Change_1(Some(50)),
         expected_serialized_patch_size: 3,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -305,7 +315,7 @@ fn structs_with_two_fields() {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(10, 50),
-        expected_delta: Diff2::Change_0_1(10, Some(50)),
+        expected_delta: TwoFieldsTupleDelta::Change_0_1(10, Some(50)),
         expected_serialized_patch_size: 4,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -327,7 +337,7 @@ fn structs_with_three_fields() {
             field2: 2,
             field3: 2,
         },
-        expected_delta: Diff3::NoChange,
+        expected_delta: ThreeFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -345,7 +355,7 @@ fn structs_with_three_fields() {
             field2: 2,
             field3: 2,
         },
-        expected_delta: Diff3::Change_0(5),
+        expected_delta: ThreeFieldsDelta::Change_0(5),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -363,7 +373,7 @@ fn structs_with_three_fields() {
             field2: 5,
             field3: 2,
         },
-        expected_delta: Diff3::Change_1(Some(5)),
+        expected_delta: ThreeFieldsDelta::Change_1(Some(5)),
         expected_serialized_patch_size: 3,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -381,7 +391,7 @@ fn structs_with_three_fields() {
             field2: 2,
             field3: 5,
         },
-        expected_delta: Diff3::Change_2(Some(5)),
+        expected_delta: ThreeFieldsDelta::Change_2(Some(5)),
         expected_serialized_patch_size: 3,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -399,7 +409,7 @@ fn structs_with_three_fields() {
             field2: 6,
             field3: 2,
         },
-        expected_delta: Diff3::Change_0_1(5, Some(6)),
+        expected_delta: ThreeFieldsDelta::Change_0_1(5, Some(6)),
         expected_serialized_patch_size: 4,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -417,7 +427,7 @@ fn structs_with_three_fields() {
             field2: 2,
             field3: 6,
         },
-        expected_delta: Diff3::Change_0_2(5, Some(6)),
+        expected_delta: ThreeFieldsDelta::Change_0_2(5, Some(6)),
         expected_serialized_patch_size: 4,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -434,7 +444,7 @@ fn structs_with_three_fields() {
             field2: 5,
             field3: 6,
         },
-        expected_delta: Diff3::Change_1_2(Some(5), Some(6)),
+        expected_delta: ThreeFieldsDelta::Change_1_2(Some(5), Some(6)),
         expected_serialized_patch_size: 5,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -452,7 +462,7 @@ fn structs_with_three_fields() {
             field2: 6,
             field3: 7,
         },
-        expected_delta: Diff3::Change_0_1_2(5, Some(6), Some(7)),
+        expected_delta: ThreeFieldsDelta::Change_0_1_2(5, Some(6), Some(7)),
         expected_serialized_patch_size: 6,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }

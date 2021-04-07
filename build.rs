@@ -80,6 +80,7 @@ fn generate_delta_n_types() -> String {
 
         // FIXME: Remove Deserialize bounds once we make generated structs use their own Delta
         //  types
+        // FIXME: pub(crate) for the two types
         let diff_n = format!(
             r#"
 #[derive(serde::Serialize, Deserialize)]

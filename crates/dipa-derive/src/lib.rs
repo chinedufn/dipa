@@ -1,6 +1,7 @@
-use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
-use crate::multi_field_struct::generate_multi_field_struct_impl;
-use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
+use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs, FieldBatchingStrategy};
+use crate::multi_field_utils::{
+    fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
+};
 use crate::multi_variant_enum::generate_multi_variant_enum_impl;
 use crate::parsed_struct::ParsedStruct;
 use crate::single_field_struct::generate_single_field_struct_impl;
@@ -24,7 +25,6 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
-mod multi_field_struct;
 mod multi_variant_enum;
 mod single_field_struct;
 mod single_variant_enum;
@@ -64,22 +64,24 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     // impl Patchable<Patch> for MyType { ... }
     let dipa_impl = match input.data {
         Data::Struct(struct_data) => {
-            let (fields, fields_span) = match &struct_data.fields {
-                Fields::Named(named_fields) => (
-                    fields_named_to_vec_fields(named_fields),
-                    named_fields.span(),
-                ),
-                Fields::Unnamed(unnamed_fields) => (
-                    fields_unnamed_to_vec_fields(unnamed_fields),
-                    unnamed_fields.span(),
-                ),
-                Fields::Unit => (vec![], enum_or_struct_name.span()),
+            let fields = match &struct_data.fields {
+                Fields::Named(named_fields) => ParsedFields {
+                    fields: fields_named_to_vec_fields(named_fields),
+                    span: named_fields.span(),
+                },
+                Fields::Unnamed(unnamed_fields) => ParsedFields {
+                    fields: fields_unnamed_to_vec_fields(unnamed_fields),
+                    span: unnamed_fields.span(),
+                },
+                Fields::Unit => ParsedFields {
+                    fields: vec![],
+                    span: enum_or_struct_name.span(),
+                },
             };
             let parsed_struct = ParsedStruct {
                 // FIXME: Remove clone once we move the logic below into generate_dipa_impl()
                 name: enum_or_struct_name.clone(),
                 fields,
-                fields_span,
             };
 
             if let Some(attrs) = dipa_attribs.as_ref() {
@@ -104,9 +106,9 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &field.ty,
                         )
                     } else {
-                        generate_multi_field_struct_impl(
-                            &enum_or_struct_name,
-                            fields_named_to_vec_fields(&fields),
+                        parsed_struct.generate_multi_field_struct_impl(
+                            FieldBatchingStrategy::OneBatch,
+                            dipa_attribs.as_ref(),
                         )
                     }
                 }
@@ -121,9 +123,9 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &fields.unnamed[0].ty,
                         )
                     } else {
-                        generate_multi_field_struct_impl(
-                            &enum_or_struct_name,
-                            fields_unnamed_to_vec_fields(&fields),
+                        parsed_struct.generate_multi_field_struct_impl(
+                            FieldBatchingStrategy::OneBatch,
+                            dipa_attribs.as_ref(),
                         )
                     }
                 }

@@ -8,6 +8,19 @@ use syn::__private::TokenStream2;
 use syn::spanned::Spanned;
 
 /// The strategy used to encode the delta of a struct or enum variant that has 2 or more fields.
+///
+/// TODO: Explore other batching strategies. Some might not necessarily fit into this enum and might
+///  require some re-designing.
+///  For example, we may want to expose a way for having specific control over which fields get
+///  batched together so that you can batch together fields that rarely change and then keep
+///  fields that change often unbatched.
+///  Which would mean that we might want a field attribute that allows you to batch fields.
+///  Perhaps #[dipa(field_batch = SomeIdent)] where SomeIdent impl's FieldBatchTrait so that we
+///  avoid the typos that can happen if we were using strings to name batches.
+///  Then the macro can just look over all of the fields and group the ones that are in the same
+///  batch. We may also want per group batching strategies. Perhaps the FieldBatchTrait impl
+///  specifies the field batching strategy. Then the container level attribute controls how all
+///  of those field level batches get batched into the final delta type.
 #[derive(Debug, Copy, Clone)]
 pub enum FieldBatchingStrategy {
     /// Use a single enum to encode the delta.

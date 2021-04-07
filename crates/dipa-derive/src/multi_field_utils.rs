@@ -136,7 +136,7 @@ pub fn make_match_patch_tokens(
     let bool_combinations = make_bool_combinations(fields.len());
 
     let match_patch_inner_tokens =
-        make_match_patch_inner_tokens(span, &bool_combinations, fields.len());
+        make_match_patch_inner_tokens(diff_ty, span, &bool_combinations, fields.len());
 
     quote! {
       #(#field_mut_refs)*
@@ -250,13 +250,11 @@ fn make_match_diff_inner_tokens(
 ///     field1_mut_ref.apply_patch(field1_patch);
 /// }
 fn make_match_patch_inner_tokens(
+    diff_ty: &Type,
     span: Span,
     bool_combinations: &[Vec<bool>],
     field_count: usize,
 ) -> Vec<TokenStream> {
-    // dipa::private::{Diff2, Diff3, ... etc}
-    let diff_n = Ident::new(&format!("Diff{}", field_count), span);
-
     let mut match_patch_inner_tokens = vec![];
     let mut all_tuple_entries_are_false = true;
 
@@ -273,7 +271,7 @@ fn make_match_patch_inner_tokens(
             //         field1_mut_ref.apply_patch(field1_patch);
             //     }
             let match_patch_branch = quote! {
-              #diff_n::#changed_keys(#(#incoming_fields),*) => {
+              #diff_ty::#changed_keys(#(#incoming_fields),*) => {
                   #(#patch_expressions)*
               }
             };

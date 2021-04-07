@@ -6,6 +6,7 @@ use syn::{Attribute, Ident, Lit};
 pub use self::field_batching_strategy::*;
 
 mod field_batching_strategy;
+mod generated_delta_type_derives;
 mod max_delta_batch;
 
 /// example: #[dipa(patch_derive = "Debug, Copy", ...)]
@@ -45,12 +46,12 @@ pub enum DipaContainerAttr {
     /// structs.
     ///
     /// example: `dipa(diff_derive = "Debug, Copy, Clone")`
-    DiffDerive(Lit),
+    DiffDerives(Lit),
     /// Used to add #[derive(...)] to the `MyTypePatch` type that is generated for enums and
     /// structs.
     ///
     /// example: `dipa(patch_derive = "Debug, Copy, Clone")`
-    PatchDerive(Lit),
+    PatchDerives(Lit),
     /// Used enable larger enums to be used to batch a struct's fields into Delta types.
     /// Larger batch sizes allow for even smaller diffs at the cost of some compile time.
     ///
@@ -74,14 +75,14 @@ impl Parse for DipaContainerAttr {
         if key == "diff_derives" {
             let path_val = content.parse::<Lit>()?;
 
-            return Ok(DipaContainerAttr::DiffDerive(path_val));
+            return Ok(DipaContainerAttr::DiffDerives(path_val));
         }
 
         // patch_derives = "Debug, Copy"
         if key == "patch_derives" {
             let path_val = content.parse::<Lit>()?;
 
-            return Ok(DipaContainerAttr::PatchDerive(path_val));
+            return Ok(DipaContainerAttr::PatchDerives(path_val));
         }
 
         // max_delta_batch = 6

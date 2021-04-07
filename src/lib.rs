@@ -9,6 +9,8 @@ mod vec;
 mod number_impl;
 
 // Exposes types meant for the dipa-derive macro.
+//
+// FIXME: No longer exposing these to the macro so just rename to `delta_n` and don't make pub
 #[doc(hidden)]
 pub mod private;
 
