@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{patch_type_name, EnumVariant};
 use crate::multi_field_utils::ChangedFieldIndices;
 use syn::Ident;
@@ -18,7 +19,11 @@ impl EnumVariant {
     /// ```
     ///
     /// See [crate::enum_utils::EnumVariant.create_patch_match_stmt].
-    pub fn generate_patch_blocks(&self, enum_name: &Ident) -> Vec<TokenStream2> {
+    pub fn generate_patch_blocks(
+        &self,
+        enum_name: &Ident,
+        dipa_attrs: &DipaAttrs,
+    ) -> Vec<TokenStream2> {
         let mut patch_blocks = vec![];
 
         patch_blocks.push(self.generate_no_change_block(enum_name));
@@ -27,7 +32,7 @@ impl EnumVariant {
             patch_blocks.push(self.generate_changed_to_variant_block_no_fields(enum_name));
         } else {
             patch_blocks.push(self.generate_changed_to_variant_block_with_fields(enum_name));
-            patch_blocks.push(self.generate_field_changes(enum_name));
+            patch_blocks.push(self.generate_field_changes(enum_name, dipa_attrs));
         }
 
         patch_blocks
@@ -150,7 +155,7 @@ impl EnumVariant {
     ///     }
     /// };
     /// ```      
-    fn generate_field_changes(&self, enum_name: &Ident) -> TokenStream2 {
+    fn generate_field_changes(&self, enum_name: &Ident, dipa_attrs: &DipaAttrs) -> TokenStream2 {
         let patch_name = patch_type_name(enum_name);
 
         let mut patch_blocks = vec![];
@@ -159,7 +164,7 @@ impl EnumVariant {
         let span = self.name.span();
 
         for changed_indices in
-            ChangedFieldIndices::all_changed_index_combinations(self.fields.len())
+            ChangedFieldIndices::all_changed_index_combinations(self.fields.len(), dipa_attrs)
         {
             let variant_name = &self.name;
             let patch_variant_name =

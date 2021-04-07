@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{diff_type_name, patch_type_name, ParsedEnum};
 use quote::ToTokens;
 use quote::__private::TokenStream;
@@ -27,13 +28,15 @@ impl ParsedEnum {
     pub fn create_associated_type_for_enum_with_fields(
         &self,
         associated_type: DipaAssociatedType,
+        dipa_attrs: &DipaAttrs,
     ) -> TokenStream2 {
         let enum_associated_ty = self.ty_name(associated_type);
 
         let mut diff_ty_variants = vec![];
 
         for variant in self.variants.iter() {
-            diff_ty_variants.extend_from_slice(&variant.diff_type_variants(associated_type));
+            diff_ty_variants
+                .extend_from_slice(&variant.diff_type_variants(associated_type, dipa_attrs));
         }
 
         let maybe_lifetime = associated_type.maybe_lifetime();

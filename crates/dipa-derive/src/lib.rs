@@ -46,7 +46,7 @@ mod test_utils;
 pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let dipa_attribs = match maybe_parse_raw_dipa_attribute(input.attrs) {
+    let dipa_attrs = match maybe_parse_raw_dipa_attribute(input.attrs) {
         Some(attrib) => {
             let attrib_tokens = attrib.tokens.into();
 
@@ -85,7 +85,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                 fields,
             };
 
-            if let Err(err) = parsed_struct.validate_struct_container_attributes(&dipa_attribs) {
+            if let Err(err) = parsed_struct.validate_struct_container_attributes(&dipa_attrs) {
                 return err.into();
             }
 
@@ -105,7 +105,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &field.ty,
                         )
                     } else {
-                        parsed_struct.generate_multi_field_struct_impl(&dipa_attribs)
+                        parsed_struct.generate_multi_field_struct_impl(&dipa_attrs)
                     }
                 }
                 // struct Foo(type1, type2);
@@ -119,7 +119,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &fields.unnamed[0].ty,
                         )
                     } else {
-                        parsed_struct.generate_multi_field_struct_impl(&dipa_attribs)
+                        parsed_struct.generate_multi_field_struct_impl(&dipa_attrs)
                     }
                 }
                 // struct Foo;
@@ -156,6 +156,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     enum_or_struct_name,
                                     &variant.ident,
                                     fields_named_to_vec_fields(&fields),
+                                    &dipa_attrs,
                                 )
                             }
                         }
@@ -173,6 +174,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     enum_or_struct_name,
                                     &variant.ident,
                                     fields_unnamed_to_vec_fields(fields),
+                                    &dipa_attrs,
                                 )
                             }
                         }
@@ -185,7 +187,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                 generate_multi_variant_enum_impl(
                     enum_or_struct_name,
                     enum_data.variants,
-                    dipa_attribs,
+                    dipa_attrs,
                 )
             }
         }

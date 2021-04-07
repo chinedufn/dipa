@@ -27,6 +27,8 @@ pub enum FieldBatchingStrategy {
     OneBatch,
     /// Use a struct that has one enum for every `max_fields_per_batch` fields in the original
     /// struct.
+    /// It also might be better to just support per field attributes for controlling
+    /// which fields get batched with which other fields. Needs research.
     ManyBatches,
     /// Use a struct that has one field for every field in the original struct.
     NoBatching,

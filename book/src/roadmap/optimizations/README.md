@@ -64,7 +64,7 @@ enum OuterDelta {
 In the above example we are using a single `u8` bitflag to encode the changes of all of the bools in both `Outer`
 and `Inner`.
 
-We could do further than this as well. If `Outer` was given a `#[dipa(max_delta_batch = 6)]` attribute, the derive
+We could do further than this as well. If `Outer` was given a `#[dipa(max_fields_per_batch = 6)]` attribute, the derive
 macro could generate an `OuterDelta` that was essentially a `Delta6` with all of the combinations of the 6 fields.
 
 There are just two quick examples. There should be other things that we can do when creating a type's delta if we know

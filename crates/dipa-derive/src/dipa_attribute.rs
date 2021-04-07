@@ -6,7 +6,7 @@ use crate::dipa_attribute::generated_delta_type_derives::parse_derives;
 
 mod field_batching_strategy;
 mod generated_delta_type_derives;
-mod max_delta_batch;
+mod max_fields_per_batch;
 
 /// example: #[dipa(patch_derive = "Debug, Copy", ...)]
 pub fn maybe_parse_raw_dipa_attribute(attrs: Vec<Attribute>) -> Option<Attribute> {
@@ -20,7 +20,7 @@ pub fn maybe_parse_raw_dipa_attribute(attrs: Vec<Attribute>) -> Option<Attribute
 pub struct DipaAttrs {
     pub diff_derives: Vec<Ident>,
     pub patch_derives: Vec<Ident>,
-    pub max_delta_batch: Option<u8>,
+    pub max_fields_per_batch: Option<u8>,
     pub field_batching_strategy: Option<FieldBatchingStrategy>,
 }
 
@@ -49,7 +49,7 @@ impl Parse for DipaAttrs {
                     dipa_attrs.patch_derives = parse_derives(&lit);
                 }
                 DipaContainerAttr::MaxDeltaBatch(max) => {
-                    dipa_attrs.max_delta_batch = Some(max);
+                    dipa_attrs.max_fields_per_batch = Some(max);
                 }
                 DipaContainerAttr::FieldBatchingStrategy(f) => {
                     dipa_attrs.field_batching_strategy = Some(f);
@@ -77,7 +77,7 @@ pub enum DipaContainerAttr {
     /// Used enable larger enums to be used to batch a struct's fields into Delta types.
     /// Larger batch sizes allow for even smaller diffs at the cost of some compile time.
     ///
-    /// example: `dipa(max_delta_batch = 6)`
+    /// example: `dipa(max_fields_per_batch = 6)`
     MaxDeltaBatch(u8),
     /// Controls how fields with a struct are batched when generating the delta type.
     FieldBatchingStrategy(FieldBatchingStrategy),
@@ -104,9 +104,9 @@ impl Parse for DipaContainerAttr {
             return Ok(DipaContainerAttr::PatchDerives(path_val));
         }
 
-        // max_delta_batch = 6
-        if key == "max_delta_batch" {
-            return Self::parse_max_delta_batch(&input);
+        // max_fields_per_batch = 6
+        if key == "max_fields_per_batch" {
+            return Self::parse_max_fields_per_batch(&input);
         }
 
         // field_batching_strategy = "no_batching"

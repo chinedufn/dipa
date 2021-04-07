@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{
     field_diff_statements, make_enum_variant_comparison_match_block,
     make_two_enums_match_statement, EnumVariant, EnumVariantFields,
@@ -123,6 +124,7 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
     enum_name: syn::Ident,
     variant_name: &syn::Ident,
     fields: Vec<StructOrTupleField>,
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream {
     let field_diff_types = field_associated_diff_types(&fields);
     let field_patch_types: Vec<TokenStream2> = field_associated_patch_types(&fields);
@@ -176,6 +178,7 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
             })
             .collect::<Vec<StructOrTupleField>>(),
         vec![],
+        dipa_attrs,
     );
 
     let fields = EnumVariantFields::Struct(fields);
@@ -186,6 +189,7 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
         &fields,
         &start_idents,
         &end_idents,
+        dipa_attrs,
     );
 
     impl_dipa(
@@ -233,6 +237,7 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
     enum_name: syn::Ident,
     variant_name: &syn::Ident,
     fields: Vec<StructOrTupleField>,
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream {
     let field_diff_types = field_associated_diff_types(&fields);
     let field_patch_types: Vec<TokenStream2> = field_associated_patch_types(&fields);
@@ -279,6 +284,7 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
             })
             .collect::<Vec<StructOrTupleField>>(),
         vec![],
+        dipa_attrs,
     );
 
     let fields = EnumVariantFields::Tuple(fields);
@@ -293,6 +299,7 @@ pub(super) fn generate_single_variant_enum_multi_tuple_impl(
             &fields,
             &start_idents,
             &end_idents,
+            dipa_attrs,
         ),
         // match self {
         //     Self::OnlyVariant ( field0, field1 ) => {
@@ -326,6 +333,7 @@ fn make_diff_fn_tokens(
     fields: &EnumVariantFields,
     start_idents: &[Ident],
     end_idents: &[Ident],
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream2 {
     let diff_n = make_diff_n_ident(fields.len(), enum_name.span());
 
@@ -347,6 +355,7 @@ fn make_diff_fn_tokens(
                 }
             })
             .collect::<Vec<StructOrTupleField>>(),
+        dipa_attrs,
     );
 
     let match_block_tokens = make_enum_variant_comparison_match_block(

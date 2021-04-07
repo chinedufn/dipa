@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{DipaAssociatedType, EnumVariant};
 use crate::multi_field_utils::ChangedFieldIndices;
 use quote::ToTokens;
@@ -23,7 +24,11 @@ impl EnumVariant {
     ///     quote!{ OneChange_0(<u16 as Diffable<'p, u16>::Delta) }
     /// ];
     /// ```
-    pub fn diff_type_variants(&self, associated_type: DipaAssociatedType) -> Vec<TokenStream2> {
+    pub fn diff_type_variants(
+        &self,
+        associated_type: DipaAssociatedType,
+        dipa_attrs: &DipaAttrs,
+    ) -> Vec<TokenStream2> {
         let mut diff_ty_variants = vec![];
 
         let no_change = self.variant_no_change();
@@ -31,7 +36,8 @@ impl EnumVariant {
 
         if self.fields.len() > 0 {
             diff_ty_variants.push(self.changed_to_with_ref_fields(associated_type));
-            diff_ty_variants.extend_from_slice(&self.change_same_variant(associated_type));
+            diff_ty_variants
+                .extend_from_slice(&self.change_same_variant(associated_type, dipa_attrs));
         } else {
             let changed_to = self.changed_to_variant();
             diff_ty_variants.push(quote! { #changed_to });
@@ -74,9 +80,13 @@ impl EnumVariant {
     }
 
     /// quote!(OneChanged_0(<u16 as dipa::Diffable<'p, u16>::Delta))
-    fn change_same_variant(&self, associated_type: DipaAssociatedType) -> Vec<TokenStream2> {
+    fn change_same_variant(
+        &self,
+        associated_type: DipaAssociatedType,
+        dipa_attrs: &DipaAttrs,
+    ) -> Vec<TokenStream2> {
         let change_combinations =
-            ChangedFieldIndices::all_changed_index_combinations(self.fields.len());
+            ChangedFieldIndices::all_changed_index_combinations(self.fields.len(), dipa_attrs);
 
         let mut tokens = vec![];
 

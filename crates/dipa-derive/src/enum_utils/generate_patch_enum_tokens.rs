@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::ParsedEnum;
 use syn::__private::TokenStream2;
 
@@ -80,11 +81,11 @@ impl ParsedEnum {
     ///     }
     /// };
     /// ```
-    pub fn create_patch_match_stmt(&self) -> TokenStream2 {
+    pub fn create_patch_match_stmt(&self, dipa_attrs: &DipaAttrs) -> TokenStream2 {
         let mut inner_tokens = vec![];
 
         for variant in self.variants.iter() {
-            inner_tokens.extend_from_slice(&variant.generate_patch_blocks(&self.name));
+            inner_tokens.extend_from_slice(&variant.generate_patch_blocks(&self.name, dipa_attrs));
         }
 
         quote! {

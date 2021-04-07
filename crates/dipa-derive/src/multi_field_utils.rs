@@ -8,6 +8,7 @@ use syn::{FieldsNamed, FieldsUnnamed, Ident, Type};
 
 pub use self::field_changes::*;
 pub use self::struct_or_tuple_field::*;
+use crate::dipa_attribute::DipaAttrs;
 use crate::multi_field_utils::make_bool_combinations;
 
 mod field_changes;
@@ -85,8 +86,9 @@ pub fn make_match_diff_tokens(
     change_prefix: &str,
     span: Span,
     fields: &[StructOrTupleField],
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream2 {
-    let bool_combinations = make_bool_combinations(fields.len());
+    let bool_combinations = make_bool_combinations(fields.len(), dipa_attrs.max_fields_per_batch);
 
     let match_diff_inner_tokens =
         make_match_diff_inner_tokens(diff_ty, change_prefix, span, &bool_combinations, &fields);
@@ -132,8 +134,9 @@ pub fn make_match_patch_tokens(
     diff_ty: &Type,
     fields: &[StructOrTupleField],
     field_mut_refs: Vec<TokenStream2>,
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream2 {
-    let bool_combinations = make_bool_combinations(fields.len());
+    let bool_combinations = make_bool_combinations(fields.len(), dipa_attrs.max_fields_per_batch);
 
     let match_patch_inner_tokens = make_match_patch_inner_tokens(diff_ty, span, &bool_combinations);
 

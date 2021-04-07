@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{diff_type_name, EnumVariant};
 use crate::multi_field_utils::make_match_diff_tokens;
 use syn::__private::TokenStream2;
@@ -27,6 +28,7 @@ impl EnumVariant {
         &self,
         other: &EnumVariant,
         enum_name: &Ident,
+        dipa_attrs: &DipaAttrs,
     ) -> TokenStream2 {
         let left_variant = &self.name;
         let right_variant = &other.name;
@@ -37,7 +39,7 @@ impl EnumVariant {
             if self.fields.is_unit() {
                 return self.block_same_variant_no_data(enum_name);
             } else {
-                return self.block_same_variant_with_data(enum_name, other);
+                return self.block_same_variant_with_data(enum_name, other, dipa_attrs);
             }
         }
 
@@ -112,7 +114,12 @@ impl EnumVariant {
     ///   }
     /// };
     /// ```
-    fn block_same_variant_with_data(&self, enum_name: &Ident, other: &EnumVariant) -> TokenStream2 {
+    fn block_same_variant_with_data(
+        &self,
+        enum_name: &Ident,
+        other: &EnumVariant,
+        dipa_attrs: &DipaAttrs,
+    ) -> TokenStream2 {
         let macro_hints_based_on_did_change = self.create_macro_hints_based_on_did_change();
 
         let variant = &self.name;
@@ -129,6 +136,7 @@ impl EnumVariant {
             other.name.to_string().trim(),
             enum_name.span(),
             &other.fields,
+            &dipa_attrs,
         );
 
         quote! {

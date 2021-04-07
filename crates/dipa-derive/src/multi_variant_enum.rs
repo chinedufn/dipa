@@ -169,23 +169,23 @@ fn generate_multi_variant_enum_with_data_impl(
         quote! {}
     };
 
-    let diff_type_definition =
-        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta);
+    let diff_type_definition = parsed_enum
+        .create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta, dipa_attrs);
     let diff_type_definition = quote! {
         #[derive(serde::Serialize, #(#diff_derives),*)]
         #diff_type_definition
     };
 
-    let patch_type_definition =
-        parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::DeltaOwned);
+    let patch_type_definition = parsed_enum
+        .create_associated_type_for_enum_with_fields(DipaAssociatedType::DeltaOwned, dipa_attrs);
     let patch_type_definition = quote! {
         #[derive(serde::Deserialize, #(#patch_derives),*)]
         #patch_type_definition
     };
 
-    let diff_tokens = diff_match_with_data(&enum_name, &parsed_enum.variants);
+    let diff_tokens = diff_match_with_data(&enum_name, &parsed_enum.variants, dipa_attrs);
 
-    let patch_tokens = parsed_enum.create_patch_match_stmt();
+    let patch_tokens = parsed_enum.create_patch_match_stmt(dipa_attrs);
 
     let dipa_impl = impl_dipa(
         &enum_name,
@@ -256,12 +256,17 @@ fn no_data_diff_match(enum_name: &syn::Ident, variants: &[EnumVariant]) -> Token
 ///     VariantTwo(SomeData),
 /// }
 /// ```
-fn diff_match_with_data(enum_name: &syn::Ident, variants: &[EnumVariant]) -> TokenStream2 {
+fn diff_match_with_data(
+    enum_name: &syn::Ident,
+    variants: &[EnumVariant],
+    dipa_attrs: &DipaAttrs,
+) -> TokenStream2 {
     let mut match_stmt_branches = vec![];
 
     for variant1 in variants.iter() {
         for variant2 in variants.iter() {
-            let match_block = variant1.diff_match_block_one_or_more_data(variant2, enum_name);
+            let match_block =
+                variant1.diff_match_block_one_or_more_data(variant2, enum_name, dipa_attrs);
             match_stmt_branches.push(match_block);
         }
     }

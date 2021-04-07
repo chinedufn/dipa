@@ -34,12 +34,19 @@ impl ParsedStruct {
                 let field_mut_refs = field_mutable_references(&self.fields);
 
                 (
-                    make_match_diff_tokens(diff_ty, "", struct_name.span(), &self.fields),
+                    make_match_diff_tokens(
+                        diff_ty,
+                        "",
+                        struct_name.span(),
+                        &self.fields,
+                        dipa_attrs,
+                    ),
                     make_match_patch_tokens(
                         struct_name.span(),
                         &patch_ty,
                         &self.fields,
                         field_mut_refs,
+                        dipa_attrs,
                     ),
                 )
             }

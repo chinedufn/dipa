@@ -1,3 +1,4 @@
+use crate::dipa_attribute::DipaAttrs;
 use crate::multi_field_utils::ChangedFieldIndices;
 use std::cmp::Ordering;
 
@@ -6,8 +7,12 @@ impl ChangedFieldIndices {
     ///
     /// So for 2 fields it would be
     ///     [0], [1], and [0, 1]
-    pub fn all_changed_index_combinations(field_count: usize) -> Vec<ChangedFieldIndices> {
-        let bool_combinations = make_bool_combinations(field_count);
+    pub fn all_changed_index_combinations(
+        field_count: usize,
+        dipa_attrs: &DipaAttrs,
+    ) -> Vec<ChangedFieldIndices> {
+        let bool_combinations =
+            make_bool_combinations(field_count, dipa_attrs.max_fields_per_batch);
 
         let mut all_combinations = vec![];
 
@@ -55,12 +60,15 @@ impl ChangedFieldIndices {
 /// So for two fields the four combinations are:
 ///
 ///   [false, false], [true, false], [false, true], [true, true]
-pub(in crate) fn make_bool_combinations(field_count: usize) -> Vec<Vec<bool>> {
-    if field_count > 5 {
-        panic!(
+pub(in crate) fn make_bool_combinations(
+    field_count: usize,
+    max_fields_per_batch: Option<u8>,
+) -> Vec<Vec<bool>> {
+    if field_count > max_fields_per_batch.unwrap_or(5) as usize {
+        todo!(
             r#"
-TODO: Support larger structs. Need to use multiple `Diff5` types and then use a `Diffn` for the
- final remaining type. TDD this.
+Compile time error either telling you to use a different strategy or increase the
+max_fields_per_batch
 "#
         )
     }
@@ -102,7 +110,7 @@ mod tests {
     #[test]
     fn change_names_2_fields() {
         assert_eq!(
-            ChangedFieldIndices::all_changed_index_combinations(2),
+            ChangedFieldIndices::all_changed_index_combinations(2, &DipaAttrs::default()),
             vec![
                 ChangedFieldIndices::new(vec![]),
                 ChangedFieldIndices::new(vec![0]),

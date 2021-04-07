@@ -12,7 +12,7 @@ impl ParsedFields {
         let delta_owned_name = self.delta_owned_name(prefix);
 
         let changed_field_indices =
-            ChangedFieldIndices::all_changed_index_combinations(self.fields.len());
+            ChangedFieldIndices::all_changed_index_combinations(self.fields.len(), dipa_attrs);
 
         let mut ref_variants = vec![];
         let mut owned_variants = vec![];
