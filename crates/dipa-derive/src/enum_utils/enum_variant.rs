@@ -47,7 +47,7 @@ impl EnumVariant {
 #[cfg(test)]
 mod test_extras {
     use crate::enum_utils::{EnumVariant, EnumVariantFields};
-    use crate::multi_field_utils::StructOrTupleField;
+    use crate::multi_field_utils::{ParsedFields, StructOrTupleField};
     use quote::__private::{Ident, Span};
     use syn::Type;
 
@@ -72,13 +72,18 @@ mod test_extras {
         /// }
         /// ```
         pub fn one_field_variant() -> Self {
+            let fields = vec![StructOrTupleField {
+                name: quote! {0},
+                ty: Type::Verbatim(quote! {u16}),
+                span: Span::call_site(),
+            }];
+
             EnumVariant {
                 name: Ident::new("One", Span::call_site()),
-                fields: EnumVariantFields::Tuple(vec![StructOrTupleField {
-                    name: quote! {0},
-                    ty: Type::Verbatim(quote! {u16}),
+                fields: EnumVariantFields::Tuple(ParsedFields {
+                    fields,
                     span: Span::call_site(),
-                }]),
+                }),
             }
         }
 
@@ -89,20 +94,25 @@ mod test_extras {
         /// }
         /// ```
         pub fn two_fields_variant() -> Self {
+            let fields = vec![
+                StructOrTupleField {
+                    name: quote! {0},
+                    ty: Type::Verbatim(quote! {u16}),
+                    span: Span::call_site(),
+                },
+                StructOrTupleField {
+                    name: quote! {1},
+                    ty: Type::Verbatim(quote! {u32}),
+                    span: Span::call_site(),
+                },
+            ];
+
             EnumVariant {
                 name: Ident::new("Two", Span::call_site()),
-                fields: EnumVariantFields::Tuple(vec![
-                    StructOrTupleField {
-                        name: quote! {0},
-                        ty: Type::Verbatim(quote! {u16}),
-                        span: Span::call_site(),
-                    },
-                    StructOrTupleField {
-                        name: quote! {1},
-                        ty: Type::Verbatim(quote! {u32}),
-                        span: Span::call_site(),
-                    },
-                ]),
+                fields: EnumVariantFields::Tuple(ParsedFields {
+                    fields,
+                    span: Span::call_site(),
+                }),
             }
         }
     }

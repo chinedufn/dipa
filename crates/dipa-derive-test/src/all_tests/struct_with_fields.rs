@@ -85,16 +85,12 @@ use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 //    that this works. Where we create a struct with 7 fields and set the max to 7. Perhaps in a
 //    `mod max_fields_per_batch`
 //
-// 13. Error if field batching strategy is used on an enum container indicating that it can only
-//     be used on enum variants.
-//
-// 14. unimplemented!() for using field batching strategy on enum variants with message linking to
-//     an issue.
-//
-// 15. Make enums generate their own DeltaN types instead of using the generated DeltaN
+// 13. Make enums generate their own DeltaN types instead of using the generated DeltaN
 //     to avoid generics to help compile times.
 //
-// 16. Get dipa working in Akigi in a separate branch and do a before and after on debug build
+// 14. Make DeltaN types private to the crate and rename the module name to be more descriptive
+//
+// 15. Get dipa working in Akigi in a separate branch and do a before and after on debug build
 //      times.
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]

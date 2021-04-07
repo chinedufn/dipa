@@ -162,6 +162,19 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
     // dipa::private::{Diff2, Diff3, ... etc}
     let diff_ty = Type::Verbatim(quote! {#diff_n});
 
+    unimplemented!(
+        r#"
+1. Move this function into the ParsedEnum module    
+
+2. Replace DiffN with custom Delta and DeltaOwned type, similar to structs.
+   Make code DRY with structs.
+
+3. Get integration tests passing
+
+4. Move on to getting this working for tuple enum variants
+    "#
+    );
+
     let match_patch_tokens = make_match_patch_tokens(
         enum_name.span(),
         &diff_ty,

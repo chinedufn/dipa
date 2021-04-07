@@ -4,9 +4,12 @@ use crate::enum_utils::{
     EnumVariant, EnumVariantFields, ParsedEnum,
 };
 use crate::impl_dipa;
-use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
+use crate::multi_field_utils::{
+    fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
+};
 use syn::__private::TokenStream2;
 use syn::punctuated::Punctuated;
+use syn::spanned::Spanned;
 use syn::{Fields, Ident, Type, TypeReference, Variant};
 
 pub fn generate_multi_variant_enum_impl(
@@ -23,11 +26,17 @@ pub fn generate_multi_variant_enum_impl(
         let fields = match &variant.fields {
             Fields::Named(named) => {
                 all_variants_unit = false;
-                EnumVariantFields::Struct(fields_named_to_vec_fields(named))
+                EnumVariantFields::Struct(ParsedFields {
+                    fields: fields_named_to_vec_fields(named),
+                    span: named.span(),
+                })
             }
             Fields::Unnamed(unnamed) => {
                 all_variants_unit = false;
-                EnumVariantFields::Tuple(fields_unnamed_to_vec_fields(unnamed))
+                EnumVariantFields::Tuple(ParsedFields {
+                    fields: fields_unnamed_to_vec_fields(unnamed),
+                    span: unnamed.span(),
+                })
             }
             Fields::Unit => EnumVariantFields::Unit,
         };

@@ -1,4 +1,5 @@
 use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
+use crate::enum_utils::{EnumVariant, EnumVariantFields, ParsedEnum};
 use crate::multi_field_utils::{
     fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
 };
@@ -129,6 +130,33 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
             struct_dipa_impl
         }
         Data::Enum(enum_data) => {
+            let variants = enum_data
+                .variants
+                .iter()
+                .map(|v| {
+                    let fields = match &v.fields {
+                        Fields::Named(named_fields) => EnumVariantFields::Struct(ParsedFields {
+                            fields: fields_named_to_vec_fields(named_fields),
+                            span: named_fields.span(),
+                        }),
+                        Fields::Unnamed(unnamed_fields) => EnumVariantFields::Tuple(ParsedFields {
+                            fields: fields_unnamed_to_vec_fields(unnamed_fields),
+                            span: unnamed_fields.span(),
+                        }),
+                        Fields::Unit => EnumVariantFields::Unit,
+                    };
+
+                    EnumVariant {
+                        name: v.ident.clone(),
+                        fields,
+                    }
+                })
+                .collect();
+            let parsed_enum = ParsedEnum {
+                name: enum_or_struct_name.clone(),
+                variants,
+            };
+
             if enum_data.variants.len() == 0 {
                 zero_sized_diff
             } else if enum_data.variants.len() == 1 {

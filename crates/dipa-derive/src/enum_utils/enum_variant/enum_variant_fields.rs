@@ -1,4 +1,4 @@
-use crate::multi_field_utils::StructOrTupleField;
+use crate::multi_field_utils::{ParsedFields, StructOrTupleField};
 use std::ops::Deref;
 use syn::Ident;
 use syn::__private::TokenStream2;
@@ -7,8 +7,8 @@ use syn::__private::TokenStream2;
 /// Struct -> MyEnum::Variant { ... }
 #[derive(Clone)]
 pub enum EnumVariantFields {
-    Tuple(Vec<StructOrTupleField>),
-    Struct(Vec<StructOrTupleField>),
+    Tuple(ParsedFields),
+    Struct(ParsedFields),
     Unit,
 }
 
