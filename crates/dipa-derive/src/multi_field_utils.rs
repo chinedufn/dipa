@@ -88,15 +88,15 @@ pub fn make_match_diff_tokens(
 ) -> TokenStream2 {
     let bool_combinations = make_bool_combinations(fields.len());
 
+    let match_diff_inner_tokens =
+        make_match_diff_inner_tokens(diff_ty, change_prefix, span, &bool_combinations, &fields);
+
     // (diff0.1.did_change, diff1.1.did_change)
     let mut did_change_tokens = vec![];
     for (idx, f) in fields.iter().enumerate() {
         let diff_ident = Ident::new(&format!("diff{}", idx), f.span);
         did_change_tokens.push(quote! { #diff_ident.1.did_change });
     }
-
-    let match_diff_inner_tokens =
-        make_match_diff_inner_tokens(diff_ty, change_prefix, span, &bool_combinations, &fields);
 
     let tokens = quote! {
         let diff = match (#(#did_change_tokens),*) {
@@ -135,8 +135,7 @@ pub fn make_match_patch_tokens(
 ) -> TokenStream2 {
     let bool_combinations = make_bool_combinations(fields.len());
 
-    let match_patch_inner_tokens =
-        make_match_patch_inner_tokens(diff_ty, span, &bool_combinations, fields.len());
+    let match_patch_inner_tokens = make_match_patch_inner_tokens(diff_ty, span, &bool_combinations);
 
     quote! {
       #(#field_mut_refs)*
@@ -253,7 +252,6 @@ fn make_match_patch_inner_tokens(
     diff_ty: &Type,
     span: Span,
     bool_combinations: &[Vec<bool>],
-    field_count: usize,
 ) -> Vec<TokenStream> {
     let mut match_patch_inner_tokens = vec![];
     let mut all_tuple_entries_are_false = true;

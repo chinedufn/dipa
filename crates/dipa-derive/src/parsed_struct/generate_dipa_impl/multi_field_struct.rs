@@ -1,4 +1,4 @@
-use crate::dipa_attribute::DipaAttrs;
+use crate::dipa_attribute::{DipaAttrs, FieldBatchingStrategy};
 use crate::impl_dipa;
 use crate::multi_field_utils::{
     make_match_diff_tokens, make_match_patch_tokens, StructOrTupleField,
@@ -7,6 +7,9 @@ use crate::parsed_struct::ParsedStruct;
 use syn::__private::TokenStream2;
 use syn::spanned::Spanned;
 use syn::{Ident, Type};
+
+mod generate_no_batching_apply_patch_tokens;
+mod generate_no_batching_create_delta_tokens;
 
 impl ParsedStruct {
     /// Generate an implementation of Diffable for a struct with 2 or more fields.
@@ -22,13 +25,32 @@ impl ParsedStruct {
         let patch_ty = Type::Verbatim(quote! {#delta_owned_name});
 
         let field_diffs_statements = field_diff_statements(&self.fields);
-        let match_diff_tokens =
-            make_match_diff_tokens(diff_ty, "", struct_name.span(), &self.fields);
 
-        let field_mut_refs = field_mutable_references(&self.fields);
+        let (calculate_delta_tokens, apply_patch_tokens) = match dipa_attrs
+            .field_batching_strategy
+            .unwrap_or(FieldBatchingStrategy::default())
+        {
+            FieldBatchingStrategy::OneBatch => {
+                let field_mut_refs = field_mutable_references(&self.fields);
 
-        let match_patch_tokens =
-            make_match_patch_tokens(struct_name.span(), &patch_ty, &self.fields, field_mut_refs);
+                (
+                    make_match_diff_tokens(diff_ty, "", struct_name.span(), &self.fields),
+                    make_match_patch_tokens(
+                        struct_name.span(),
+                        &patch_ty,
+                        &self.fields,
+                        field_mut_refs,
+                    ),
+                )
+            }
+            FieldBatchingStrategy::ManyBatches => {
+                todo!("Implement many batches")
+            }
+            FieldBatchingStrategy::NoBatching => (
+                self.generate_no_batching_create_delta_tokens(),
+                self.generate_no_batching_apply_patch_tokens(),
+            ),
+        };
 
         let delta_tys = self.fields.generate_delta_type(prefix, dipa_attrs);
 
@@ -37,25 +59,19 @@ impl ParsedStruct {
             quote! {#delta_name<'p>},
             quote! {#delta_owned_name},
             quote! {
-               use dipa::MacroOptimizationHints;
+               #field_diffs_statements
+               #calculate_delta_tokens
 
-               #(#field_diffs_statements)*;
-               #match_diff_tokens
-
-               let macro_hints = MacroOptimizationHints {
+               let macro_hints = dipa::MacroOptimizationHints {
                    did_change
                };
 
               (diff, macro_hints)
             },
             quote! {
-               #match_patch_tokens
+               #apply_patch_tokens
             },
         );
-
-        if self.fields.len() > 1 {
-            // panic!("{}", dipa_impl.to_string());
-        }
 
         quote! {
             #delta_tys
@@ -86,7 +102,33 @@ fn field_mutable_references(fields: &[StructOrTupleField]) -> Vec<TokenStream2> 
 
 /// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
 /// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
-fn field_diff_statements(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
+/// let did_change = diff0.1.did_change || diff1.1.did_change;
+fn field_diff_statements(fields: &[StructOrTupleField]) -> TokenStream2 {
+    let diffs = field_diff_calculations(fields);
+
+    let did_change: Vec<TokenStream2> = fields
+        .iter()
+        .enumerate()
+        .map(|(field_idx, field)| {
+            let field_name = &field.name;
+
+            let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
+
+            quote! {
+            #diff_idx_ident.1.did_change
+            }
+        })
+        .collect();
+
+    quote! {
+        #(#diffs)*
+        let did_change = #(#did_change)||*;
+    }
+}
+
+/// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
+/// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
+fn field_diff_calculations(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
     fields
         .iter()
         .enumerate()

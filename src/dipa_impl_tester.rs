@@ -12,12 +12,7 @@ use serde::Serialize;
 /// Useful for verifying that custom implementations of the [DiffPatch] trait work as expected.
 pub struct DiffPatchTestCase<
     'p,
-    T: Debug
-        + Diffable<'p, T>
-        + Patchable<<T as Diffable<'p, T>>::DeltaOwned>
-        + Eq
-        + PartialEq
-        + Serialize,
+    T: Debug + Diffable<'p, T> + Patchable<<T as Diffable<'p, T>>::DeltaOwned> + PartialEq,
 > {
     pub label: Option<&'p str>,
     pub start: T,
@@ -30,13 +25,7 @@ pub struct DiffPatchTestCase<
 
 impl<
         'p,
-        T: 'p
-            + Debug
-            + Diffable<'p, T>
-            + Patchable<<T as Diffable<'p, T>>::DeltaOwned>
-            + Eq
-            + PartialEq
-            + Serialize,
+        T: 'p + Debug + Diffable<'p, T> + Patchable<<T as Diffable<'p, T>>::DeltaOwned> + PartialEq,
     > DiffPatchTestCase<'p, T>
 where
     <T as Diffable<'p, T>>::Delta: Serialize + Debug + PartialEq,

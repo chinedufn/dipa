@@ -32,9 +32,12 @@ impl Parse for DipaAttrs {
             return Ok(dipa_attrs);
         }
 
+        let content;
+        parenthesized!(content in input);
+
         let opts =
             syn::punctuated::Punctuated::<DipaContainerAttr, syn::token::Comma>::parse_terminated(
-                input,
+                &content,
             )?;
 
         for dipa_attr in opts.into_iter() {
@@ -84,34 +87,31 @@ impl Parse for DipaContainerAttr {
     fn parse(input: ParseStream) -> SynResult<Self> {
         let original = input.fork();
 
-        let content;
-        parenthesized!(content in input);
-
-        let key = content.parse::<Ident>()?;
-        let _equals = content.parse::<Token![=]>()?;
+        let key = input.parse::<Ident>()?;
+        let _equals = input.parse::<Token![=]>()?;
 
         // diff_derives = "Debug, Copy"
         if key == "diff_derives" {
-            let path_val = content.parse::<Lit>()?;
+            let path_val = input.parse::<Lit>()?;
 
             return Ok(DipaContainerAttr::DiffDerives(path_val));
         }
 
         // patch_derives = "Debug, Copy"
         if key == "patch_derives" {
-            let path_val = content.parse::<Lit>()?;
+            let path_val = input.parse::<Lit>()?;
 
             return Ok(DipaContainerAttr::PatchDerives(path_val));
         }
 
         // max_delta_batch = 6
         if key == "max_delta_batch" {
-            return Self::parse_max_delta_batch(&content);
+            return Self::parse_max_delta_batch(&input);
         }
 
         // field_batching_strategy = "no_batching"
         if key == "field_batching_strategy" {
-            return Self::parse_field_batching_strategy(&content);
+            return Self::parse_field_batching_strategy(&input);
         }
 
         Err(original.error("unknown attribute"))

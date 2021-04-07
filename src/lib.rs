@@ -4,6 +4,7 @@ extern crate serde;
 mod bool;
 mod float;
 mod integer;
+mod null;
 mod vec;
 #[macro_use]
 mod number_impl;

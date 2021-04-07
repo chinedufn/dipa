@@ -6,7 +6,7 @@ const LETTERS: [char; 9] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 //  an issue and we can add feature flags for specific tuple sizes such as `tuple-5` `tuple-6`.
 //  But we shouldn't have flags above `tuple-9` or so because as it increases debug build compile
 //  times start to become noticably longer.
-const MAX_DELTA_N: u8 = 5;
+const MAX_DELTA_N: u8 = 4;
 
 fn main() {
     let delta_n_types = generate_delta_n_types();

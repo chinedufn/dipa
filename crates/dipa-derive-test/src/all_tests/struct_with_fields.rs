@@ -63,43 +63,38 @@ use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 // 5. (DONE) Make structs generate their own DeltaN types instead of using the generated DeltaN to avoid
 //     generics to help compile times.
 //
-// 6. Add dipa derive test in `mod field_batching_strategy` where we add the
+// 6. (DONE) Add dipa derive test in `mod field_batching_strategy` where we add the
 //     no_batching on a struct and verify that the diff type is a struct with the correctly named
 //     fields (use a struct with 10 fields and verify that each one shows up in the delta type
 //      and the DeltaOwned type by creating a Delta and DeltaOwned instance).
 //
-// 7. Reduce DiffN to 4 and use it for up to 4 Tuples. Leave TODO to allow larger implementations
+// 7. (DONE) Reduce DiffN to 4 and use it for up to 4 Tuples. Leave TODO to allow larger implementations
 //     via feature flag.
 //
-// 8. In that same file leave a commented out TODO that we should add a dipa derive test where we
+// 8. (DONE) In that same file leave a commented out TODO that we should add a dipa derive test where we
 //     use no_batching strategy on an enum variant.
 //
-// 9. Add `many_batches` delta strategy but make it unimplemented!
+// 9. (DONE) Add `many_batches` delta strategy but make it unimplemented!
 //
 // 10. Add book documentation to the attributes chapter for `max_fields_per_batch`
 //
 // 11. Add book documentation to the attributes chapter for `field_batching_strategy` where we discuss each
 //    strategy.
 //
-// 12. Leave TODO in dipa's Cargo.toml to add feature flags that lets you unlock delta_batch_6 and
-//    delta_batch_7 delta_batch_8
-//    and delta_batch_9 which makes the build script generate Delta6 and Delta7 Delta8 and Delta9
-//    types.
-//
-// 13. Make `max_delta_batch = N` respected in `all_combinations.rs`. Add dipa-derive-test to verify
+// 12. Make `max_delta_batch = N` respected in `all_combinations.rs`. Add dipa-derive-test to verify
 //    that this works. Where we create a struct with 7 fields and set the max to 7. Perhaps in a
 //    `mod max_delta_batch`
 //
-// 14. Get dipa working in Akigi in a separate branch and do a before and after on debug build
+// 13. Get dipa working in Akigi in a separate branch and do a before and after on debug build
 //      times.
 //
-// 15. Error if field batching strategy is used on an enum container indicating that it can only
+// 14. Error if field batching strategy is used on an enum container indicating that it can only
 //     be used on enum variants.
 //
-// 16. unimplemented!() for using field batching strategy on enum variants with message linking to
+// 15. unimplemented!() for using field batching strategy on enum variants with message linking to
 //     an issue.
 //
-// 17. (DONE) Make enums generate their own DeltaN types instead of using the generated DeltaN
+// 16. (DONE) Make enums generate their own DeltaN types instead of using the generated DeltaN
 //     to avoid generics to help compile times.
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]

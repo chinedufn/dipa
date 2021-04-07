@@ -17,4 +17,6 @@
 //     Change_0_2(A, C),
 //     Change_0_1_2(A, B, C),
 // }
+//
+// Useful for our generic tuple dipa implementations.
 include!(concat!(env!("OUT_DIR"), "/delta_n_types.rs"));
