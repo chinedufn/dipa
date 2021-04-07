@@ -48,13 +48,49 @@ each responsible for a few fields, or being able to annotate individual fields i
   By default this strategy is limited to structs that have 5 fields since as the number of fields grows the number of enum variants grows exponentially.
   The `max_fields_per_batch` attribute can be used to increase this limit on a per-struct basis.
 
-- `many_batches` - Currently unimplemented, but the idea is to batch the struct's fields' diffs into multiple enums. This allows you to take advantage of
+  ```rust
+  #[derive(DiffPatch)]
+  #[dipa(field_batching_strategy = "one_batch")]
+  struct MyStruct {
+      field1: u32,
+      field2: u64
+  }
+
+  // Automatically generated delta would look something like this
+  enum MyStructDelta<'d> {
+      NoChange,
+      Change_0(<u32 as dipa::Diffable<'d>::Delta),
+      Change_1(<u64 as dipa::Diffable<'d>::Delta),
+      Change_0_1(
+          <u32 as dipa::Diffable<'d>::Delta,
+          <u64 as dipa::Diffable<'d>::Delta
+      ),
+  }
+  ```
+
+- `no_batching` - The `Diffable::Delta` type will be a struct with the same number of fields as your original type. This is useful when you know that **every** field will change
+   between every delta encoding since it means you can avoid the one byte overhead of strategies that encode to enums.
+
+  ```rust
+  #[derive(DiffPatch)]
+  #[dipa(field_batching_strategy = "no_batching")]
+  struct MyStruct {
+      field1: u32,
+      field2: u64
+  }
+
+  // Automatically generated delta would look something like this
+  struct MyStructDelta {
+      field1: <u32 as dipa::Diffable<'d>::Delta,
+      field2: <u64 as dipa::Diffable<'d>::Delta,
+  }
+  ```
 
 ---
 
 `max_fields_per_batch = 5`
 
-This can used when the `field_batching_strateg = "one_batch"`.
+This can used when the `field_batching_strategy = "one_batch"`.
 
 By default, the `one_batch` strategy can only be used with structs or enum that have 5 or fewer fields. The `max_fields_per_batch` allows you to increase this limit.
 
