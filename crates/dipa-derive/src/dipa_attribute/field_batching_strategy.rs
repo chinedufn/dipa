@@ -83,3 +83,11 @@ impl FromStr for FieldBatchingStrategy {
         }
     }
 }
+
+impl Default for FieldBatchingStrategy {
+    // We use OneBatch as the default since it allows for the smallest possible diffs.
+    // But this does not mean that it is always the best. For example,
+    fn default() -> Self {
+        FieldBatchingStrategy::OneBatch
+    }
+}

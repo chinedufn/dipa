@@ -340,7 +340,7 @@ get that working.
         }
     }
 
-    fn variant_c() -> EnumVariant {
+    fn _variant_c() -> EnumVariant {
         EnumVariant {
             name: Ident::new("VariantC", Span::call_site()),
             fields: EnumVariantFields::Tuple(vec![StructOrTupleField {

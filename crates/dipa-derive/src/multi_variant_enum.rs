@@ -1,18 +1,18 @@
-use crate::dipa_attribute::{DipaAttrs, DipaContainerAttr};
+use crate::dipa_attribute::DipaAttrs;
 use crate::enum_utils::{
     diff_type_name, make_two_enums_match_statement, patch_type_name, DipaAssociatedType,
     EnumVariant, EnumVariantFields, ParsedEnum,
 };
 use crate::impl_dipa;
 use crate::multi_field_utils::{fields_named_to_vec_fields, fields_unnamed_to_vec_fields};
-use syn::__private::{ToTokens, TokenStream2};
+use syn::__private::TokenStream2;
 use syn::punctuated::Punctuated;
 use syn::{Fields, Ident, Type, TypeReference, Variant};
 
 pub fn generate_multi_variant_enum_impl(
     enum_name: syn::Ident,
     variants: Punctuated<Variant, Token![,]>,
-    dipa_attrs: Option<DipaAttrs>,
+    dipa_attrs: DipaAttrs,
 ) -> TokenStream2 {
     let mut enum_variants = vec![];
 
@@ -41,7 +41,7 @@ pub fn generate_multi_variant_enum_impl(
     if all_variants_unit {
         generate_multi_variant_enum_no_data_impl(enum_name, enum_variants)
     } else {
-        generate_multi_variant_enum_with_data_impl(enum_name, enum_variants, dipa_attrs)
+        generate_multi_variant_enum_with_data_impl(enum_name, enum_variants, &dipa_attrs)
     }
 }
 
@@ -83,7 +83,7 @@ fn generate_multi_variant_enum_no_data_impl(
 fn generate_multi_variant_enum_with_data_impl(
     enum_name: syn::Ident,
     variants: Vec<EnumVariant>,
-    dipa_attrs: Option<DipaAttrs>,
+    dipa_attrs: &DipaAttrs,
 ) -> TokenStream2 {
     let parsed_enum = ParsedEnum {
         name: enum_name.clone(),
@@ -160,11 +160,7 @@ fn generate_multi_variant_enum_with_data_impl(
         patch_variants.push(quote! {#no_change});
     }
 
-    let (diff_derives, patch_derives) = if let Some(attrs) = dipa_attrs.as_ref() {
-        attrs.parse_diff_and_patch_derives()
-    } else {
-        (vec![], vec![])
-    };
+    let (diff_derives, patch_derives) = (&dipa_attrs.diff_derives, &dipa_attrs.patch_derives);
 
     let maybe_lifetime = if needs_lifetime {
         let lifetime = syn::Lifetime::new("'p", enum_name.span());

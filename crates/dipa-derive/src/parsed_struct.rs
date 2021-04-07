@@ -1,5 +1,4 @@
 use crate::multi_field_utils::ParsedFields;
-use quote::__private::Span;
 use syn::Ident;
 
 mod generate_dipa_impl;

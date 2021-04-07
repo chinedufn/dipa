@@ -1,8 +1,7 @@
-use crate::dipa_attribute::{DipaAttrs, FieldBatchingStrategy};
+use crate::dipa_attribute::DipaAttrs;
 use crate::impl_dipa;
 use crate::multi_field_utils::{
-    field_associated_patch_types, make_match_diff_tokens, make_match_patch_tokens,
-    StructOrTupleField,
+    make_match_diff_tokens, make_match_patch_tokens, StructOrTupleField,
 };
 use crate::parsed_struct::ParsedStruct;
 use syn::__private::TokenStream2;
@@ -11,11 +10,7 @@ use syn::{Ident, Type};
 
 impl ParsedStruct {
     /// Generate an implementation of Diffable for a struct with 2 or more fields.
-    pub fn generate_multi_field_struct_impl(
-        &self,
-        field_batching_strategy: FieldBatchingStrategy,
-        dipa_attrs: Option<&DipaAttrs>,
-    ) -> TokenStream2 {
+    pub fn generate_multi_field_struct_impl(&self, dipa_attrs: &DipaAttrs) -> TokenStream2 {
         let struct_name = &self.name;
 
         let prefix = self.name.to_string();
@@ -23,25 +18,19 @@ impl ParsedStruct {
         let delta_name = self.fields.delta_name(prefix);
         let delta_owned_name = self.fields.delta_owned_name(prefix);
 
-        let field_diffs_statements = field_diff_statements(&self.fields);
-        let match_diff_tokens = make_match_diff_tokens(
-            Type::Verbatim(quote! {#delta_name}),
-            "",
-            struct_name.span(),
-            &self.fields,
-        );
-
-        let field_mut_refs = field_mutable_references(&self.fields);
-
         let diff_ty = Type::Verbatim(quote! {#delta_name});
         let patch_ty = Type::Verbatim(quote! {#delta_owned_name});
+
+        let field_diffs_statements = field_diff_statements(&self.fields);
+        let match_diff_tokens =
+            make_match_diff_tokens(diff_ty, "", struct_name.span(), &self.fields);
+
+        let field_mut_refs = field_mutable_references(&self.fields);
 
         let match_patch_tokens =
             make_match_patch_tokens(struct_name.span(), &patch_ty, &self.fields, field_mut_refs);
 
-        let delta_tys =
-            self.fields
-                .generate_delta_type(prefix, field_batching_strategy, dipa_attrs);
+        let delta_tys = self.fields.generate_delta_type(prefix, dipa_attrs);
 
         let dipa_impl = impl_dipa(
             struct_name,

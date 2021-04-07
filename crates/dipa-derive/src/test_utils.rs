@@ -16,7 +16,7 @@ Right Tokens:
     )
 }
 
-pub fn assert_starts_with_tokens(all_tokens: &TokenStream2, expected_start: &TokenStream2) {
+pub fn _assert_starts_with_tokens(all_tokens: &TokenStream2, expected_start: &TokenStream2) {
     let all_token_strings = token_stream_to_vec(&all_tokens);
     let expected_start_strings = token_stream_to_vec(&expected_start);
 

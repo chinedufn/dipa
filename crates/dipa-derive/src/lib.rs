@@ -1,4 +1,4 @@
-use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs, FieldBatchingStrategy};
+use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
 use crate::multi_field_utils::{
     fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
 };
@@ -53,7 +53,8 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
             Some(parse_macro_input!(attrib_tokens as DipaAttrs))
         }
         None => None,
-    };
+    }
+    .unwrap_or(DipaAttrs::default());
 
     let enum_or_struct_name = input.ident;
 
@@ -84,10 +85,8 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                 fields,
             };
 
-            if let Some(attrs) = dipa_attribs.as_ref() {
-                if let Err(err) = parsed_struct.validate_struct_container_attributes(attrs) {
-                    return err.into();
-                }
+            if let Err(err) = parsed_struct.validate_struct_container_attributes(&dipa_attribs) {
+                return err.into();
             }
 
             // TODO: Move this logic into ParsedStruct.generate_dipa_impl()
@@ -106,10 +105,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &field.ty,
                         )
                     } else {
-                        parsed_struct.generate_multi_field_struct_impl(
-                            FieldBatchingStrategy::OneBatch,
-                            dipa_attribs.as_ref(),
-                        )
+                        parsed_struct.generate_multi_field_struct_impl(&dipa_attribs)
                     }
                 }
                 // struct Foo(type1, type2);
@@ -123,10 +119,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                             &fields.unnamed[0].ty,
                         )
                     } else {
-                        parsed_struct.generate_multi_field_struct_impl(
-                            FieldBatchingStrategy::OneBatch,
-                            dipa_attribs.as_ref(),
-                        )
+                        parsed_struct.generate_multi_field_struct_impl(&dipa_attribs)
                     }
                 }
                 // struct Foo;

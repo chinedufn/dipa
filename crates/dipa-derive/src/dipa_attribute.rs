@@ -1,9 +1,8 @@
-use std::ops::Deref;
-
 use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::{Attribute, Ident, Lit};
 
 pub use self::field_batching_strategy::*;
+use crate::dipa_attribute::generated_delta_type_derives::parse_derives;
 
 mod field_batching_strategy;
 mod generated_delta_type_derives;
@@ -17,15 +16,20 @@ pub fn maybe_parse_raw_dipa_attribute(attrs: Vec<Attribute>) -> Option<Attribute
 }
 
 /// A parsed representation of the #[dipa(...)] container attribute.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DipaAttrs {
-    attrs: Vec<DipaContainerAttr>,
+    pub diff_derives: Vec<Ident>,
+    pub patch_derives: Vec<Ident>,
+    pub max_delta_batch: Option<u8>,
+    pub field_batching_strategy: Option<FieldBatchingStrategy>,
 }
 
 impl Parse for DipaAttrs {
     fn parse(input: ParseStream) -> SynResult<Self> {
+        let mut dipa_attrs = DipaAttrs::default();
+
         if input.is_empty() {
-            return Ok(DipaAttrs { attrs: vec![] });
+            return Ok(dipa_attrs);
         }
 
         let opts =
@@ -33,9 +37,24 @@ impl Parse for DipaAttrs {
                 input,
             )?;
 
-        Ok(DipaAttrs {
-            attrs: opts.into_iter().collect(),
-        })
+        for dipa_attr in opts.into_iter() {
+            match dipa_attr {
+                DipaContainerAttr::DiffDerives(lit) => {
+                    dipa_attrs.diff_derives = parse_derives(&lit);
+                }
+                DipaContainerAttr::PatchDerives(lit) => {
+                    dipa_attrs.patch_derives = parse_derives(&lit);
+                }
+                DipaContainerAttr::MaxDeltaBatch(max) => {
+                    dipa_attrs.max_delta_batch = Some(max);
+                }
+                DipaContainerAttr::FieldBatchingStrategy(f) => {
+                    dipa_attrs.field_batching_strategy = Some(f);
+                }
+            };
+        }
+
+        Ok(dipa_attrs)
     }
 }
 
@@ -96,13 +115,5 @@ impl Parse for DipaContainerAttr {
         }
 
         Err(original.error("unknown attribute"))
-    }
-}
-
-impl Deref for DipaAttrs {
-    type Target = Vec<DipaContainerAttr>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.attrs
     }
 }

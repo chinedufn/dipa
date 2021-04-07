@@ -88,10 +88,7 @@ impl DipaAssociatedType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::multi_field_utils::StructOrTupleField;
-    use crate::test_utils::{assert_starts_with_tokens, assert_tokens_eq};
-    use quote::__private::{Ident, Span};
-    use syn::Type;
+    use crate::test_utils::assert_tokens_eq;
 
     /// Verify that we properly generate an enum's diff type
     #[test]

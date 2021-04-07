@@ -1,7 +1,7 @@
 //! Validate the usage of different dipa attributes on a type's container, variants and
 //! fields.
 
-use crate::dipa_attribute::{DipaAttrs, DipaContainerAttr, FieldBatchingStrategy};
+use crate::dipa_attribute::{DipaAttrs, FieldBatchingStrategy};
 use crate::parsed_struct::ParsedStruct;
 use syn::__private::TokenStream2;
 
@@ -22,20 +22,12 @@ impl ParsedStruct {
     ) -> Result<(), TokenStream2> {
         let mut errs = vec![];
 
-        for attribute in attributes.iter() {
-            match attribute {
-                DipaContainerAttr::DiffDerives(_) => {}
-                DipaContainerAttr::PatchDerives(_) => {}
-                DipaContainerAttr::MaxDeltaBatch(_) => {}
-                DipaContainerAttr::FieldBatchingStrategy(_field_batching_strategy) => {
-                    if let Err(err) = FieldBatchingStrategy::validate_field_count(
-                        self.fields.len(),
-                        self.fields.span,
-                    ) {
-                        errs.push(err);
-                    }
-                }
-            };
+        if let Some(_field_batching_strategy) = attributes.field_batching_strategy {
+            if let Err(err) =
+                FieldBatchingStrategy::validate_field_count(self.fields.len(), self.fields.span)
+            {
+                errs.push(err);
+            }
         }
 
         if errs.len() == 0 {
