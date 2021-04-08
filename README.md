@@ -52,7 +52,8 @@ struct MyClientState {
     id: u32,
     friends: Option<u8>,
     position: Position,
-    notifications: Vec<String>
+    notifications: Vec<String>,
+	emotional_state: EmotionalState
 }
 
 #[derive(DiffPatch)]
@@ -62,12 +63,20 @@ struct Position {
     z: f32
 }
 
+#[derive(DiffPatch)]
+struct EmotionalState {
+    Peace { score: u128 },
+    Love(u64),
+    Courage(u32),
+}
+
 fn main() {
     let old_client_state = MyClientState {
         id: 308,
         friends: None,
         position: Position { x: 1., y: 2., z: 3. }
-        notifications: vec!["courage".to_string(), "love".to_string()]
+        notifications: vec!["courage".to_string(), "love".to_string()],
+        emotional_state: EmotionalState::Love(100),
     };
 
     let new_client_state = MyClientState {
@@ -75,6 +84,7 @@ fn main() {
         friends: Some(1),
         position: Position { x: 4., y: 2., z: 3. }
         notifications: vec!["peace".to_string()]
+        emotional_state: EmotionalState::Peace { score: 10_000 },
     };
 
     let patch = old_client_state.create_delta_towards(&new_client_state);
@@ -86,7 +96,7 @@ fn main() {
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
     let serialized = bin.serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState'>::DeltaOwned = 
+    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState>::DeltaOwned = 
         bin.deserialize(&serialized).unwrap();
 
     old_client_state.apply_patch(deserialized);
@@ -133,7 +143,7 @@ struct ClientState {
     // TODO: dipa should add attributes such as
     // #[dipa(diff_with = "only_small_changes", patch_with = "only_small_changes")]
     // In order to enable custom diffing/patching without needing to clutter your data
-    // structues with wrapper types.
+    // structures with wrapper types.
     hair_length: OnlySmallChanges(u128)
 }
 
