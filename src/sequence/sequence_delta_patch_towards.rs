@@ -1,18 +1,21 @@
-use crate::vec::longest_common_subsequence::get_longest_common_subsequence;
-use crate::vec::SequenceModificationDiff;
+use crate::sequence::longest_common_subsequence::get_longest_common_subsequence;
+use crate::sequence::SequenceModificationDelta;
 use crate::MacroOptimizationHints;
 
 // Tests are in the parent module.
-pub(super) fn patch_towards<'p, T: PartialEq>(
-    before: &Vec<T>,
-    target_state: &'p Vec<T>,
-) -> (Vec<SequenceModificationDiff<'p, T>>, MacroOptimizationHints)
+pub(super) fn delta_towards<'p, T: PartialEq>(
+    before: &[T],
+    target_state: &'p [T],
+) -> (
+    Vec<SequenceModificationDelta<'p, T>>,
+    MacroOptimizationHints,
+)
 where
     &'p T: serde::Serialize,
 {
     if target_state.len() == 0 && before.len() > 0 {
         return (
-            vec![SequenceModificationDiff::DeleteAll],
+            vec![SequenceModificationDelta::DeleteAll],
             MacroOptimizationHints { did_change: true },
         );
     }
@@ -36,19 +39,19 @@ where
         if let Some(advanced_by) = advanced_by {
             let modification = match (advanced_by.start_sequence, advanced_by.target_sequence) {
                 (start_advance, target_advance) if start_advance == 1 && target_advance == 2 => {
-                    Some(SequenceModificationDiff::InsertOne {
+                    Some(SequenceModificationDelta::InsertOne {
                         index: previous_start_idx.unwrap() + 1,
                         value: &target_state[previous_target_idx.unwrap() + 1],
                     })
                 }
                 (start_advance, target_advance) if start_advance == 1 && target_advance > 2 => {
-                    Some(SequenceModificationDiff::InsertMany {
+                    Some(SequenceModificationDelta::InsertMany {
                         start_idx: previous_start_idx.unwrap() + 1,
                         items: &target_state[previous_target_idx.unwrap() + 1..target_common_idx],
                     })
                 }
                 (start_advance, target_advance) if start_advance == 2 && target_advance == 2 => {
-                    Some(SequenceModificationDiff::ReplaceOne {
+                    Some(SequenceModificationDelta::ReplaceOne {
                         index: previous_start_idx.unwrap() + 1,
                         new: &target_state[previous_target_idx.unwrap() + 1],
                     })
@@ -57,26 +60,26 @@ where
                     if start_advance > 2 && target_advance == start_advance =>
                 {
                     Some(
-                        SequenceModificationDiff::ReplaceManySameAmountAddedAndRemoved {
+                        SequenceModificationDelta::ReplaceManySameAmountAddedAndRemoved {
                             index: previous_start_idx.unwrap() + 1,
                             new: &target_state[previous_target_idx.unwrap() + 1..target_advance],
                         },
                     )
                 }
                 (start_advance, target_advance) if start_advance > 2 && target_advance > 1 => {
-                    Some(SequenceModificationDiff::ReplaceMany {
+                    Some(SequenceModificationDelta::ReplaceMany {
                         start_idx: previous_start_idx.unwrap() + 1,
                         items_to_replace: start_advance - 1,
                         new: &target_state[previous_target_idx.unwrap() + 1..target_advance],
                     })
                 }
                 (start_advance, target_advance) if start_advance == 2 && target_advance == 1 => {
-                    Some(SequenceModificationDiff::DeleteOne {
+                    Some(SequenceModificationDelta::DeleteOne {
                         index: previous_start_idx.unwrap() + 1,
                     })
                 }
                 (start_advance, target_advance) if start_advance > 2 && target_advance == 1 => {
-                    Some(SequenceModificationDiff::DeleteMany {
+                    Some(SequenceModificationDelta::DeleteMany {
                         start_index: previous_start_idx.unwrap() + 1,
                         items_to_delete: start_advance - 1,
                     })
@@ -93,31 +96,31 @@ where
             }
         } else {
             if start_common_idx == 1 && target_common_idx == 1 {
-                let modification = SequenceModificationDiff::ReplaceFirst {
+                let modification = SequenceModificationDelta::ReplaceFirst {
                     item: &target_state[0],
                 };
                 modifications.push(modification);
             } else if start_common_idx > 1 && start_common_idx == target_common_idx {
-                let modification = SequenceModificationDiff::ReplaceAllBeforeIncluding {
+                let modification = SequenceModificationDelta::ReplaceAllBeforeIncluding {
                     before: start_common_idx - 1,
                     new: &target_state[0..target_common_idx],
                 };
                 modifications.push(modification);
             } else if start_common_idx == 1 && target_common_idx == 0 {
-                let modification = SequenceModificationDiff::DeleteFirst;
+                let modification = SequenceModificationDelta::DeleteFirst;
                 modifications.push(modification);
             } else if start_common_idx > 1 && target_common_idx == 0 {
-                let modification = SequenceModificationDiff::DeleteAllBeforeIncluding {
+                let modification = SequenceModificationDelta::DeleteAllBeforeIncluding {
                     end_index: start_common_idx - 1,
                 };
                 modifications.push(modification);
             } else if start_common_idx == 0 && target_common_idx == 1 {
-                let modification = SequenceModificationDiff::PrependOne {
+                let modification = SequenceModificationDelta::PrependOne {
                     item: &target_state[0],
                 };
                 modifications.push(modification);
             } else if start_common_idx == 0 && target_common_idx > 1 {
-                let modification = SequenceModificationDiff::PrependMany {
+                let modification = SequenceModificationDelta::PrependMany {
                     items: &target_state[0..target_common_idx],
                 };
                 modifications.push(modification);
@@ -135,26 +138,26 @@ where
         let target_remaining = target_state.len() - 1 - previous_target_idx;
 
         let modification = if start_remaining == 1 && target_remaining == 1 {
-            Some(SequenceModificationDiff::ReplaceLast {
+            Some(SequenceModificationDelta::ReplaceLast {
                 item: target_state.last().unwrap(),
             })
         } else if start_remaining > 1 && start_remaining == target_remaining {
-            Some(SequenceModificationDiff::ReplaceAllAfterIncluding {
+            Some(SequenceModificationDelta::ReplaceAllAfterIncluding {
                 after: previous_start_idx + 1,
                 new: &target_state[previous_target_idx + 1..],
             })
         } else if start_remaining == 1 && target_remaining == 0 {
-            Some(SequenceModificationDiff::DeleteLast)
+            Some(SequenceModificationDelta::DeleteLast)
         } else if start_remaining > 1 && target_remaining == 0 {
-            Some(SequenceModificationDiff::DeleteAllAfterIncluding {
+            Some(SequenceModificationDelta::DeleteAllAfterIncluding {
                 start_index: previous_start_idx + 1,
             })
         } else if start_remaining == 0 && target_remaining == 1 {
-            Some(SequenceModificationDiff::AppendOne {
+            Some(SequenceModificationDelta::AppendOne {
                 item: target_state.last().unwrap(),
             })
         } else if start_remaining == 0 && target_remaining > 1 {
-            Some(SequenceModificationDiff::AppendMany {
+            Some(SequenceModificationDelta::AppendMany {
                 items: &target_state[target_state.len() - target_remaining..],
             })
         } else {

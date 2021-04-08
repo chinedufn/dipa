@@ -1,35 +1,50 @@
-use crate::vec::vec_apply_patch::apply_patch;
-use crate::vec::vec_delta_patch_towards::patch_towards;
+use crate::sequence::sequence_apply_patch::apply_patch;
+use crate::sequence::sequence_delta_patch_towards::delta_towards;
 use crate::{CreatePatchTowardsReturn, Diffable, Patchable};
+use serde::Serialize;
 
 mod longest_common_subsequence;
-mod vec_apply_patch;
-mod vec_delta_patch_towards;
+mod sequence_apply_patch;
+mod sequence_delta_patch_towards;
 
 impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, Vec<T>> for Vec<T>
 where
     T: PartialEq,
     &'p T: serde::Serialize,
 {
-    type Delta = Vec<SequenceModificationDiff<'p, T>>;
+    type Delta = Vec<SequenceModificationDelta<'p, T>>;
 
-    type DeltaOwned = Vec<OwnedSequenceModificationDiff<T>>;
+    type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
 
     fn create_delta_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Delta> {
-        patch_towards(self, end_state)
+        delta_towards(self, end_state)
     }
 }
 
-impl<T> Patchable<Vec<OwnedSequenceModificationDiff<T>>> for Vec<T> {
-    fn apply_patch(&mut self, patch: Vec<OwnedSequenceModificationDiff<T>>) {
+impl<T> Patchable<Vec<SequenceModificationDeltaOwned<T>>> for Vec<T> {
+    fn apply_patch(&mut self, patch: Vec<SequenceModificationDeltaOwned<T>>) {
         apply_patch(self, patch)
+    }
+}
+
+impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, [T]> for &[T]
+where
+    T: PartialEq,
+    &'p T: serde::Serialize,
+{
+    type Delta = Vec<SequenceModificationDelta<'p, T>>;
+
+    type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
+
+    fn create_delta_towards(&self, end_state: &'p [T]) -> CreatePatchTowardsReturn<Self::Delta> {
+        delta_towards(self, end_state)
     }
 }
 
 /// Used to diff/patch sequences such as vectors and slices.
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
-pub enum SequenceModificationDiff<'a, T>
+pub enum SequenceModificationDelta<'a, T>
 where
     &'a T: serde::Serialize,
 {
@@ -92,7 +107,7 @@ where
 /// Used to patch sequences such as vectors and slices.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-pub enum OwnedSequenceModificationDiff<T> {
+pub enum SequenceModificationDeltaOwned<T> {
     /// Insert into the Vec<T>, starting at some start index.
     InsertOne { index: usize, value: T },
     /// Prepend an item to the beginning of the vector.
@@ -183,7 +198,7 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3],
             end: &vec![0u8, 1, 2],
-            expected_delta: vec![SequenceModificationDiff::DeleteLast],
+            expected_delta: vec![SequenceModificationDelta::DeleteLast],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
@@ -201,7 +216,7 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3, 4],
             end: &vec![0u8, 1, 2],
-            expected_delta: vec![SequenceModificationDiff::DeleteAllAfterIncluding {
+            expected_delta: vec![SequenceModificationDelta::DeleteAllAfterIncluding {
                 start_index: 3,
             }],
             expected_serialized_patch_size,
@@ -220,7 +235,7 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2],
             end: &vec![1u8, 2],
-            expected_delta: vec![SequenceModificationDiff::DeleteFirst],
+            expected_delta: vec![SequenceModificationDelta::DeleteFirst],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
         }
@@ -238,7 +253,7 @@ mod tests {
             label: None,
             start: vec![0u8, 1, 2, 3],
             end: &vec![2u8, 3],
-            expected_delta: vec![SequenceModificationDiff::DeleteAllBeforeIncluding {
+            expected_delta: vec![SequenceModificationDelta::DeleteAllBeforeIncluding {
                 end_index: 1,
             }],
             expected_serialized_patch_size,
@@ -260,8 +275,8 @@ mod tests {
             start: vec![0u8, 1, 2, 3, 4, 5],
             end: &vec![2],
             expected_delta: vec![
-                SequenceModificationDiff::DeleteAllAfterIncluding { start_index: 3 },
-                SequenceModificationDiff::DeleteAllBeforeIncluding { end_index: 1 },
+                SequenceModificationDelta::DeleteAllAfterIncluding { start_index: 3 },
+                SequenceModificationDelta::DeleteAllBeforeIncluding { end_index: 1 },
             ],
             expected_serialized_patch_size,
             expected_macro_hints: macro_optimization_hint_did_change(),
@@ -272,7 +287,7 @@ mod tests {
     /// Verify that we delete one item in the middle.
     #[test]
     fn delete_one_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::DeleteOne { index: 1 }];
+        let expected_patch = vec![SequenceModificationDelta::DeleteOne { index: 1 }];
 
         // 1 for the one variant in the vec, 1 index
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
@@ -291,7 +306,7 @@ mod tests {
     /// Verify that we delete many items in the middle.
     #[test]
     fn delete_many_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::DeleteMany {
+        let expected_patch = vec![SequenceModificationDelta::DeleteMany {
             start_index: 1,
             items_to_delete: 2,
         }];
@@ -315,7 +330,7 @@ mod tests {
     /// Verify that we properly insert one item at the beginning of the start sequence.
     #[test]
     fn insert_one_at_beginning() {
-        let expected_patch = vec![SequenceModificationDiff::PrependOne { item: &1 }];
+        let expected_patch = vec![SequenceModificationDelta::PrependOne { item: &1 }];
 
         // 1 for the one variant in the vec, 1 for the appended u8
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
@@ -334,7 +349,7 @@ mod tests {
     /// Verify that we properly insert many items at the beginning of the start sequence.
     #[test]
     fn insert_many_at_beginning() {
-        let expected_patch = vec![SequenceModificationDiff::PrependMany { items: &[1, 2] }];
+        let expected_patch = vec![SequenceModificationDelta::PrependMany { items: &[1, 2] }];
 
         // 1 for the one variant in the vec
         // 1 for the length of the items vector
@@ -355,7 +370,7 @@ mod tests {
     /// Verify that we properly diff/patch inserting one item in the middle
     #[test]
     fn insert_one_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::InsertOne {
+        let expected_patch = vec![SequenceModificationDelta::InsertOne {
             index: 1,
             value: &2,
         }];
@@ -379,7 +394,7 @@ mod tests {
     /// Insert multiple items into the middle of the array.
     #[test]
     fn insert_many_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::InsertMany {
+        let expected_patch = vec![SequenceModificationDelta::InsertMany {
             start_idx: 1,
             items: &[2, 3],
         }];
@@ -404,7 +419,7 @@ mod tests {
     /// Verify that we append one item to the end.
     #[test]
     fn append_one_at_end() {
-        let expected_patch = vec![SequenceModificationDiff::AppendOne { item: &3 }];
+        let expected_patch = vec![SequenceModificationDelta::AppendOne { item: &3 }];
 
         // 1 for the one variant in the vec, 1 for the appended u8
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
@@ -423,7 +438,7 @@ mod tests {
     /// Verify that we create a patch to append many items to the end.
     #[test]
     fn append_many_at_end() {
-        let expected_patch = vec![SequenceModificationDiff::AppendMany { items: &[3, 4] }];
+        let expected_patch = vec![SequenceModificationDelta::AppendMany { items: &[3, 4] }];
 
         // 1 for the one variant in the modifications
         // 1 for the length of the items vec
@@ -444,7 +459,7 @@ mod tests {
     /// Verify that we can replace one item at the beginning of the array.
     #[test]
     fn replace_one_at_beginning() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceFirst { item: &2 }];
+        let expected_patch = vec![SequenceModificationDelta::ReplaceFirst { item: &2 }];
 
         // 1 for the one variant in the modifications
         // 1 for the item
@@ -464,7 +479,7 @@ mod tests {
     /// Verify that we can replace many items in the middle of the array.
     #[test]
     fn replace_many_at_beginning() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceAllBeforeIncluding {
+        let expected_patch = vec![SequenceModificationDelta::ReplaceAllBeforeIncluding {
             before: 1,
             new: &[5, 6],
         }];
@@ -489,7 +504,7 @@ mod tests {
     /// Verify that we can replace one item at the end of the array.
     #[test]
     fn replace_one_at_end() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceLast { item: &3 }];
+        let expected_patch = vec![SequenceModificationDelta::ReplaceLast { item: &3 }];
 
         // 1 for the one variant in the modifications
         // 1 for the item
@@ -509,7 +524,7 @@ mod tests {
     /// Verify that we can replace many items at the end of the array.
     #[test]
     fn replace_many_at_end() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceAllAfterIncluding {
+        let expected_patch = vec![SequenceModificationDelta::ReplaceAllAfterIncluding {
             after: 2,
             new: &[5, 6],
         }];
@@ -534,7 +549,7 @@ mod tests {
     /// Verify that we can replace one item in the middle of the array.
     #[test]
     fn replace_one_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceOne { index: 1, new: &4 }];
+        let expected_patch = vec![SequenceModificationDelta::ReplaceOne { index: 1, new: &4 }];
 
         // 1 for the one variant in the modifications
         // 1 for index
@@ -555,7 +570,7 @@ mod tests {
     /// Verify that we can rename `n` items with `m` new items.
     #[test]
     fn replace_many_in_middle() {
-        let expected_patch = vec![SequenceModificationDiff::ReplaceMany {
+        let expected_patch = vec![SequenceModificationDelta::ReplaceMany {
             start_idx: 1,
             items_to_replace: 3,
             new: &[6, 7],
@@ -584,7 +599,7 @@ mod tests {
     #[test]
     fn replace_many_in_middle_same_amount_added_and_removed() {
         let expected_patch = vec![
-            SequenceModificationDiff::ReplaceManySameAmountAddedAndRemoved {
+            SequenceModificationDelta::ReplaceManySameAmountAddedAndRemoved {
                 index: 1,
                 new: &[5, 6],
             },
@@ -610,7 +625,7 @@ mod tests {
     /// Verify that we create a patch to remove all items.
     #[test]
     fn delete_entire_vector() {
-        let expected_patch = vec![SequenceModificationDiff::DeleteAll];
+        let expected_patch = vec![SequenceModificationDelta::DeleteAll];
 
         // 1 for the one variant in the modifications
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1;
@@ -632,7 +647,7 @@ mod tests {
     /// bincode would begin to use 2 bytes instead of one.
     #[test]
     fn sequence_variant_one_byte() {
-        let diff: SequenceModificationDiff<()> = SequenceModificationDiff::DeleteFirst;
+        let diff: SequenceModificationDelta<()> = SequenceModificationDelta::DeleteFirst;
 
         assert_eq!(
             bincode::options()

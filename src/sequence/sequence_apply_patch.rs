@@ -1,19 +1,19 @@
-use crate::vec::OwnedSequenceModificationDiff;
+use crate::sequence::SequenceModificationDeltaOwned;
 
 // Tested in parent module.
 pub(super) fn apply_patch<'p, T>(
     receiver: &mut Vec<T>,
-    patch: Vec<OwnedSequenceModificationDiff<T>>,
+    patch: Vec<SequenceModificationDeltaOwned<T>>,
 ) {
     for modification in patch {
         match modification {
-            OwnedSequenceModificationDiff::InsertOne { index, value } => {
+            SequenceModificationDeltaOwned::InsertOne { index, value } => {
                 receiver.insert(index, value);
             }
-            OwnedSequenceModificationDiff::DeleteOne { index } => {
+            SequenceModificationDeltaOwned::DeleteOne { index } => {
                 receiver.remove(index);
             }
-            OwnedSequenceModificationDiff::DeleteMany {
+            SequenceModificationDeltaOwned::DeleteMany {
                 start_index,
                 items_to_delete,
             } => {
@@ -21,16 +21,16 @@ pub(super) fn apply_patch<'p, T>(
                     receiver.remove(start_index);
                 }
             }
-            OwnedSequenceModificationDiff::DeleteAllAfterIncluding { start_index } => {
+            SequenceModificationDeltaOwned::DeleteAllAfterIncluding { start_index } => {
                 receiver.truncate(start_index);
             }
-            OwnedSequenceModificationDiff::AppendOne { item } => {
+            SequenceModificationDeltaOwned::AppendOne { item } => {
                 receiver.push(item);
             }
-            OwnedSequenceModificationDiff::PrependOne { item } => {
+            SequenceModificationDeltaOwned::PrependOne { item } => {
                 receiver.insert(0, item);
             }
-            OwnedSequenceModificationDiff::InsertMany { start_idx, items } => {
+            SequenceModificationDeltaOwned::InsertMany { start_idx, items } => {
                 let mut current = start_idx;
 
                 for item in items {
@@ -38,23 +38,23 @@ pub(super) fn apply_patch<'p, T>(
                     current += 1;
                 }
             }
-            OwnedSequenceModificationDiff::DeleteAllBeforeIncluding { end_index } => {
+            SequenceModificationDeltaOwned::DeleteAllBeforeIncluding { end_index } => {
                 for _ in 0..=end_index {
                     receiver.remove(0);
                 }
             }
-            OwnedSequenceModificationDiff::AppendMany { items } => {
+            SequenceModificationDeltaOwned::AppendMany { items } => {
                 for item in items {
                     receiver.push(item);
                 }
             }
-            OwnedSequenceModificationDiff::DeleteFirst => {
+            SequenceModificationDeltaOwned::DeleteFirst => {
                 receiver.remove(0);
             }
-            OwnedSequenceModificationDiff::DeleteLast => {
+            SequenceModificationDeltaOwned::DeleteLast => {
                 receiver.remove(receiver.len() - 1);
             }
-            OwnedSequenceModificationDiff::PrependMany { items } => {
+            SequenceModificationDeltaOwned::PrependMany { items } => {
                 let mut idx = 0;
 
                 for item in items {
@@ -62,16 +62,16 @@ pub(super) fn apply_patch<'p, T>(
                     idx += 1;
                 }
             }
-            OwnedSequenceModificationDiff::ReplaceOne { index, new } => {
+            SequenceModificationDeltaOwned::ReplaceOne { index, new } => {
                 receiver[index] = new;
             }
-            OwnedSequenceModificationDiff::ReplaceFirst { item } => {
+            SequenceModificationDeltaOwned::ReplaceFirst { item } => {
                 receiver[0] = item;
             }
-            OwnedSequenceModificationDiff::ReplaceLast { item } => {
+            SequenceModificationDeltaOwned::ReplaceLast { item } => {
                 *receiver.last_mut().unwrap() = item;
             }
-            OwnedSequenceModificationDiff::ReplaceMany {
+            SequenceModificationDeltaOwned::ReplaceMany {
                 start_idx,
                 items_to_replace,
                 new,
@@ -86,12 +86,12 @@ pub(super) fn apply_patch<'p, T>(
                     offset += 1;
                 }
             }
-            OwnedSequenceModificationDiff::ReplaceManySameAmountAddedAndRemoved { index, new } => {
+            SequenceModificationDeltaOwned::ReplaceManySameAmountAddedAndRemoved { index, new } => {
                 for (offset, item) in new.into_iter().enumerate() {
                     receiver[index + offset] = item;
                 }
             }
-            OwnedSequenceModificationDiff::ReplaceAllBeforeIncluding { before, new } => {
+            SequenceModificationDeltaOwned::ReplaceAllBeforeIncluding { before, new } => {
                 for _ in 0..=before {
                     receiver.remove(0);
                 }
@@ -100,14 +100,14 @@ pub(super) fn apply_patch<'p, T>(
                     receiver.insert(idx, item);
                 }
             }
-            OwnedSequenceModificationDiff::ReplaceAllAfterIncluding { after, new } => {
+            SequenceModificationDeltaOwned::ReplaceAllAfterIncluding { after, new } => {
                 receiver.truncate(after);
 
                 for item in new {
                     receiver.push(item);
                 }
             }
-            OwnedSequenceModificationDiff::DeleteAll => {
+            SequenceModificationDeltaOwned::DeleteAll => {
                 receiver.clear();
             }
         };

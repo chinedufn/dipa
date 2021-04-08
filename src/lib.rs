@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate serde;
 
+mod sequence;
+
 mod bool;
 mod float;
 mod integer;
 mod null;
-mod vec;
+mod string;
 #[macro_use]
 mod number_impl;
 
@@ -13,14 +15,14 @@ mod delta_n;
 
 #[cfg(any(test, feature = "impl-tester"))]
 mod dipa_impl_tester;
-#[cfg(feature = "impl-tester")]
+#[cfg(any(test, feature = "impl-tester"))]
 pub use self::dipa_impl_tester::DiffPatchTestCase;
 
 /// The type returned by [Diffable.create_delta_towards].
 pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
 
 /// Allows a type to be diffed with another type.
-pub trait Diffable<'p, Other> {
+pub trait Diffable<'p, Other: ?Sized> {
     /// This will typically hold references to data from the structs that are being diffed.
     type Delta;
 
