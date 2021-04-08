@@ -1,6 +1,6 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{patch_type_name, EnumVariant};
 use crate::multi_field_utils::ChangedFieldIndices;
+use crate::parsed_enum::{delta_owned_type_name, EnumVariant};
 use syn::Ident;
 use syn::__private::TokenStream2;
 
@@ -45,7 +45,7 @@ impl EnumVariant {
     /// };
     /// ```
     fn generate_no_change_block(&self, enum_name: &Ident) -> TokenStream2 {
-        let patch_name = patch_type_name(enum_name);
+        let patch_name = delta_owned_type_name(enum_name);
 
         let no_change = self.variant_no_change();
 
@@ -63,7 +63,7 @@ impl EnumVariant {
     /// };
     /// ```
     fn generate_changed_to_variant_block_no_fields(&self, enum_name: &Ident) -> TokenStream2 {
-        let patch_name = patch_type_name(enum_name);
+        let patch_name = delta_owned_type_name(enum_name);
 
         let changed_to = self.changed_to_variant();
 
@@ -103,7 +103,7 @@ impl EnumVariant {
     /// };
     /// ```      
     fn generate_changed_to_variant_block_with_fields(&self, enum_name: &Ident) -> TokenStream2 {
-        let patch_name = patch_type_name(enum_name);
+        let patch_name = delta_owned_type_name(enum_name);
 
         let change_to_variant = self.changed_to_variant();
 
@@ -156,7 +156,7 @@ impl EnumVariant {
     /// };
     /// ```      
     fn generate_field_changes(&self, enum_name: &Ident, dipa_attrs: &DipaAttrs) -> TokenStream2 {
-        let patch_name = patch_type_name(enum_name);
+        let patch_name = delta_owned_type_name(enum_name);
 
         let mut patch_blocks = vec![];
 
@@ -219,8 +219,8 @@ mod tests {
     //! ```
     //!
     use super::*;
-    use crate::enum_utils::EnumVariantFields;
-    use crate::multi_field_utils::StructOrTupleField;
+    use crate::multi_field_utils::{ParsedFields, StructOrTupleField};
+    use crate::parsed_enum::EnumVariantFields;
     use crate::test_utils::assert_tokens_eq;
     use quote::__private::Span;
     use syn::Type;
@@ -278,7 +278,7 @@ get that working.
     /// Verify that we generate a match block for applying patches to the same struct like variant.
     #[test]
     fn same_variant_struct_fields() {
-        let tokens = variant_b().generate_field_changes(&enum_name());
+        let tokens = variant_b().generate_field_changes(&enum_name(), &DipaAttrs::default());
 
         let expected = quote! {
             MyEnumPatch::VariantBChanged_0(patch0) => {
@@ -328,31 +328,24 @@ get that working.
     }
 
     fn variant_b() -> EnumVariant {
+        let fields = vec![
+            StructOrTupleField {
+                name: quote! {some_field},
+                ty: Type::Verbatim(quote! {Vec<f32>}),
+                span: Span::call_site(),
+            },
+            StructOrTupleField {
+                name: quote! {another_field},
+                ty: Type::Verbatim(quote! {Option<u64>}),
+                span: Span::call_site(),
+            },
+        ];
         EnumVariant {
             name: Ident::new("VariantB", Span::call_site()),
-            fields: EnumVariantFields::Struct(vec![
-                StructOrTupleField {
-                    name: quote! {some_field},
-                    ty: Type::Verbatim(quote! {Vec<f32>}),
-                    span: Span::call_site(),
-                },
-                StructOrTupleField {
-                    name: quote! {another_field},
-                    ty: Type::Verbatim(quote! {Option<u64>}),
-                    span: Span::call_site(),
-                },
-            ]),
-        }
-    }
-
-    fn _variant_c() -> EnumVariant {
-        EnumVariant {
-            name: Ident::new("VariantC", Span::call_site()),
-            fields: EnumVariantFields::Tuple(vec![StructOrTupleField {
-                name: quote! {0},
-                ty: Type::Verbatim(quote! {i16}),
+            fields: EnumVariantFields::Struct(ParsedFields {
+                fields,
                 span: Span::call_site(),
-            }]),
+            }),
         }
     }
 }

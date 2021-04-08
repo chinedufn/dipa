@@ -21,6 +21,14 @@ impl EnumVariantFields {
         }
     }
 
+    pub fn unwrap_parsed_fields(&self) -> &ParsedFields {
+        match self {
+            EnumVariantFields::Tuple(v) => v,
+            EnumVariantFields::Struct(v) => v,
+            EnumVariantFields::Unit => panic!("Unit variant does not fields."),
+        }
+    }
+
     /// Tuple:
     ///   (prefix_field0, prefix_field1)
     /// Struct:

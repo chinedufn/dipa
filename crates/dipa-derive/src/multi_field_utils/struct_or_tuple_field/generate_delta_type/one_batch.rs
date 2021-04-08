@@ -104,7 +104,7 @@ mod tests {
             ],
             span: Span::call_site(),
         };
-        let tokens = parsed_fields.generate_delta_type("MyStruct", &attrs);
+        let tokens = parsed_fields.generate_delta_types("MyStruct", &attrs);
 
         let expected = quote! {
             #[derive(Serialize,)]

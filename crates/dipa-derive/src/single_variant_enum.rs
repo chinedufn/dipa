@@ -1,12 +1,12 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{
-    field_diff_statements, make_enum_variant_comparison_match_block,
-    make_two_enums_match_statement, EnumVariant, EnumVariantFields,
-};
 use crate::impl_dipa;
 use crate::multi_field_utils::{
     field_associated_diff_types, field_associated_patch_types, make_diff_n_ident,
-    make_match_diff_tokens, make_match_patch_tokens, StructOrTupleField,
+    make_match_diff_tokens, make_match_patch_tokens, ParsedFields, StructOrTupleField,
+};
+use crate::parsed_enum::{
+    field_diff_statements, make_enum_variant_comparison_match_block,
+    make_two_enums_match_statement, EnumVariant, EnumVariantFields,
 };
 use quote::__private::TokenStream;
 use syn::__private::TokenStream2;
@@ -123,7 +123,7 @@ pub(super) fn generate_single_variant_enum_single_tuple_field_impl(
 pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
     enum_name: syn::Ident,
     variant_name: &syn::Ident,
-    fields: Vec<StructOrTupleField>,
+    fields: ParsedFields,
     dipa_attrs: &DipaAttrs,
 ) -> TokenStream {
     let field_diff_types = field_associated_diff_types(&fields);
@@ -161,19 +161,6 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
 
     // dipa::private::{Diff2, Diff3, ... etc}
     let diff_ty = Type::Verbatim(quote! {#diff_n});
-
-    unimplemented!(
-        r#"
-1. Move this function into the ParsedEnum module    
-
-2. Replace DiffN with custom Delta and DeltaOwned type, similar to structs.
-   Make code DRY with structs.
-
-3. Get integration tests passing
-
-4. Move on to getting this working for tuple enum variants
-    "#
-    );
 
     let match_patch_tokens = make_match_patch_tokens(
         enum_name.span(),
@@ -249,7 +236,7 @@ pub(super) fn generate_single_variant_enum_multi_struct_field_impl(
 pub(super) fn generate_single_variant_enum_multi_tuple_impl(
     enum_name: syn::Ident,
     variant_name: &syn::Ident,
-    fields: Vec<StructOrTupleField>,
+    fields: ParsedFields,
     dipa_attrs: &DipaAttrs,
 ) -> TokenStream {
     let field_diff_types = field_associated_diff_types(&fields);

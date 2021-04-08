@@ -9,7 +9,7 @@ mod one_batch;
 impl ParsedFields {
     /// Given named or unnamed fields return a Delta type that encompasses all of those fields.
     /// Depending on the field batching strategy this might be an enum or a struct.
-    pub fn generate_delta_type(&self, prefix: &str, dipa_attrs: &DipaAttrs) -> TokenStream2 {
+    pub fn generate_delta_types(&self, prefix: &str, dipa_attrs: &DipaAttrs) -> TokenStream2 {
         if self.len() < 2 {
             unreachable!(
                 r#"Out logic is spread out a bit. Need to move the logic for 0 and 1 field

@@ -1,6 +1,6 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{DipaAssociatedType, EnumVariant};
 use crate::multi_field_utils::ChangedFieldIndices;
+use crate::parsed_enum::{DipaAssociatedType, EnumVariant};
 use quote::ToTokens;
 use syn::__private::TokenStream2;
 use syn::{Type, TypeReference};
@@ -139,7 +139,8 @@ mod tests {
     fn no_fields_variant() {
         let variant = EnumVariant::no_field_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
+        let diff_variants =
+            variant.diff_type_variants(DipaAssociatedType::Delta, &DipaAttrs::default());
         let expected = vec![quote! {TwoNoChange}, quote! {ChangedToVariantTwo}];
 
         assert_eq!(diff_variants.len(), expected.len());
@@ -154,7 +155,8 @@ mod tests {
     fn one_field_variant() {
         let variant = EnumVariant::one_field_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
+        let diff_variants =
+            variant.diff_type_variants(DipaAssociatedType::Delta, &DipaAttrs::default());
         let expected = vec![
             quote! {OneNoChange},
             quote! {
@@ -174,7 +176,8 @@ mod tests {
     fn two_field_variant() {
         let variant = EnumVariant::two_fields_variant();
 
-        let diff_variants = variant.diff_type_variants(DipaAssociatedType::Delta);
+        let diff_variants =
+            variant.diff_type_variants(DipaAssociatedType::Delta, &DipaAttrs::default());
         let expected = vec![
             quote! {TwoNoChange},
             quote! {

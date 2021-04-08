@@ -1,11 +1,11 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{
-    diff_type_name, make_two_enums_match_statement, patch_type_name, DipaAssociatedType,
-    EnumVariant, EnumVariantFields, ParsedEnum,
-};
 use crate::impl_dipa;
 use crate::multi_field_utils::{
     fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
+};
+use crate::parsed_enum::{
+    delta_owned_type_name, delta_type_name, make_two_enums_match_statement, DipaAssociatedType,
+    EnumVariant, EnumVariantFields, ParsedEnum,
 };
 use syn::__private::TokenStream2;
 use syn::punctuated::Punctuated;
@@ -99,8 +99,8 @@ fn generate_multi_variant_enum_with_data_impl(
         variants,
     };
 
-    let diff_ty = diff_type_name(&enum_name);
-    let patch_ty = patch_type_name(&enum_name);
+    let diff_ty = delta_type_name(&enum_name);
+    let patch_ty = delta_owned_type_name(&enum_name);
 
     let mut diff_variants = vec![];
 

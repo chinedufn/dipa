@@ -59,7 +59,7 @@ impl ParsedStruct {
             ),
         };
 
-        let delta_tys = self.fields.generate_delta_type(prefix, dipa_attrs);
+        let delta_tys = self.fields.generate_delta_types(prefix, dipa_attrs);
 
         let dipa_impl = impl_dipa(
             struct_name,
@@ -110,7 +110,7 @@ fn field_mutable_references(fields: &[StructOrTupleField]) -> Vec<TokenStream2> 
 /// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
 /// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
 /// let did_change = diff0.1.did_change || diff1.1.did_change;
-fn field_diff_statements(fields: &[StructOrTupleField]) -> TokenStream2 {
+pub fn field_diff_statements(fields: &[StructOrTupleField]) -> TokenStream2 {
     let diffs = field_diff_calculations(fields);
 
     let did_change: Vec<TokenStream2> = fields

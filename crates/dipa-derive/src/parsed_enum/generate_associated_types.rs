@@ -1,5 +1,5 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{diff_type_name, patch_type_name, ParsedEnum};
+use crate::parsed_enum::{delta_owned_type_name, delta_type_name, ParsedEnum};
 use quote::ToTokens;
 use quote::__private::TokenStream;
 use syn::Ident;
@@ -50,8 +50,8 @@ impl ParsedEnum {
 
     fn ty_name(&self, associated_type: DipaAssociatedType) -> Ident {
         match associated_type {
-            DipaAssociatedType::Delta => diff_type_name(&self.name),
-            DipaAssociatedType::DeltaOwned => patch_type_name(&self.name),
+            DipaAssociatedType::Delta => delta_type_name(&self.name),
+            DipaAssociatedType::DeltaOwned => delta_owned_type_name(&self.name),
         }
     }
 }
@@ -98,8 +98,10 @@ mod tests {
     fn generates_diff_type() {
         let parsed_enum = ParsedEnum::new_test_two_variants_one_field();
 
-        let tokens =
-            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::Delta);
+        let tokens = parsed_enum.create_associated_type_for_enum_with_fields(
+            DipaAssociatedType::Delta,
+            &DipaAttrs::default(),
+        );
 
         let expected = quote! {
             enum MyEnumDiff<'p> {
@@ -119,8 +121,10 @@ mod tests {
     fn generates_patch_type() {
         let parsed_enum = ParsedEnum::new_test_two_variants_one_field();
 
-        let tokens =
-            parsed_enum.create_associated_type_for_enum_with_fields(DipaAssociatedType::DeltaOwned);
+        let tokens = parsed_enum.create_associated_type_for_enum_with_fields(
+            DipaAssociatedType::DeltaOwned,
+            &DipaAttrs::default(),
+        );
 
         let expected = quote! {
             enum MyEnumPatch {

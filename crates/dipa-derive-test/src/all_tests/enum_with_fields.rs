@@ -1,4 +1,3 @@
-use dipa::private::Diff2;
 use dipa::{DiffPatchTestCase, MacroOptimizationHints};
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
@@ -12,11 +11,13 @@ enum OneVariantOneTuple {
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 enum OneVariantStructTwoFields {
     One { foo: u8, bar: u16 },
 }
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
+#[dipa(diff_derives = "Debug, PartialEq")]
 enum OneVariantTwoTuple {
     One(u8, u16),
 }
@@ -106,7 +107,7 @@ fn single_variant_enum_with_two_data() {
         label: Some("Struct no change"),
         start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 0, bar: 0 },
-        expected_delta: Diff2::NoChange,
+        expected_delta: OneVariantStructTwoFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -116,7 +117,7 @@ fn single_variant_enum_with_two_data() {
         label: Some("Struct Change_0"),
         start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 5, bar: 0 },
-        expected_delta: Diff2::Change_0(5),
+        expected_delta: OneVariantStructTwoFieldsDelta::Change_0(5),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -126,7 +127,7 @@ fn single_variant_enum_with_two_data() {
         label: Some("Struct Change_1"),
         start: OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(2, 5),
-        expected_delta: Diff2::Change_1(Some(5)),
+        expected_delta: OneVariantTwoTupleDelta::Change_1(Some(5)),
         expected_serialized_patch_size: 3,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -136,7 +137,7 @@ fn single_variant_enum_with_two_data() {
         label: Some("Struct Change_0_1"),
         start: OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(5, 6),
-        expected_delta: Diff2::Change_0_1(5, Some(6)),
+        expected_delta: OneVariantTwoTupleDelta::Change_0_1(5, Some(6)),
         expected_serialized_patch_size: 4,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -174,7 +175,7 @@ fn two_variants_one_tuple() {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(5),
-        expected_delta: TwoVariantsOneTupleDiff::OneNoChange,
+        expected_delta: TwoVariantsOneTupleDelta::OneNoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -184,7 +185,7 @@ fn two_variants_one_tuple() {
         label: None,
         start: TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::Two,
-        expected_delta: TwoVariantsOneTupleDiff::TwoNoChange,
+        expected_delta: TwoVariantsOneTupleDelta::TwoNoChange,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: false },
     }
@@ -194,7 +195,7 @@ fn two_variants_one_tuple() {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::Two,
-        expected_delta: TwoVariantsOneTupleDiff::ChangedToVariantTwo,
+        expected_delta: TwoVariantsOneTupleDelta::ChangedToVariantTwo,
         expected_serialized_patch_size: 1,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -204,7 +205,7 @@ fn two_variants_one_tuple() {
         label: None,
         start: TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::One(5),
-        expected_delta: TwoVariantsOneTupleDiff::ChangedToVariantOne(&5),
+        expected_delta: TwoVariantsOneTupleDelta::ChangedToVariantOne(&5),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
@@ -214,7 +215,7 @@ fn two_variants_one_tuple() {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(10),
-        expected_delta: TwoVariantsOneTupleDiff::OneChange_0(10),
+        expected_delta: TwoVariantsOneTupleDelta::OneChange_0(10),
         expected_serialized_patch_size: 2,
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }

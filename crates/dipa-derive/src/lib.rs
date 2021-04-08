@@ -1,9 +1,9 @@
 use crate::dipa_attribute::{maybe_parse_raw_dipa_attribute, DipaAttrs};
-use crate::enum_utils::{EnumVariant, EnumVariantFields, ParsedEnum};
 use crate::multi_field_utils::{
     fields_named_to_vec_fields, fields_unnamed_to_vec_fields, ParsedFields,
 };
 use crate::multi_variant_enum::generate_multi_variant_enum_impl;
+use crate::parsed_enum::{EnumVariant, EnumVariantFields, ParsedEnum};
 use crate::parsed_struct::ParsedStruct;
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::single_variant_enum::{
@@ -33,8 +33,8 @@ mod zst_impl;
 
 mod dipa_attribute;
 
-mod enum_utils;
 mod multi_field_utils;
+mod parsed_enum;
 mod parsed_struct;
 
 #[cfg(test)]
@@ -180,12 +180,20 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     &field.ty,
                                 )
                             } else {
-                                generate_single_variant_enum_multi_struct_field_impl(
-                                    enum_or_struct_name,
-                                    &variant.ident,
-                                    fields_named_to_vec_fields(&fields),
-                                    &dipa_attrs,
-                                )
+                                let fields = ParsedFields {
+                                    fields: fields_named_to_vec_fields(&fields),
+                                    span: fields.span(),
+                                };
+                                let parsed_enum = ParsedEnum {
+                                    name: enum_or_struct_name,
+                                    variants: vec![EnumVariant {
+                                        name: variant.ident.clone(),
+                                        fields: EnumVariantFields::Struct(fields),
+                                    }],
+                                };
+
+                                parsed_enum
+                                    .generate_single_variant_multi_field_dipa_impl(&dipa_attrs)
                             }
                         }
                         Fields::Unnamed(fields) => {
@@ -198,12 +206,21 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     &field.ty,
                                 )
                             } else {
-                                generate_single_variant_enum_multi_tuple_impl(
-                                    enum_or_struct_name,
-                                    &variant.ident,
-                                    fields_unnamed_to_vec_fields(fields),
-                                    &dipa_attrs,
-                                )
+                                let fields = ParsedFields {
+                                    fields: fields_unnamed_to_vec_fields(&fields),
+                                    span: fields.span(),
+                                };
+
+                                let parsed_enum = ParsedEnum {
+                                    name: enum_or_struct_name,
+                                    variants: vec![EnumVariant {
+                                        name: variant.ident.clone(),
+                                        fields: EnumVariantFields::Struct(fields),
+                                    }],
+                                };
+
+                                parsed_enum
+                                    .generate_single_variant_multi_field_dipa_impl(&dipa_attrs)
                             }
                         }
                         Fields::Unit => {

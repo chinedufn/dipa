@@ -1,6 +1,6 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::{diff_type_name, EnumVariant};
 use crate::multi_field_utils::make_match_diff_tokens;
+use crate::parsed_enum::{delta_type_name, EnumVariant};
 use syn::__private::TokenStream2;
 use syn::spanned::Spanned;
 use syn::{Ident, Type};
@@ -72,7 +72,7 @@ impl EnumVariant {
         let variant = &self.name;
         let variant_no_change = self.variant_no_change();
 
-        let diff_ty = diff_type_name(enum_name);
+        let diff_ty = delta_type_name(enum_name);
 
         quote! {
             (
@@ -124,7 +124,7 @@ impl EnumVariant {
 
         let variant = &self.name;
 
-        let diff_ty = diff_type_name(enum_name);
+        let diff_ty = delta_type_name(enum_name);
 
         let start_pattern_fields = self.fields.to_pattern_match_tokens("start_");
         let end_pattern_fields = other.fields.to_pattern_match_tokens("end_");
@@ -185,7 +185,7 @@ impl EnumVariant {
 
         let changed_to_variant = other.changed_to_variant();
 
-        let diff_ty = diff_type_name(enum_name);
+        let diff_ty = delta_type_name(enum_name);
 
         quote! {
             (
@@ -231,7 +231,7 @@ impl EnumVariant {
 
         let changed_to_variant = other.changed_to_variant();
 
-        let diff_ty = diff_type_name(enum_name);
+        let diff_ty = delta_type_name(enum_name);
 
         let variant_2_pattern_fields = other.fields.to_pattern_match_tokens("end_");
         let variant_2_field_values = other.fields.to_field_value_tokens_parenthesized("end_");
@@ -301,8 +301,8 @@ impl EnumVariant {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::enum_utils::EnumVariantFields;
-    use crate::multi_field_utils::StructOrTupleField;
+    use crate::multi_field_utils::{ParsedFields, StructOrTupleField};
+    use crate::parsed_enum::EnumVariantFields;
     use crate::test_utils::assert_tokens_eq;
     use syn::Type;
     use syn::__private::Span;
@@ -315,7 +315,11 @@ mod tests {
             fields: EnumVariantFields::Unit,
         };
 
-        let tokens = enum_variant.diff_match_block_one_or_more_data(&enum_variant, &enum_name());
+        let tokens = enum_variant.diff_match_block_one_or_more_data(
+            &enum_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
           (
@@ -348,7 +352,11 @@ mod tests {
             fields: EnumVariantFields::Unit,
         };
 
-        let tokens = old_variant.diff_match_block_one_or_more_data(&new_variant, &enum_name());
+        let tokens = old_variant.diff_match_block_one_or_more_data(
+            &new_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
             (
@@ -378,16 +386,24 @@ mod tests {
         };
 
         let ty = Type::Verbatim(quote! {u32});
+        let fields = vec![StructOrTupleField {
+            name: quote! {field},
+            ty,
+            span: Span::call_site(),
+        }];
         let new_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Struct(vec![StructOrTupleField {
-                name: quote! {field},
-                ty: ty,
+            fields: EnumVariantFields::Struct(ParsedFields {
+                fields,
                 span: Span::call_site(),
-            }]),
+            }),
         };
 
-        let tokens = old_variant.diff_match_block_one_or_more_data(&new_variant, &enum_name());
+        let tokens = old_variant.diff_match_block_one_or_more_data(
+            &new_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
             (
@@ -417,16 +433,24 @@ mod tests {
         };
 
         let ty = Type::Verbatim(quote! {u32});
+        let fields = vec![StructOrTupleField {
+            name: quote! {field},
+            ty,
+            span: Span::call_site(),
+        }];
         let new_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Tuple(vec![StructOrTupleField {
-                name: quote! {field},
-                ty: ty,
+            fields: EnumVariantFields::Tuple(ParsedFields {
+                fields,
                 span: Span::call_site(),
-            }]),
+            }),
         };
 
-        let tokens = old_variant.diff_match_block_one_or_more_data(&new_variant, &enum_name());
+        let tokens = old_variant.diff_match_block_one_or_more_data(
+            &new_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
             (
@@ -452,39 +476,51 @@ mod tests {
     fn same_variant_new_has_two_tuple_fields() {
         let ty = Type::Verbatim(quote! {u32});
 
+        let fields = vec![
+            StructOrTupleField {
+                name: quote! {0},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+            StructOrTupleField {
+                name: quote! {1},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+        ];
         let old_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Tuple(vec![
-                StructOrTupleField {
-                    name: quote! {0},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-                StructOrTupleField {
-                    name: quote! {1},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-            ]),
+            fields: EnumVariantFields::Tuple(ParsedFields {
+                fields,
+                span: Span::call_site(),
+            }),
         };
 
+        let fields = vec![
+            StructOrTupleField {
+                name: quote! {0},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+            StructOrTupleField {
+                name: quote! {1},
+                ty,
+                span: Span::call_site(),
+            },
+        ];
         let new_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Tuple(vec![
-                StructOrTupleField {
-                    name: quote! {0},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-                StructOrTupleField {
-                    name: quote! {1},
-                    ty,
-                    span: Span::call_site(),
-                },
-            ]),
+            fields: EnumVariantFields::Tuple(ParsedFields {
+                fields,
+                span: Span::call_site(),
+            }),
         };
 
-        let tokens = old_variant.diff_match_block_one_or_more_data(&new_variant, &enum_name());
+        let tokens = old_variant.diff_match_block_one_or_more_data(
+            &new_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
             (
@@ -520,39 +556,51 @@ mod tests {
     fn same_variant_new_has_two_struct_fields() {
         let ty = Type::Verbatim(quote! {u32});
 
+        let fields = vec![
+            StructOrTupleField {
+                name: quote! {field_a},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+            StructOrTupleField {
+                name: quote! {field_b},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+        ];
         let old_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Struct(vec![
-                StructOrTupleField {
-                    name: quote! {field_a},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-                StructOrTupleField {
-                    name: quote! {field_b},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-            ]),
+            fields: EnumVariantFields::Struct(ParsedFields {
+                fields,
+                span: Span::call_site(),
+            }),
         };
 
+        let fields = vec![
+            StructOrTupleField {
+                name: quote! {field_a},
+                ty: ty.clone(),
+                span: Span::call_site(),
+            },
+            StructOrTupleField {
+                name: quote! {field_b},
+                ty,
+                span: Span::call_site(),
+            },
+        ];
         let new_variant = EnumVariant {
             name: variant_name_2(),
-            fields: EnumVariantFields::Struct(vec![
-                StructOrTupleField {
-                    name: quote! {field_a},
-                    ty: ty.clone(),
-                    span: Span::call_site(),
-                },
-                StructOrTupleField {
-                    name: quote! {field_b},
-                    ty,
-                    span: Span::call_site(),
-                },
-            ]),
+            fields: EnumVariantFields::Struct(ParsedFields {
+                fields,
+                span: Span::call_site(),
+            }),
         };
 
-        let tokens = old_variant.diff_match_block_one_or_more_data(&new_variant, &enum_name());
+        let tokens = old_variant.diff_match_block_one_or_more_data(
+            &new_variant,
+            &enum_name(),
+            &DipaAttrs::default(),
+        );
 
         let expected_tokens = quote! {
             (

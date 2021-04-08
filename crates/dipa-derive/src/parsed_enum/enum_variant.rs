@@ -46,8 +46,8 @@ impl EnumVariant {
 
 #[cfg(test)]
 mod test_extras {
-    use crate::enum_utils::{EnumVariant, EnumVariantFields};
     use crate::multi_field_utils::{ParsedFields, StructOrTupleField};
+    use crate::parsed_enum::{EnumVariant, EnumVariantFields};
     use quote::__private::{Ident, Span};
     use syn::Type;
 

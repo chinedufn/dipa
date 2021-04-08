@@ -1,5 +1,5 @@
 use crate::dipa_attribute::DipaAttrs;
-use crate::enum_utils::ParsedEnum;
+use crate::parsed_enum::ParsedEnum;
 use syn::__private::TokenStream2;
 
 impl ParsedEnum {
