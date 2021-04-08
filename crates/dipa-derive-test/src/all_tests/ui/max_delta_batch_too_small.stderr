@@ -1,7 +1,7 @@
 error: The max_fields_per_batch attribute must be greater than or equal to 2.
 Consider using the `dipa(delta_strategy = "no_batching")` attribute if you are trying to
 disable field batching.
- --> $DIR/max_fields_per_batch_too_small.rs:4:26
+ --> $DIR/max_delta_batch_too_small.rs:4:31
   |
 4 | #[dipa(max_fields_per_batch = 1)]
-  |                          ^
+  |                               ^

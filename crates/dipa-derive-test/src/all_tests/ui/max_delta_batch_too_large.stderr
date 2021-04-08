@@ -1,7 +1,7 @@
 error: The max_fields_per_batch attribute must be less than or equal to 7.
 This limit is meant to prevent the use of large values, since as max_fields_per_batch grows
 compile times grow exponentially.
- --> $DIR/max_fields_per_batch_too_large.rs:4:26
+ --> $DIR/max_delta_batch_too_large.rs:4:31
   |
 4 | #[dipa(max_fields_per_batch = 8)]
-  |                          ^
+  |                               ^

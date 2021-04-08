@@ -55,11 +55,6 @@ pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTuple
         .collect()
 }
 
-/// For making the `DiffN` in dipa::private::{Diff2, Diff3, ... etc}.
-pub fn make_diff_n_ident(field_count: usize, span: Span) -> Ident {
-    Ident::new(&format!("Diff{}", field_count), span)
-}
-
 /// Generate the tokens to match on the different fields within the struct to see which changed,
 /// then combine the changes into one final Diff for the entire struct.
 ///
@@ -148,36 +143,6 @@ pub fn make_match_patch_tokens(
          #(#match_patch_inner_tokens)*
      };
     }
-}
-
-/// Get the Diff associated types for all of the fields.
-/// i.e. vec![<u8::Diff, Option<f64>::Delta, ..]
-pub fn field_associated_diff_types(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .map(|field| {
-            let ty = &field.ty;
-
-            quote! {
-            <#ty as dipa::Diffable<'p, #ty>>::Delta
-            }
-        })
-        .collect()
-}
-
-/// Get the Patch associated types for all of the fields.
-/// i.e. vec![<u8::Diff, Option<f64>::Delta, ..]
-pub fn field_associated_patch_types(fields: &[StructOrTupleField]) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .map(|field| {
-            let ty = &field.ty;
-
-            quote! {
-            <#ty as dipa::Diffable<'p, #ty>>::DeltaOwned
-            }
-        })
-        .collect()
 }
 
 /// Generate the inside of a match statement that returns a diff based on which fields have changed.

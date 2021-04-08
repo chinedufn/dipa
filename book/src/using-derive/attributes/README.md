@@ -68,8 +68,9 @@ each responsible for a few fields, or being able to annotate individual fields i
   }
   ```
 
-- `no_batching` - The `Diffable::Delta` type will be a struct with the same number of fields as your original type. This is useful when you know that **every** field will change
-   between every delta encoding since it means you can avoid the one byte overhead of strategies that encode to enums.
+- `no_batching` - The `Diffable::Delta` type will be a struct with the same number of fields as your original type. This is useful when have too many fields
+  for the `on_batch` strategy. Note that in the future we will introduce other strategies that are likely to better handle large numbers of fields. So this
+  is more of a temporary measure.
 
   ```rust
   #[derive(DiffPatch)]

@@ -7,8 +7,6 @@ use crate::parsed_enum::{EnumVariant, EnumVariantFields, ParsedEnum};
 use crate::parsed_struct::ParsedStruct;
 use crate::single_field_struct::generate_single_field_struct_impl;
 use crate::single_variant_enum::{
-    generate_single_variant_enum_multi_struct_field_impl,
-    generate_single_variant_enum_multi_tuple_impl,
     generate_single_variant_enum_single_struct_field_impl,
     generate_single_variant_enum_single_tuple_field_impl,
 };
@@ -180,18 +178,6 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     &field.ty,
                                 )
                             } else {
-                                let fields = ParsedFields {
-                                    fields: fields_named_to_vec_fields(&fields),
-                                    span: fields.span(),
-                                };
-                                let parsed_enum = ParsedEnum {
-                                    name: enum_or_struct_name,
-                                    variants: vec![EnumVariant {
-                                        name: variant.ident.clone(),
-                                        fields: EnumVariantFields::Struct(fields),
-                                    }],
-                                };
-
                                 parsed_enum
                                     .generate_single_variant_multi_field_dipa_impl(&dipa_attrs)
                             }
@@ -206,19 +192,6 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
                                     &field.ty,
                                 )
                             } else {
-                                let fields = ParsedFields {
-                                    fields: fields_unnamed_to_vec_fields(&fields),
-                                    span: fields.span(),
-                                };
-
-                                let parsed_enum = ParsedEnum {
-                                    name: enum_or_struct_name,
-                                    variants: vec![EnumVariant {
-                                        name: variant.ident.clone(),
-                                        fields: EnumVariantFields::Struct(fields),
-                                    }],
-                                };
-
                                 parsed_enum
                                     .generate_single_variant_multi_field_dipa_impl(&dipa_attrs)
                             }

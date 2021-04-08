@@ -20,7 +20,7 @@ impl EnumVariant {
     ///   VariantName (prefix_field0, prefix_field1)
     /// Struct:
     ///   VariantName { field0: prefix_field0, field1: prefix_field1 }
-    pub fn to_tokens(&self, field_prefix: &'static str) -> TokenStream2 {
+    pub fn _to_tokens(&self, field_prefix: &'static str) -> TokenStream2 {
         let name = &self.name;
         let fields = self.fields.to_pattern_match_tokens(field_prefix);
 

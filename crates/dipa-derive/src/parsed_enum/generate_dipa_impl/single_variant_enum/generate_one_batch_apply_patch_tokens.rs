@@ -26,7 +26,7 @@ impl ParsedEnum {
             ChangedFieldIndices::all_changed_index_combinations(fields.len(), dipa_attrs)
         {
             let change_name = changed_indices.variant_name_ident("", variant_name.span());
-            let mut patches = changed_indices.patch_field_idents(variant_name.span());
+            let patches = changed_indices.patch_field_idents(variant_name.span());
 
             let mut field_applies = vec![];
 

@@ -2,10 +2,8 @@
 //! enums.
 
 use syn::__private::TokenStream2;
-use syn::spanned::Spanned;
 use syn::Ident;
 
-use crate::multi_field_utils::StructOrTupleField;
 
 pub use self::enum_variant::*;
 pub use self::generate_associated_types::*;
@@ -23,33 +21,6 @@ pub struct ParsedEnum {
     pub variants: Vec<EnumVariant>,
 }
 
-/// Generate code to diff every field in a struct or tuple variant.
-///
-/// let diff0 = start0.create_delta_towards(&end0);
-/// let diff1 = start1.create_delta_towards(&end1);
-pub fn field_diff_statements(
-    fields: &[StructOrTupleField],
-    start_idents: &[Ident],
-    end_idents: &[Ident],
-) -> Vec<TokenStream2> {
-    fields
-        .iter()
-        .enumerate()
-        .map(|(field_idx, field)| {
-            let field_name = &field.name;
-
-            let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
-
-            let start_ident = &start_idents[field_idx];
-            let end_ident = &end_idents[field_idx];
-
-            quote! {
-            let #diff_idx_ident = #start_ident.create_delta_towards(&#end_ident);
-            }
-        })
-        .collect()
-}
-
 /// Create a match statement for comparing two enums.
 ///
 /// match (self, other) {
@@ -64,28 +35,6 @@ pub fn make_two_enums_match_statement(
      match (#left_ident, #right_ident) {
          #inner_tokens
      }
-    }
-}
-
-/// Create a block within a match statement to compare two enums.
-///
-/// (Self::left_variant_name, Self::right_variant_name(field0, field1)) => {
-///     // ... Paste inner tokens here
-/// }
-pub fn make_enum_variant_comparison_match_block(
-    left_variant_prefix: &'static str,
-    left_variant: &EnumVariant,
-    right_variant_prefix: &'static str,
-    right_variant: &EnumVariant,
-    inner_tokens: TokenStream2,
-) -> TokenStream2 {
-    let left_variant_tokens = left_variant.to_tokens(left_variant_prefix);
-    let right_variant_tokens = right_variant.to_tokens(right_variant_prefix);
-
-    quote! {
-        (Self::#left_variant_tokens, Self::#right_variant_tokens) => {
-            #inner_tokens
-        }
     }
 }
 

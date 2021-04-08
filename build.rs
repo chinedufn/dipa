@@ -2,10 +2,10 @@ use std::path::PathBuf;
 
 const LETTERS: [char; 9] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
-// FIXME: Reduce to 4. If someone needs tuple support for more than 4 indices they can open
-//  an issue and we can add feature flags for specific tuple sizes such as `tuple-5` `tuple-6`.
-//  But we shouldn't have flags above `tuple-9` or so because as it increases debug build compile
-//  times start to become noticably longer.
+// Enums will have 2^N fields, so we default to a small number and expose feature flags to generate
+// larger `DeltaN` types.
+// TODO: Expose those feature flags. Such as `delta-5` `delta-6` etc. Experiment to see how large
+//  we can go without impacting compile times too much.
 const MAX_DELTA_N: u8 = 4;
 
 fn main() {
@@ -19,13 +19,13 @@ fn main() {
     .unwrap();
 }
 
-/// Generate `DiffN` types.
+/// Generate `DeltaN` types.
 ///
 /// ```no_run
 /// #[derive(serde::Serialize)]
 /// #[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 /// #[allow(non_camel_case_types, missing_docs)]
-/// pub enum Diff2<A, B> {
+/// pub enum Delta2<A, B> {
 ///     NoChange,
 ///     Change_0(A),
 ///     Change_1(B),
@@ -34,7 +34,7 @@ fn main() {
 ///
 /// #[derive(serde::Deserialize)]
 /// #[allow(non_camel_case_types, missing_docs)]
-/// pub enum Diff2Owned<A, B> {
+/// pub enum DiffOwned2<A, B> {
 ///     NoChange,
 ///     Change_0(A),
 ///     Change_1(B),
@@ -78,15 +78,12 @@ fn generate_delta_n_types() -> String {
             );
         }
 
-        // FIXME: Remove Deserialize bounds once we make generated structs use their own Delta
-        //  types
-        // FIXME: pub(crate) for the two types
         let diff_n = format!(
             r#"
-#[derive(serde::Serialize, Deserialize)]
+#[derive(serde::Serialize)]
 #[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
 #[allow(non_camel_case_types, missing_docs)]
-pub enum Diff{field_count}<{diff_n_generics}> {{
+pub(crate) enum Delta{field_count}<{diff_n_generics}> {{
     NoChange,
     {change_combinations}
 }}"#,
@@ -99,7 +96,7 @@ pub enum Diff{field_count}<{diff_n_generics}> {{
             r#"
 #[derive(serde::Deserialize)]
 #[allow(non_camel_case_types, missing_docs)]
-pub enum Diff{field_count}Owned<{diff_n_generics}> {{
+pub(crate) enum DeltaOwned{field_count}<{diff_n_generics}> {{
     NoChange,
     {change_combinations}
 }}"#,

@@ -89,6 +89,7 @@ impl ParsedEnum {
         }
 
         quote! {
+            #[allow(unused)] // Easier for now than prefixing unused fields with underscores
             match patch {
                 #(#inner_tokens)*
             }

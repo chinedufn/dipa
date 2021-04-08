@@ -42,6 +42,7 @@ impl ParsedEnum {
         let maybe_lifetime = associated_type.maybe_lifetime();
 
         quote! {
+            #[allow(non_camel_case_types)]
             enum #enum_associated_ty#maybe_lifetime {
                 #(#diff_ty_variants),*,
             }
@@ -104,6 +105,7 @@ mod tests {
         );
 
         let expected = quote! {
+            #[allow(non_camel_case_types)]
             enum MyEnumDiff<'p> {
                 OneNoChange,
                 ChangedToVariantOne(&'p u16),
@@ -127,6 +129,7 @@ mod tests {
         );
 
         let expected = quote! {
+            #[allow(non_camel_case_types)]
             enum MyEnumPatch {
                 OneNoChange,
                 ChangedToVariantOne(u16),
