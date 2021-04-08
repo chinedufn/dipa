@@ -8,6 +8,8 @@ mod float;
 mod integer;
 mod null;
 mod string;
+mod tuple;
+
 #[macro_use]
 mod number_impl;
 

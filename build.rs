@@ -81,9 +81,9 @@ fn generate_delta_n_types() -> String {
         let diff_n = format!(
             r#"
 #[derive(serde::Serialize)]
-#[cfg_attr(feature = "impl-tester", derive(Debug, PartialEq))]
+#[cfg_attr(any(test, feature = "impl-tester"), derive(Debug, PartialEq))]
 #[allow(non_camel_case_types, missing_docs)]
-pub(crate) enum Delta{field_count}<{diff_n_generics}> {{
+pub enum Delta{field_count}<{diff_n_generics}> {{
     NoChange,
     {change_combinations}
 }}"#,
@@ -96,7 +96,7 @@ pub(crate) enum Delta{field_count}<{diff_n_generics}> {{
             r#"
 #[derive(serde::Deserialize)]
 #[allow(non_camel_case_types, missing_docs)]
-pub(crate) enum DeltaOwned{field_count}<{diff_n_generics}> {{
+pub enum DeltaOwned{field_count}<{diff_n_generics}> {{
     NoChange,
     {change_combinations}
 }}"#,
