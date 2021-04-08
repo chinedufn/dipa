@@ -46,9 +46,8 @@ serde = { version = "1", features = ["derive"] }
 
 ```rust
 use dipa::{DiffPatch};
-use serde::{Serialize, Deserialize};
 
-#[derive(DiffPatch, Serialize, Deserialize)]
+#[derive(DiffPatch)]
 struct MyClientState {
     id: u32,
     friends: Option<u8>,
@@ -56,7 +55,7 @@ struct MyClientState {
     notifications: Vec<String>
 }
 
-#[derive(DiffPatch, Serialize, Deserialize)]
+#[derive(DiffPatch)]
 struct Position {
     x: f32,
     y: f32,
