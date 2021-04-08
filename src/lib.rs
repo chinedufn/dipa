@@ -6,7 +6,9 @@ mod sequence;
 mod bool;
 mod float;
 mod integer;
+mod map;
 mod null;
+mod option;
 mod string;
 mod tuple;
 

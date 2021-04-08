@@ -4,9 +4,12 @@ const LETTERS: [char; 9] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
 // Enums will have 2^N fields, so we default to a small number and expose feature flags to generate
 // larger `DeltaN` types.
+//
+// TODO: Increase to 4 whenever we're working on supporting 3-tuples and 4-tuples
+//
 // TODO: Expose those feature flags. Such as `delta-5` `delta-6` etc. Experiment to see how large
 //  we can go without impacting compile times too much.
-const MAX_DELTA_N: u8 = 4;
+const MAX_DELTA_N: u8 = 2;
 
 fn main() {
     let delta_n_types = generate_delta_n_types();
