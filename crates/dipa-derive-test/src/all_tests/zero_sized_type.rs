@@ -1,4 +1,4 @@
-use dipa::{DiffPatchTestCase, MacroOptimizationHints};
+use dipa::{DipaImplTester, MacroOptimizationHints};
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct UnitStruct;
@@ -25,7 +25,7 @@ fn zst() {
     let expected_diff = ();
     let expected_serialized_patch_size = 0;
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: UnitStruct,
         end: &UnitStruct,
@@ -35,7 +35,7 @@ fn zst() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: EmptyStruct {},
         end: &EmptyStruct {},
@@ -45,7 +45,7 @@ fn zst() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: EmptyTupleStruct {},
         end: &EmptyTupleStruct {},
@@ -55,7 +55,7 @@ fn zst() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: SingleFieldEnum::Foo,
         end: &SingleFieldEnum::Foo,

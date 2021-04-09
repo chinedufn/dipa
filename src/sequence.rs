@@ -7,16 +7,16 @@ mod longest_common_subsequence;
 mod sequence_apply_patch;
 mod sequence_delta_patch_towards;
 
-impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, Vec<T>> for Vec<T>
+impl<'s, 'e, T: 'e + Diffable<'s, 'e, T>> Diffable<'s, 'e, Vec<T>> for Vec<T>
 where
     T: PartialEq,
-    &'p T: serde::Serialize,
+    &'e T: serde::Serialize,
 {
-    type Delta = Vec<SequenceModificationDelta<'p, T>>;
+    type Delta = Vec<SequenceModificationDelta<'e, T>>;
 
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
 
-    fn create_delta_towards(&self, end_state: &'p Self) -> CreatePatchTowardsReturn<Self::Delta> {
+    fn create_delta_towards(&self, end_state: &'e Self) -> CreatePatchTowardsReturn<Self::Delta> {
         delta_towards(self, end_state)
     }
 }
@@ -27,16 +27,16 @@ impl<T> Patchable<Vec<SequenceModificationDeltaOwned<T>>> for Vec<T> {
     }
 }
 
-impl<'p, T: 'p + Diffable<'p, T>> Diffable<'p, [T]> for &[T]
+impl<'s, 'e, T: 'e + Diffable<'s, 'e, T>> Diffable<'s, 'e, [T]> for &[T]
 where
     T: PartialEq,
-    &'p T: serde::Serialize,
+    &'e T: serde::Serialize,
 {
-    type Delta = Vec<SequenceModificationDelta<'p, T>>;
+    type Delta = Vec<SequenceModificationDelta<'e, T>>;
 
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
 
-    fn create_delta_towards(&self, end_state: &'p [T]) -> CreatePatchTowardsReturn<Self::Delta> {
+    fn create_delta_towards(&self, end_state: &'e [T]) -> CreatePatchTowardsReturn<Self::Delta> {
         delta_towards(self, end_state)
     }
 }
@@ -164,7 +164,7 @@ pub enum SequenceModificationDeltaOwned<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::DipaImplTester;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -176,9 +176,9 @@ mod tests {
     /// Verify that there is no diff if the start and end vector are the same.
     #[test]
     fn vec_unchanged() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3],
+            start: &mut vec![1u8, 2, 3],
             end: &vec![1u8, 2, 3],
             expected_delta: vec![],
             // No change, none variant is one byte
@@ -194,9 +194,9 @@ mod tests {
         // 1 for the variant
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![0u8, 1, 2, 3],
+            start: &mut vec![0u8, 1, 2, 3],
             end: &vec![0u8, 1, 2],
             expected_delta: vec![SequenceModificationDelta::DeleteLast],
             expected_serialized_patch_size,
@@ -212,9 +212,9 @@ mod tests {
         // 1 bytes for the start index
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![0u8, 1, 2, 3, 4],
+            start: &mut vec![0u8, 1, 2, 3, 4],
             end: &vec![0u8, 1, 2],
             expected_delta: vec![SequenceModificationDelta::DeleteAllAfterIncluding {
                 start_index: 3,
@@ -231,9 +231,9 @@ mod tests {
         // 1 for the variant then
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![0u8, 1, 2],
+            start: &mut vec![0u8, 1, 2],
             end: &vec![1u8, 2],
             expected_delta: vec![SequenceModificationDelta::DeleteFirst],
             expected_serialized_patch_size,
@@ -249,9 +249,9 @@ mod tests {
         // 1 the index
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![0u8, 1, 2, 3],
+            start: &mut vec![0u8, 1, 2, 3],
             end: &vec![2u8, 3],
             expected_delta: vec![SequenceModificationDelta::DeleteAllBeforeIncluding {
                 end_index: 1,
@@ -270,9 +270,9 @@ mod tests {
         // 1 bytes for the start index
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 2 + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![0u8, 1, 2, 3, 4, 5],
+            start: &mut vec![0u8, 1, 2, 3, 4, 5],
             end: &vec![2],
             expected_delta: vec![
                 SequenceModificationDelta::DeleteAllAfterIncluding { start_index: 3 },
@@ -292,9 +292,9 @@ mod tests {
         // 1 for the one variant in the vec, 1 index
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3],
+            start: &mut vec![1u8, 2, 3],
             end: &vec![1u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -316,9 +316,9 @@ mod tests {
         // 1 for item to delete count
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4],
+            start: &mut vec![1u8, 2, 3, 4],
             end: &vec![1u8, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -335,9 +335,9 @@ mod tests {
         // 1 for the one variant in the vec, 1 for the appended u8
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![2u8, 3],
+            start: &mut vec![2u8, 3],
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -356,9 +356,9 @@ mod tests {
         // 2 for the prepended u8's
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![3u8, 4],
+            start: &mut vec![3u8, 4],
             end: &vec![1u8, 2u8, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -380,9 +380,9 @@ mod tests {
 
         // If the start idx has advanced by 1 but the end index has advanced by 2 then
         //  insert one
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 3],
+            start: &mut vec![1u8, 3],
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -405,9 +405,9 @@ mod tests {
         // 2 for the appended u8's
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 4],
+            start: &mut vec![1u8, 4],
             end: &vec![1u8, 2, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -424,9 +424,9 @@ mod tests {
         // 1 for the one variant in the vec, 1 for the appended u8
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2],
+            start: &mut vec![1u8, 2],
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -445,9 +445,9 @@ mod tests {
         // 2 for the appended u8's
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2],
+            start: &mut vec![1u8, 2],
             end: &vec![1u8, 2, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -465,9 +465,9 @@ mod tests {
         // 1 for the item
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 3],
+            start: &mut vec![1u8, 3],
             end: &vec![2u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -490,9 +490,9 @@ mod tests {
         // 2 for the items
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4],
+            start: &mut vec![1u8, 2, 3, 4],
             end: &vec![5u8, 6, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -510,9 +510,9 @@ mod tests {
         // 1 for the item
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2],
+            start: &mut vec![1u8, 2],
             end: &vec![1u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -535,9 +535,9 @@ mod tests {
         // 2 for the items
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4],
+            start: &mut vec![1u8, 2, 3, 4],
             end: &vec![1u8, 2, 5, 6],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -556,9 +556,9 @@ mod tests {
         // 1 for the item
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3],
+            start: &mut vec![1u8, 2, 3],
             end: &vec![1u8, 4, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -583,9 +583,9 @@ mod tests {
         // 2 for the items
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4, 5],
+            start: &mut vec![1u8, 2, 3, 4, 5],
             end: &vec![1u8, 6, 7, 5],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -611,9 +611,9 @@ mod tests {
         // 2 for the items
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1 + 2;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4],
+            start: &mut vec![1u8, 2, 3, 4],
             end: &vec![1u8, 5, 6, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
@@ -630,9 +630,9 @@ mod tests {
         // 1 for the one variant in the modifications
         let expected_serialized_patch_size = BASE_PATCH_BYTES + 1;
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
-            start: vec![1u8, 2, 3, 4],
+            start: &mut vec![1u8, 2, 3, 4],
             end: &vec![],
             expected_delta: expected_patch,
             expected_serialized_patch_size,

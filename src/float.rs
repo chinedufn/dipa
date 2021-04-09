@@ -10,7 +10,7 @@ number_patch_impl_option_wrapped!(f64, Option<f64>);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dipa_impl_tester::DiffPatchTestCase;
+    use crate::dipa_impl_tester::DipaImplTester;
     use crate::test_utils::{
         macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
     };
@@ -23,7 +23,7 @@ mod tests {
     #[derive(Debug, Deserialize, Serialize, Copy, Clone)]
     struct F64TestWrapper(f64);
 
-    impl<'p> Diffable<'p, F32TestWrapper> for F32TestWrapper {
+    impl<'s, 'e> Diffable<'s, 'e, F32TestWrapper> for F32TestWrapper {
         type Delta = Option<f32>;
         type DeltaOwned = Option<f32>;
 
@@ -38,7 +38,7 @@ mod tests {
         }
     }
 
-    impl<'p> Diffable<'p, F64TestWrapper> for F64TestWrapper {
+    impl<'s, 'e> Diffable<'s, 'e, F64TestWrapper> for F64TestWrapper {
         type Delta = Option<f64>;
         type DeltaOwned = Option<f64>;
 
@@ -70,9 +70,9 @@ mod tests {
 
     #[test]
     fn f32_unchanged() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff patch same f32"),
-            start: F32TestWrapper(0.),
+            start: &mut F32TestWrapper(0.),
             end: &F32TestWrapper(0.),
             expected_delta: None,
             expected_serialized_patch_size: 1,
@@ -83,9 +83,9 @@ mod tests {
 
     #[test]
     fn f32_changed() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff patch different f32"),
-            start: F32TestWrapper(0.),
+            start: &mut F32TestWrapper(0.),
             end: &F32TestWrapper(5.),
             expected_delta: Some(5.),
             expected_serialized_patch_size: 5,
@@ -96,9 +96,9 @@ mod tests {
 
     #[test]
     fn f64_unchanged() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff patch different f64"),
-            start: F64TestWrapper(0.),
+            start: &mut F64TestWrapper(0.),
             end: &F64TestWrapper(0.),
             expected_delta: None,
             expected_serialized_patch_size: 1,
@@ -109,9 +109,9 @@ mod tests {
 
     #[test]
     fn f64_changed() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff patch different f64"),
-            start: F64TestWrapper(0.),
+            start: &mut F64TestWrapper(0.),
             end: &F64TestWrapper(5.),
             expected_delta: Some(5.),
             expected_serialized_patch_size: 9,

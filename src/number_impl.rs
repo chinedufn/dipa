@@ -3,7 +3,7 @@
 #[macro_export]
 macro_rules! number_diff_impl_option_wrapped {
     ($num_ty:ty , $other:ty) => {
-        impl<'p> crate::Diffable<'p, $other> for $num_ty {
+        impl<'s, 'e> crate::Diffable<'s, 'e, $other> for $num_ty {
             type Delta = Option<$num_ty>;
 
             type DeltaOwned = Option<$num_ty>;
@@ -46,7 +46,7 @@ macro_rules! number_patch_impl_option_wrapped {
 #[macro_export]
 macro_rules! number_diff_impl_u8_or_i8 {
     ($num_ty:ty, $other:ty) => {
-        impl<'p> crate::Diffable<'p, $other> for $num_ty {
+        impl<'s, 'e> crate::Diffable<'s, 'e, $other> for $num_ty {
             type Delta = $num_ty;
 
             type DeltaOwned = $num_ty;

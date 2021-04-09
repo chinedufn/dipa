@@ -1,11 +1,11 @@
 use crate::sequence::{SequenceModificationDelta, SequenceModificationDeltaOwned};
 use crate::{Diffable, MacroOptimizationHints, Patchable};
 
-impl<'d> Diffable<'d, String> for String {
-    type Delta = Vec<SequenceModificationDelta<'d, u8>>;
+impl<'s, 'e> Diffable<'s, 'e, String> for String {
+    type Delta = Vec<SequenceModificationDelta<'e, u8>>;
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<u8>>;
 
-    fn create_delta_towards(&self, end_state: &'d String) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&self, end_state: &'e String) -> (Self::Delta, MacroOptimizationHints) {
         self.as_bytes().create_delta_towards(&end_state.as_bytes())
     }
 }
@@ -25,14 +25,14 @@ impl Patchable<Vec<SequenceModificationDeltaOwned<u8>>> for String {
 mod tests {
     use super::*;
     use crate::sequence::SequenceModificationDelta;
-    use crate::DiffPatchTestCase;
+    use crate::DipaImplTester;
 
     /// Verify that we can diff and patch strings.
     #[test]
     fn string_dipa() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("String unchanged"),
-            start: "XYZ".to_string(),
+            start: &mut "XYZ".to_string(),
             end: &"XYZ".to_string(),
             expected_delta: vec![],
             // 1 for vec length
@@ -41,9 +41,9 @@ mod tests {
         }
         .test();
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("String changed"),
-            start: "ABCDE".to_string(),
+            start: &mut "ABCDE".to_string(),
             end: &"ABDE".to_string(),
             expected_delta: vec![SequenceModificationDelta::DeleteOne { index: 2 }],
             // 1 for vec length, 1 for variant, 1 for index

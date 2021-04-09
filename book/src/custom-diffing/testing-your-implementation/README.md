@@ -3,7 +3,7 @@
 By enabling the `impl-tester` feature, you gain access to machinery that makes it easy to test
 your custom `Diffable` and `Patchable` implementations.
 
-The `DiffPatchTestCase` will.
+The `DipaImplTester` will.
 
 1. Delta encode your provided start and end values.
 
@@ -52,11 +52,11 @@ impl
 
 #[cfg(test)]
 mod tests {
-    use dipa::DiffPatchTestCase;
+    use dipa::DipaImplTester;
 
     #[test]
     fn diff_my_struct_changed() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff MyStruct changed"),
             start: MyStruct { field: 2 },
             end: &MyStruct { field: 5 },
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn diff_my_struct_no_change() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: Some("Diff MyStruct no change"),
             start: MyStruct { field: 2 },
             end: &MyStruct { field: 2 },

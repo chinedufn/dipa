@@ -1,10 +1,10 @@
 use crate::{Diffable, MacroOptimizationHints, Patchable};
 
-impl<'d> Diffable<'d, ()> for () {
+impl<'s, 'e> Diffable<'s, 'e, ()> for () {
     type Delta = ();
     type DeltaOwned = ();
 
-    fn create_delta_towards(&self, _end_state: &'d ()) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&self, _end_state: &()) -> (Self::Delta, MacroOptimizationHints) {
         ((), MacroOptimizationHints { did_change: false })
     }
 }

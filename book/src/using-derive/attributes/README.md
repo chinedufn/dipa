@@ -29,7 +29,7 @@ enum E {
 Used to add #[derive(SomeDerive, AnotherDerive)]'s for the delta encoded diff type that dipa generates for your struct or enum.
 
 This is mainly useful internally so that we can satisfy the necessary trait bounds for using our automatically generated
-`Diffable::Delta`'s' with the `DiffPatchTestCase`.
+`Diffable::Delta`'s' with the `DipaImplTester`.
 
 ---
 

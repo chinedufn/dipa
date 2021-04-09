@@ -5,7 +5,7 @@
 //! possible change/no-change combination for structs with 4+ fields. Instead, for structs with
 //! 4+ fields we simply verify that they compile when annotated with `#[derive(Dipa)]`.
 
-use dipa::{DiffPatchTestCase, MacroOptimizationHints};
+use dipa::{DipaImplTester, MacroOptimizationHints};
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct OneField {
@@ -76,7 +76,7 @@ struct FiveFieldsTuple(u8, u16, u32, u64, u128);
 /// Verify that we can generate a diff/patch for structs with one field.
 #[test]
 fn structs_with_one_field() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneField { field1: 1 },
         end: &OneField { field1: 30 },
@@ -86,7 +86,7 @@ fn structs_with_one_field() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneField { field1: 1 },
         end: &OneField { field1: 1 },
@@ -96,7 +96,7 @@ fn structs_with_one_field() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneFieldTuple(1),
         end: &OneFieldTuple(30),
@@ -106,7 +106,7 @@ fn structs_with_one_field() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneFieldTuple(1),
         end: &OneFieldTuple(1),
@@ -120,7 +120,7 @@ fn structs_with_one_field() {
 /// Verify that we can generate a diff/patch for structs with two fields.
 #[test]
 fn structs_with_two_fields() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFields {
             field1: 2,
@@ -136,7 +136,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFields {
             field1: 2,
@@ -152,7 +152,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFields {
             field1: 2,
@@ -168,7 +168,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFields {
             field1: 2,
@@ -186,7 +186,7 @@ fn structs_with_two_fields() {
 
     //
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 2),
@@ -196,7 +196,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(50, 2),
@@ -206,7 +206,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 50),
@@ -216,7 +216,7 @@ fn structs_with_two_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(10, 50),
@@ -230,7 +230,7 @@ fn structs_with_two_fields() {
 /// Verify that we can generate a diff/patch for structs with three fields.
 #[test]
 fn structs_with_three_fields() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("No Change"),
         start: ThreeFields {
             field1: 2,
@@ -248,7 +248,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("0"),
         start: ThreeFields {
             field1: 2,
@@ -266,7 +266,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("1"),
         start: ThreeFields {
             field1: 2,
@@ -284,7 +284,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("2"),
         start: ThreeFields {
             field1: 2,
@@ -302,7 +302,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("0 1"),
         start: ThreeFields {
             field1: 2,
@@ -320,7 +320,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("0 2"),
         start: ThreeFields {
             field1: 2,
@@ -337,7 +337,7 @@ fn structs_with_three_fields() {
         expected_macro_hints: MacroOptimizationHints { did_change: true },
     }
     .test();
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("1 2"),
         start: ThreeFields {
             field1: 2,
@@ -355,7 +355,7 @@ fn structs_with_three_fields() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("0 1 2"),
         start: ThreeFields {
             field1: 2,

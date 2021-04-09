@@ -26,7 +26,7 @@ struct NoBatchingManyFields {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dipa::{DiffPatchTestCase, MacroOptimizationHints};
+    use dipa::{DipaImplTester, MacroOptimizationHints};
 
     /// Verify that the delta types for a struct with no field batching are properly created.
     /// The no_batching strategy creates a delta struct with one field per original field, so
@@ -47,7 +47,7 @@ mod tests {
     /// Verify that we can properly diff and patch a type that uses the no batching strategy.
     #[test]
     fn diff_patch_no_batching_strategy() {
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
             start: NoBatching {
                 field_a: 1,
@@ -66,7 +66,7 @@ mod tests {
         }
         .test();
 
-        DiffPatchTestCase {
+        DipaImplTester {
             label: None,
             start: NoBatching {
                 field_a: 1,

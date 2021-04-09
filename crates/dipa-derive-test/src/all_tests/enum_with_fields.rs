@@ -1,4 +1,4 @@
-use dipa::{DiffPatchTestCase, MacroOptimizationHints};
+use dipa::{DipaImplTester, MacroOptimizationHints};
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 enum OneVariantStructOneField {
@@ -59,7 +59,7 @@ enum TwoVariantsStructTwoFields {
 /// Verify that we properly handle an enum with a single variant and one piece of data.
 #[test]
 fn single_variant_enum_single_data() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneVariantStructOneField::One { foo: 2 },
         end: &OneVariantStructOneField::One { foo: 2 },
@@ -69,7 +69,7 @@ fn single_variant_enum_single_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneVariantStructOneField::One { foo: 1 },
         end: &OneVariantStructOneField::One { foo: 5 },
@@ -79,7 +79,7 @@ fn single_variant_enum_single_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneVariantOneTuple::One(2),
         end: &OneVariantOneTuple::One(2),
@@ -89,7 +89,7 @@ fn single_variant_enum_single_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: OneVariantOneTuple::One(1),
         end: &OneVariantOneTuple::One(5),
@@ -103,7 +103,7 @@ fn single_variant_enum_single_data() {
 /// Verify that we properly handle an enum with a single variant and two pieces of data.
 #[test]
 fn single_variant_enum_with_two_data() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Struct no change"),
         start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 0, bar: 0 },
@@ -113,7 +113,7 @@ fn single_variant_enum_with_two_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Struct Change_0"),
         start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 5, bar: 0 },
@@ -123,7 +123,7 @@ fn single_variant_enum_with_two_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Struct Change_1"),
         start: OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(2, 5),
@@ -133,7 +133,7 @@ fn single_variant_enum_with_two_data() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Struct Change_0_1"),
         start: OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(5, 6),
@@ -147,7 +147,7 @@ fn single_variant_enum_with_two_data() {
 /// Verify that enum diffs are one byte if none of the variants of an enum contain any data.
 #[test]
 fn empty_variants_single_byte_diffs() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Enum no data same"),
         start: TwoVariants::One,
         end: &TwoVariants::One,
@@ -157,7 +157,7 @@ fn empty_variants_single_byte_diffs() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: Some("Enum no data different"),
         start: TwoVariants::One,
         end: &TwoVariants::Two,
@@ -171,7 +171,7 @@ fn empty_variants_single_byte_diffs() {
 /// Verify that we can diff an enum with two variants, one of which contains data.
 #[test]
 fn two_variants_one_tuple() {
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(5),
@@ -181,7 +181,7 @@ fn two_variants_one_tuple() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::Two,
@@ -191,7 +191,7 @@ fn two_variants_one_tuple() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::Two,
@@ -201,7 +201,7 @@ fn two_variants_one_tuple() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::One(5),
@@ -211,7 +211,7 @@ fn two_variants_one_tuple() {
     }
     .test();
 
-    DiffPatchTestCase {
+    DipaImplTester {
         label: None,
         start: TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(10),
