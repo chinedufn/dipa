@@ -58,14 +58,14 @@ impl ParsedFields {
         quote! {
             #[derive(serde::Serialize, #(#diff_derives),*)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum #delta_name<'s, 'e> {
+            pub enum #delta_name<'s, 'e> {
                 NoChange,
                 #(#ref_variants),*
             }
 
             #[derive(serde::Deserialize, #(#patch_derives),*)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum #delta_owned_name {
+            pub enum #delta_owned_name {
                 NoChange,
                 #(#owned_variants),*
             }
@@ -109,7 +109,7 @@ mod tests {
         let expected = quote! {
             #[derive(serde::Serialize,)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum MyStructDelta<'s, 'e> {
+            pub enum MyStructDelta<'s, 'e> {
                 NoChange,
                 Change_0(<u16 as dipa::Diffable<'s, 'e, u16>>::Delta),
                 Change_1(<u32 as dipa::Diffable<'s, 'e, u32>>::Delta),
@@ -121,7 +121,7 @@ mod tests {
 
             #[derive(serde::Deserialize,)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum MyStructDeltaOwned {
+            pub enum MyStructDeltaOwned {
                 NoChange,
                 Change_0(<u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned),
                 Change_1(<u32 as dipa::Diffable<'static, 'static, u32>>::DeltaOwned),

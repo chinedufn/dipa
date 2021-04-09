@@ -9,11 +9,15 @@ keywords = ["delta", "encode", "compress", "network", "state", "client", "server
 build = "build.rs"
 
 [features]
+derive = ["dipa-derive"]
 impl-tester = ["bincode"]
 
 [dependencies]
 bincode = {optional = true, version = "1.3"}
 serde = {version = "1", features = ["derive"]}
+
+# Optional Dependencies
+dipa-derive = {optional = true, version = "0.1", path = "./crates/dipa-derive"}
 
 [dev-dependencies]
 bincode = "1.3"

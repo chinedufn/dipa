@@ -46,7 +46,7 @@ impl ParsedEnum {
 
         quote! {
             #[allow(non_camel_case_types)]
-            enum #enum_associated_ty#maybe_lifetime {
+            pub enum #enum_associated_ty#maybe_lifetime {
                 #(#diff_ty_variants),*,
             }
         }
@@ -109,7 +109,7 @@ mod tests {
 
         let expected = quote! {
             #[allow(non_camel_case_types)]
-            enum MyEnumDelta<'s, 'e> {
+            pub enum MyEnumDelta<'s, 'e> {
                 OneNoChange,
                 ChangedToVariantOne(&'e u16),
                 OneChange_0(<u16 as dipa::Diffable<'s, 'e, u16>>::Delta),
@@ -133,7 +133,7 @@ mod tests {
 
         let expected = quote! {
             #[allow(non_camel_case_types)]
-            enum MyEnumDeltaOwned {
+            pub enum MyEnumDeltaOwned {
                 OneNoChange,
                 ChangedToVariantOne(u16),
                 OneChange_0(<u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned),

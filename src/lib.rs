@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate serde;
 
+#[cfg(feature = "derive")]
+pub use dipa_derive::DiffPatch;
+
 mod sequence;
 
 mod bool;

@@ -31,13 +31,13 @@ impl ParsedFields {
         quote! {
             #[derive(serde::Serialize, #(#diff_derives),*)]
             #[allow(non_camel_case_types)]
-            struct #delta_name<'s, 'e> {
+            pub struct #delta_name<'s, 'e> {
                 #(#delta_fields),*
             }
 
             #[derive(serde::Deserialize, #(#patch_derives),*)]
             #[allow(non_camel_case_types)]
-            struct #delta_owned_name {
+            pub struct #delta_owned_name {
                 #(#delta_owned_fields),*
             }
         }
@@ -80,14 +80,14 @@ mod tests {
         let expected = quote! {
             #[derive(serde::Serialize,)]
             #[allow(non_camel_case_types)]
-            struct MyStructDelta<'s, 'e> {
+            pub struct MyStructDelta<'s, 'e> {
                 field_a: <u16 as dipa::Diffable<'s, 'e, u16>>::Delta,
                 field_b: <u32 as dipa::Diffable<'s, 'e, u32>>::Delta
             }
 
             #[derive(serde::Deserialize,)]
             #[allow(non_camel_case_types)]
-            struct MyStructDeltaOwned {
+            pub struct MyStructDeltaOwned {
                 field_a: <u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned,
                 field_b: <u32 as dipa::Diffable<'static, 'static, u32>>::DeltaOwned
             }
