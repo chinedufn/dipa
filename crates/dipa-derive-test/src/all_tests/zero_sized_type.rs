@@ -27,7 +27,7 @@ fn zst() {
 
     DipaImplTester {
         label: None,
-        start: UnitStruct,
+        start: &mut UnitStruct,
         end: &UnitStruct,
         expected_delta: expected_diff,
         expected_serialized_patch_size,
@@ -37,7 +37,7 @@ fn zst() {
 
     DipaImplTester {
         label: None,
-        start: EmptyStruct {},
+        start: &mut EmptyStruct {},
         end: &EmptyStruct {},
         expected_delta: expected_diff,
         expected_serialized_patch_size,
@@ -47,7 +47,7 @@ fn zst() {
 
     DipaImplTester {
         label: None,
-        start: EmptyTupleStruct {},
+        start: &mut EmptyTupleStruct {},
         end: &EmptyTupleStruct {},
         expected_delta: expected_diff,
         expected_serialized_patch_size,
@@ -57,7 +57,7 @@ fn zst() {
 
     DipaImplTester {
         label: None,
-        start: SingleFieldEnum::Foo,
+        start: &mut SingleFieldEnum::Foo,
         end: &SingleFieldEnum::Foo,
         expected_delta: expected_diff,
         expected_serialized_patch_size,

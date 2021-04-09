@@ -61,7 +61,7 @@ enum TwoVariantsStructTwoFields {
 fn single_variant_enum_single_data() {
     DipaImplTester {
         label: None,
-        start: OneVariantStructOneField::One { foo: 2 },
+        start: &mut OneVariantStructOneField::One { foo: 2 },
         end: &OneVariantStructOneField::One { foo: 2 },
         expected_delta: 2,
         expected_serialized_patch_size: 1,
@@ -71,7 +71,7 @@ fn single_variant_enum_single_data() {
 
     DipaImplTester {
         label: None,
-        start: OneVariantStructOneField::One { foo: 1 },
+        start: &mut OneVariantStructOneField::One { foo: 1 },
         end: &OneVariantStructOneField::One { foo: 5 },
         expected_delta: 5,
         expected_serialized_patch_size: 1,
@@ -81,7 +81,7 @@ fn single_variant_enum_single_data() {
 
     DipaImplTester {
         label: None,
-        start: OneVariantOneTuple::One(2),
+        start: &mut OneVariantOneTuple::One(2),
         end: &OneVariantOneTuple::One(2),
         expected_delta: 2,
         expected_serialized_patch_size: 1,
@@ -91,7 +91,7 @@ fn single_variant_enum_single_data() {
 
     DipaImplTester {
         label: None,
-        start: OneVariantOneTuple::One(1),
+        start: &mut OneVariantOneTuple::One(1),
         end: &OneVariantOneTuple::One(5),
         expected_delta: 5,
         expected_serialized_patch_size: 1,
@@ -105,7 +105,7 @@ fn single_variant_enum_single_data() {
 fn single_variant_enum_with_two_data() {
     DipaImplTester {
         label: Some("Struct no change"),
-        start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
+        start: &mut OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         expected_delta: OneVariantStructTwoFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
@@ -115,7 +115,7 @@ fn single_variant_enum_with_two_data() {
 
     DipaImplTester {
         label: Some("Struct Change_0"),
-        start: OneVariantStructTwoFields::One { foo: 0, bar: 0 },
+        start: &mut OneVariantStructTwoFields::One { foo: 0, bar: 0 },
         end: &OneVariantStructTwoFields::One { foo: 5, bar: 0 },
         expected_delta: OneVariantStructTwoFieldsDelta::Change_0(5),
         expected_serialized_patch_size: 2,
@@ -125,7 +125,7 @@ fn single_variant_enum_with_two_data() {
 
     DipaImplTester {
         label: Some("Struct Change_1"),
-        start: OneVariantTwoTuple::One(2, 2),
+        start: &mut OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(2, 5),
         expected_delta: OneVariantTwoTupleDelta::Change_1(Some(5)),
         expected_serialized_patch_size: 3,
@@ -135,7 +135,7 @@ fn single_variant_enum_with_two_data() {
 
     DipaImplTester {
         label: Some("Struct Change_0_1"),
-        start: OneVariantTwoTuple::One(2, 2),
+        start: &mut OneVariantTwoTuple::One(2, 2),
         end: &OneVariantTwoTuple::One(5, 6),
         expected_delta: OneVariantTwoTupleDelta::Change_0_1(5, Some(6)),
         expected_serialized_patch_size: 4,
@@ -149,7 +149,7 @@ fn single_variant_enum_with_two_data() {
 fn empty_variants_single_byte_diffs() {
     DipaImplTester {
         label: Some("Enum no data same"),
-        start: TwoVariants::One,
+        start: &mut TwoVariants::One,
         end: &TwoVariants::One,
         expected_delta: TwoVariants::One,
         expected_serialized_patch_size: 1,
@@ -159,7 +159,7 @@ fn empty_variants_single_byte_diffs() {
 
     DipaImplTester {
         label: Some("Enum no data different"),
-        start: TwoVariants::One,
+        start: &mut TwoVariants::One,
         end: &TwoVariants::Two,
         expected_delta: TwoVariants::Two,
         expected_serialized_patch_size: 1,
@@ -173,7 +173,7 @@ fn empty_variants_single_byte_diffs() {
 fn two_variants_one_tuple() {
     DipaImplTester {
         label: None,
-        start: TwoVariantsOneTuple::One(5),
+        start: &mut TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(5),
         expected_delta: TwoVariantsOneTupleDelta::OneNoChange,
         expected_serialized_patch_size: 1,
@@ -183,7 +183,7 @@ fn two_variants_one_tuple() {
 
     DipaImplTester {
         label: None,
-        start: TwoVariantsOneTuple::Two,
+        start: &mut TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::Two,
         expected_delta: TwoVariantsOneTupleDelta::TwoNoChange,
         expected_serialized_patch_size: 1,
@@ -193,7 +193,7 @@ fn two_variants_one_tuple() {
 
     DipaImplTester {
         label: None,
-        start: TwoVariantsOneTuple::One(5),
+        start: &mut TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::Two,
         expected_delta: TwoVariantsOneTupleDelta::ChangedToVariantTwo,
         expected_serialized_patch_size: 1,
@@ -203,7 +203,7 @@ fn two_variants_one_tuple() {
 
     DipaImplTester {
         label: None,
-        start: TwoVariantsOneTuple::Two,
+        start: &mut TwoVariantsOneTuple::Two,
         end: &TwoVariantsOneTuple::One(5),
         expected_delta: TwoVariantsOneTupleDelta::ChangedToVariantOne(&5),
         expected_serialized_patch_size: 2,
@@ -213,7 +213,7 @@ fn two_variants_one_tuple() {
 
     DipaImplTester {
         label: None,
-        start: TwoVariantsOneTuple::One(5),
+        start: &mut TwoVariantsOneTuple::One(5),
         end: &TwoVariantsOneTuple::One(10),
         expected_delta: TwoVariantsOneTupleDelta::OneChange_0(10),
         expected_serialized_patch_size: 2,

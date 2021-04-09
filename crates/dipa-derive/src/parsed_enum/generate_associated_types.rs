@@ -10,20 +10,23 @@ impl ParsedEnum {
     /// that has one or more named or unnamed fields.
     ///
     /// ```
+    /// # use quote::quote;
+    ///
     /// # #[allow(unused)]
     /// enum MyEnum {
     ///     One(u8),
     ///     Two
     /// }
     ///
-    /// # #[allow(unused)]
-    /// enum MyEnumDiff<'p> {
-    ///     OneNoChange,
-    ///     ChangedToVariantOne(&'p u8),
-    ///     OneChange_0(<u8 as Diffable<'p, u8>>::Delta),
-    ///     TwoNoChange,
-    ///     ChangedToVariantTwo,
-    /// }
+    /// quote! {
+    ///     enum MyEnumDiff<'s, 'e> {
+    ///         OneNoChange,
+    ///         ChangedToVariantOne(&'e u8),
+    ///         OneChange_0(<u8 as Diffable<'s, 'e, u8>>::Delta),
+    ///         TwoNoChange,
+    ///         ChangedToVariantTwo,
+    ///     }
+    /// };
     /// ```
     pub fn create_associated_type_for_enum_with_fields(
         &self,
@@ -75,7 +78,7 @@ impl ToTokens for DipaAssociatedType {
 impl DipaAssociatedType {
     fn maybe_lifetime(&self) -> TokenStream2 {
         if self.has_lifetime() {
-            quote! { <'p> }
+            quote! { <'s, 'e> }
         } else {
             quote! {}
         }
@@ -106,10 +109,10 @@ mod tests {
 
         let expected = quote! {
             #[allow(non_camel_case_types)]
-            enum MyEnumDiff<'p> {
+            enum MyEnumDelta<'s, 'e> {
                 OneNoChange,
-                ChangedToVariantOne(&'p u16),
-                OneChange_0(<u16 as dipa::Diffable<'p, u16>>::Delta),
+                ChangedToVariantOne(&'e u16),
+                OneChange_0(<u16 as dipa::Diffable<'s, 'e, u16>>::Delta),
                 TwoNoChange,
                 ChangedToVariantTwo,
             }
@@ -130,10 +133,10 @@ mod tests {
 
         let expected = quote! {
             #[allow(non_camel_case_types)]
-            enum MyEnumPatch {
+            enum MyEnumDeltaOwned {
                 OneNoChange,
                 ChangedToVariantOne(u16),
-                OneChange_0(<u16 as dipa::Diffable<'_, u16>>::DeltaOwned),
+                OneChange_0(<u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned),
                 TwoNoChange,
                 ChangedToVariantTwo,
             }

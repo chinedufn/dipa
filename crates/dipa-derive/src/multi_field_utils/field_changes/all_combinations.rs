@@ -112,7 +112,6 @@ mod tests {
         assert_eq!(
             ChangedFieldIndices::all_changed_index_combinations(2, &DipaAttrs::default()),
             vec![
-                ChangedFieldIndices::new(vec![]),
                 ChangedFieldIndices::new(vec![0]),
                 ChangedFieldIndices::new(vec![1]),
                 ChangedFieldIndices::new(vec![0, 1]),

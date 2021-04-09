@@ -55,27 +55,31 @@ pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTuple
         .collect()
 }
 
-/// Generate the tokens to match on the different fields within the struct to see which changed,
-/// then combine the changes into one final Diff for the entire struct.
-///
-///
-/// ```no_run
-/// // Not included. Just here to illustrate.
-/// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
-/// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
-/// // End not included.
-///
-/// let diff = match (diff0.1.did_change, diff1.1.did_change) {
-///     (false, false) => Diff2::NoChange,
-///     (true, false) => Diff2::Change_0(diff0.0),
-///     (false, true) => Diff2::Change_1(diff1.0),
-///     (true, true) => Diff2::Change_0_1(diff0.0, diff1.0)
-/// };
-/// let did_change = match (diff0.1.did_change, diff1.1.did_change) {
-///     (false, false) => false,
-///     _ => true
-/// };
-/// ```
+// Generate the tokens to match on the different fields within the struct to see which changed,
+// then combine the changes into one final Diff for the entire struct.
+//
+//
+// ```no_run
+// # use quote::quote;
+//
+// // Not included. Just here to illustrate.
+// // let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
+// // let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
+// // End not included.
+//
+// quote! {
+//     let diff = match (diff0.1.did_change, diff1.1.did_change) {
+//         (false, false) => MyTypeDelta::NoChange,
+//         (true, false) => MyTypeDelta::Change_0(diff0.0),
+//         (false, true) => MyTypeDelta::Change_1(diff1.0),
+//         (true, true) => MyTypeDelta::Change_0_1(diff0.0, diff1.0)
+//     };
+//     let did_change = match (diff0.1.did_change, diff1.1.did_change) {
+//         (false, false) => false,
+//         _ => true
+//     };
+// };
+// ```
 pub fn make_match_diff_tokens(
     diff_ty: Type,
     change_prefix: &str,
@@ -105,25 +109,27 @@ pub fn make_match_diff_tokens(
     tokens
 }
 
-/// Generate the tokens to match on the different possible Diff's and apply the appropriate patches
-/// to the struct's sub fields.
-///
-/// let field0_mut_ref = &mut self.some_field_name;
-/// let field1_mut_ref = &mut self.another_field_name;
-///
-/// match patch {
-///     #diff_n::NoChange => {}
-///     #diff_n::Change_0(field0_patch) => {
-///         field0_mut_ref.apply_patch(field0_patch);
-///     }
-///     #diff_n::Change_1(field1_patch) => {
-///         field1_mut_ref.apply_patch(field1_patch);
-///     }
-///     #diff_n::Change_0_1(field0_patch, field1_patch) => {
-///         field0_mut_ref.apply_patch(field0_patch);
-///         field1_mut_ref.apply_patch(field1_patch);
-///     }
-/// };
+// Generate the tokens to match on the different possible Diff's and apply the appropriate patches
+// to the struct's sub fields.
+//
+// ```
+// let field0_mut_ref = &mut self.some_field_name;
+// let field1_mut_ref = &mut self.another_field_name;
+//
+// match patch {
+//     #diff_n::NoChange => {}
+//     #diff_n::Change_0(field0_patch) => {
+//         field0_mut_ref.apply_patch(field0_patch);
+//     }
+//     #diff_n::Change_1(field1_patch) => {
+//         field1_mut_ref.apply_patch(field1_patch);
+//     }
+//     #diff_n::Change_0_1(field0_patch, field1_patch) => {
+//         field0_mut_ref.apply_patch(field0_patch);
+//         field1_mut_ref.apply_patch(field1_patch);
+//     }
+// };
+// ```
 pub fn make_match_patch_tokens(
     span: Span,
     diff_ty: &Type,

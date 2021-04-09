@@ -87,16 +87,16 @@ fn main() {
         emotional_state: EmotionalState::Peace { score: 10_000 },
     };
 
-    let patch = old_client_state.create_delta_towards(&new_client_state);
+    let delta = old_client_state.create_delta_towards(&new_client_state);
 
-	let bin = bincode::options().with_varint_encoding();
+    let bin = bincode::options().with_varint_encoding();
 
     // Consider using bincode to serialize your diffs on the server side.
     // You can then send them over the wire and deserialize them on the client side.
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
-    let serialized = bin.serialize(&patch).unwrap();
-    let deserialized: <MyClientState as dipa::Diffable<'_, MyClientState>::DeltaOwned = 
+    let serialized = bin.serialize(&delta).unwrap();
+    let deserialized: <MyClientState as dipa::Diffable<'_, '_, MyClientState>::DeltaOwned = 
         bin.deserialize(&serialized).unwrap();
 
     old_client_state.apply_patch(deserialized);
@@ -149,7 +149,7 @@ struct ClientState {
 
 struct OnlySmallChanges(u128);
 
-impl<'p> Diffable<'p, u128> for OnlySmallChanges {
+impl<'s, 'e> Diffable<'s, 'e, u128> for OnlySmallChanges {
     type Delta = i8;
     type DeltaOwned = Self::Delta;
 

@@ -78,7 +78,7 @@ struct FiveFieldsTuple(u8, u16, u32, u64, u128);
 fn structs_with_one_field() {
     DipaImplTester {
         label: None,
-        start: OneField { field1: 1 },
+        start: &mut OneField { field1: 1 },
         end: &OneField { field1: 30 },
         expected_delta: 30,
         expected_serialized_patch_size: 1,
@@ -88,7 +88,7 @@ fn structs_with_one_field() {
 
     DipaImplTester {
         label: None,
-        start: OneField { field1: 1 },
+        start: &mut OneField { field1: 1 },
         end: &OneField { field1: 1 },
         expected_delta: 1,
         expected_serialized_patch_size: 1,
@@ -98,7 +98,7 @@ fn structs_with_one_field() {
 
     DipaImplTester {
         label: None,
-        start: OneFieldTuple(1),
+        start: &mut OneFieldTuple(1),
         end: &OneFieldTuple(30),
         expected_delta: 30,
         expected_serialized_patch_size: 1,
@@ -108,7 +108,7 @@ fn structs_with_one_field() {
 
     DipaImplTester {
         label: None,
-        start: OneFieldTuple(1),
+        start: &mut OneFieldTuple(1),
         end: &OneFieldTuple(1),
         expected_delta: 1,
         expected_serialized_patch_size: 1,
@@ -122,7 +122,7 @@ fn structs_with_one_field() {
 fn structs_with_two_fields() {
     DipaImplTester {
         label: None,
-        start: TwoFields {
+        start: &mut TwoFields {
             field1: 2,
             field2: 2,
         },
@@ -138,7 +138,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFields {
+        start: &mut TwoFields {
             field1: 2,
             field2: 2,
         },
@@ -154,7 +154,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFields {
+        start: &mut TwoFields {
             field1: 2,
             field2: 2,
         },
@@ -170,7 +170,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFields {
+        start: &mut TwoFields {
             field1: 2,
             field2: 2,
         },
@@ -188,7 +188,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFieldsTuple(2, 2),
+        start: &mut TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 2),
         expected_delta: TwoFieldsTupleDelta::NoChange,
         expected_serialized_patch_size: 1,
@@ -198,7 +198,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFieldsTuple(2, 2),
+        start: &mut TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(50, 2),
         expected_delta: TwoFieldsTupleDelta::Change_0(50),
         expected_serialized_patch_size: 2,
@@ -208,7 +208,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFieldsTuple(2, 2),
+        start: &mut TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(2, 50),
         expected_delta: TwoFieldsTupleDelta::Change_1(Some(50)),
         expected_serialized_patch_size: 3,
@@ -218,7 +218,7 @@ fn structs_with_two_fields() {
 
     DipaImplTester {
         label: None,
-        start: TwoFieldsTuple(2, 2),
+        start: &mut TwoFieldsTuple(2, 2),
         end: &TwoFieldsTuple(10, 50),
         expected_delta: TwoFieldsTupleDelta::Change_0_1(10, Some(50)),
         expected_serialized_patch_size: 4,
@@ -232,7 +232,7 @@ fn structs_with_two_fields() {
 fn structs_with_three_fields() {
     DipaImplTester {
         label: Some("No Change"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -250,7 +250,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("0"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -268,7 +268,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("1"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -286,7 +286,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("2"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -304,7 +304,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("0 1"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -322,7 +322,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("0 2"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -339,7 +339,7 @@ fn structs_with_three_fields() {
     .test();
     DipaImplTester {
         label: Some("1 2"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,
@@ -357,7 +357,7 @@ fn structs_with_three_fields() {
 
     DipaImplTester {
         label: Some("0 1 2"),
-        start: ThreeFields {
+        start: &mut ThreeFields {
             field1: 2,
             field2: 2,
             field3: 2,

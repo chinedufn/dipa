@@ -63,7 +63,7 @@ impl ParsedStruct {
 
         let dipa_impl = impl_dipa(
             struct_name,
-            quote! {#delta_name<'p>},
+            quote! {#delta_name<'s, 'e>},
             quote! {#delta_owned_name},
             quote! {
                #field_diffs_statements
@@ -80,11 +80,15 @@ impl ParsedStruct {
             },
         );
 
-        quote! {
+        let tokens = quote! {
             #delta_tys
 
             #dipa_impl
-        }
+        };
+
+        // panic!("{}", tokens.to_string());
+
+        tokens
     }
 }
 

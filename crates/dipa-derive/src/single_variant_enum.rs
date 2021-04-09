@@ -20,10 +20,10 @@ pub(super) fn generate_single_variant_enum_single_struct_field_impl(
     impl_dipa(
         &enum_name,
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::Delta
+        <#field_type as dipa::Diffable<'s, 'e, #field_type>>::Delta
         },
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::DeltaOwned
+        <#field_type as dipa::Diffable<'s, 'e, #field_type>>::DeltaOwned
         },
         // match (self, end_state) {
         //     (Self::OnlyVariant { only_field: start }, Self::OnlyVariant { only_field: end }) => {
@@ -68,10 +68,10 @@ pub(super) fn generate_single_variant_enum_single_tuple_field_impl(
     impl_dipa(
         &enum_name,
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::Delta
+        <#field_type as dipa::Diffable<'s, 'e, #field_type>>::Delta
         },
         quote! {
-        <#field_type as dipa::Diffable<'p, #field_type>>::DeltaOwned
+        <#field_type as dipa::Diffable<'s, 'e, #field_type>>::DeltaOwned
         },
         // match (self, end_state) {
         //     (Self::OnlyVariant(only_field), Self::OnlyVariant(only_field)) => {

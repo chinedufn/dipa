@@ -39,7 +39,7 @@ enum MyDeltaOwned {
    New(u8)
 }
 
-impl Diffable<'p, MyStruct> for MyStruct {
+impl Diffable<'s, 'e, MyStruct> for MyStruct {
     type Delta = MyDelta;
     type DeltaOwned = MyDeltaOwned;
 

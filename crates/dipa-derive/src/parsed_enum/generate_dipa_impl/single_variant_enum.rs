@@ -23,7 +23,7 @@ impl ParsedEnum {
 
         let dipa_impl = impl_dipa(
             &self.name,
-            quote! {#delta_ty<'p>},
+            quote! {#delta_ty<'s, 'e>},
             quote! {#delta_owned_ty},
             self.generate_single_variant_multi_field_one_batch_create_delta_tokens(dipa_attrs),
             self.generate_single_variant_multi_field_one_batch_apply_patch_tokens(dipa_attrs),

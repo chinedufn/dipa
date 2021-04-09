@@ -131,7 +131,7 @@ fn generate_multi_variant_enum_with_data_impl(
 
                     let ref_ty = Type::Reference(TypeReference {
                         and_token: syn::token::And::default(),
-                        lifetime: Some(syn::Lifetime::new("'p", f.span)),
+                        lifetime: Some(syn::Lifetime::new("'e", f.span)),
                         mutability: None,
                         elem: Box::new(f.ty.clone()),
                     });
@@ -150,7 +150,7 @@ fn generate_multi_variant_enum_with_data_impl(
                 .map(|f| {
                     let ty = &f.ty;
 
-                    Type::Verbatim(quote! { <#ty as dipa::Diffable<'p, #ty>>::Delta })
+                    Type::Verbatim(quote! { <#ty as dipa::Diffable<'s, 'e, #ty>>::Delta })
                 })
                 .collect();
 
@@ -172,8 +172,9 @@ fn generate_multi_variant_enum_with_data_impl(
     let (diff_derives, patch_derives) = (&dipa_attrs.diff_derives, &dipa_attrs.patch_derives);
 
     let maybe_lifetime = if needs_lifetime {
-        let lifetime = syn::Lifetime::new("'p", enum_name.span());
-        quote! {<#lifetime>}
+        let start_state_lifetime = syn::Lifetime::new("'s", enum_name.span());
+        let end_state_lifetime = syn::Lifetime::new("'e", enum_name.span());
+        quote! {<#start_state_lifetime, #end_state_lifetime>}
     } else {
         quote! {}
     };
@@ -262,7 +263,7 @@ fn no_data_diff_match(enum_name: &syn::Ident, variants: &[EnumVariant]) -> Token
 /// # #[allow(unused)]
 /// enum MyEnum {
 ///     VariantOne,
-///     VariantTwo(SomeData),
+///     VariantTwo(u32),
 /// }
 /// ```
 fn diff_match_with_data(

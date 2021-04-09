@@ -60,7 +60,7 @@ pub fn derive_diff_patch(input: TokenStream) -> TokenStream {
     let zero_sized_diff = create_zst_impl(&enum_or_struct_name);
 
     // Generate:
-    // impl<'p, Other> Diffable<'p, Other> for MyType { ... }
+    // impl<'p, Other> Diffable<'s, 'e, Other> for MyType { ... }
     // impl Patchable<Patch> for MyType { ... }
     let dipa_impl = match input.data {
         Data::Struct(struct_data) => {
@@ -226,22 +226,24 @@ fn impl_dipa(
     create_delta_inner: TokenStream2,
     apply_patch_inner: TokenStream2,
 ) -> TokenStream2 {
-    quote! {
-     impl<'p> dipa::Diffable<'p, #enum_or_struct_name> for #enum_or_struct_name {
+    let tokens = quote! {
+     impl<'s, 'e> dipa::Diffable<'s, 'e, #enum_or_struct_name> for #enum_or_struct_name {
         type Delta = #delta_type;
 
         type DeltaOwned = #delta_owned_type;
 
-        fn create_delta_towards (&self, end_state: &'p #enum_or_struct_name)
+        fn create_delta_towards (&'s self, end_state: &'e #enum_or_struct_name)
           -> dipa::CreatePatchTowardsReturn<Self::Delta> {
             #create_delta_inner
         }
      }
 
-     impl<'p> dipa::Patchable<#delta_owned_type> for #enum_or_struct_name {
+     impl<'s, 'e> dipa::Patchable<#delta_owned_type> for #enum_or_struct_name {
         fn apply_patch (&mut self, patch: #delta_owned_type) {
             #apply_patch_inner
         }
      }
-    }
+    };
+
+    tokens
 }

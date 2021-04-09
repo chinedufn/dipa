@@ -20,21 +20,21 @@ impl ParsedEnum {
     /// # use quote::quote;
     /// quote! {
     ///     match patch {
-    ///         MyEnumPatch::VariantANoChange => { }
-    ///         MyEnumPatch::ChangedToVariantA => {
-    ///             *self = MyEnumPatch::VariantA;
+    ///         MyEnumDeltaOwned::VariantANoChange => { }
+    ///         MyEnumDeltaOwned::ChangedToVariantA => {
+    ///             *self = MyEnumDeltaOwned::VariantA;
     ///         }
     ///
-    ///         MyEnumPatch::VariantBNoChange => { }
-    ///         MyEnumPatch::ChangedToVariantB {
+    ///         MyEnumDeltaOwned::VariantBNoChange => { }
+    ///         MyEnumDeltaOwned::ChangedToVariantB {
     ///             some_field: patch_some_field, patch_another_field
     ///         } => {
-    ///             *self = MyEnumPatch::VariantB {
+    ///             *self = MyEnumDeltaOwned::VariantB {
     ///                 some_field: patch_some_field,
     ///                 another_field: patch_another_field,
     ///             };
     ///         }
-    ///         MyEnumPatch::VariantBChange_0(patch0) => {
+    ///         MyEnumDeltaOwned::VariantBChange_0(patch0) => {
     ///             match self {
     ///                 MyEnum::VariantB {
     ///                     some_field: patch_some_field, another_field: patch_another_field
@@ -44,7 +44,7 @@ impl ParsedEnum {
     ///                 _ => { panic!("TODO: Return Result::Err") }
     ///             }
     ///         }
-    ///         MyEnumPatch::VariantBChange_1(patch1) => {
+    ///         MyEnumDeltaOwned::VariantBChange_1(patch1) => {
     ///             match self {
     ///                 MyEnum::VariantB {
     ///                     some_field: patch_some_field, another_field: patch_another_field
@@ -54,7 +54,7 @@ impl ParsedEnum {
     ///                 _ => { panic!("TODO: Return Result::Err") }
     ///             }
     ///         }
-    ///         MyEnumPatch::VariantBChange_0_1(patch0, patch1) => {
+    ///         MyEnumDeltaOwned::VariantBChange_0_1(patch0, patch1) => {
     ///             match self {
     ///                 MyEnum::VariantB {
     ///                     some_field: patch_some_field, another_field: patch_another_field
@@ -66,11 +66,11 @@ impl ParsedEnum {
     ///             }
     ///         }      
     ///
-    ///         MyEnumPatch::VariantCNoChange => { }
-    ///         MyEnumPatch::ChangedToVariantC(patch0)  => {
-    ///             *self = MyEnumPatch::VariantC(patch0);
+    ///         MyEnumDeltaOwned::VariantCNoChange => { }
+    ///         MyEnumDeltaOwned::ChangedToVariantC(patch0)  => {
+    ///             *self = MyEnumDeltaOwned::VariantC(patch0);
     ///         }
-    ///         MyEnumPatch::VariantCChange_0(patch0) => {
+    ///         MyEnumDeltaOwned::VariantCChange_0(patch0) => {
     ///             match self {
     ///                 MyEnum::VariantC(field_0) => {
     ///                     field_0.apply_patch(patch0);

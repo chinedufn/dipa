@@ -51,6 +51,7 @@ impl EnumVariant {
     }
 
     /// ```
+    /// # use quote::quote;
     /// quote! {
     ///   (
     ///       MyEnum::MyVariant,
@@ -60,7 +61,7 @@ impl EnumVariant {
     ///           did_change: false
     ///       };
     ///
-    ///       let diff = MyEnumDiff::MyVariantNoChange;
+    ///       let diff = MyEnumDelta::MyVariantNoChange;
     ///
     ///       (diff, macro_hints)
     ///   }
@@ -89,6 +90,7 @@ impl EnumVariant {
     }
 
     /// ```
+    /// # use quote::quote;
     /// quote! {
     ///   (
     ///       MyEnum::AnotherVariant { some_field: start_some_field, another: start_another },
@@ -98,10 +100,10 @@ impl EnumVariant {
     ///       let diff1 = start_another.create_delta_towards(&end_another);
     ///
     ///       let diff = match (diff0.1.did_change, diff1.1.did_change) => {
-    ///           (false, false) => MyEnumDiff::AnotherVariantNoChange,
-    ///           (true, false) => MyEnumDiff::AnotherVariantChange_0(diff_0.0),
-    ///           (false, true) => MyEnumDiff::AnotherVariantChange_1(diff_1.0),
-    ///           (true, true) => MyEnumDiff::AnotherVariantChange_0_1(diff_0.0, diff_1.0)
+    ///           (false, false) => MyEnumDelta::AnotherVariantNoChange,
+    ///           (true, false) => MyEnumDelta::AnotherVariantChange_0(diff_0.0),
+    ///           (false, true) => MyEnumDelta::AnotherVariantChange_1(diff_1.0),
+    ///           (true, true) => MyEnumDelta::AnotherVariantChange_0_1(diff_0.0, diff_1.0)
     ///       };
     ///
     ///       let did_change = diff_0.1.did_change || diff_1.1.did_change;
@@ -156,6 +158,7 @@ impl EnumVariant {
     }
 
     /// ```
+    /// # use quote::quote;
     /// quote! {
     ///   (
     ///       MyEnum::MyVariant,
@@ -165,7 +168,7 @@ impl EnumVariant {
     ///           did_change: false
     ///       };
     ///
-    ///       let diff = MyEnumDiff::ChangedToAnotherVariant;
+    ///       let diff = MyEnumDelta::ChangedToAnotherVariant;
     ///
     ///       (diff, macro_hints)
     ///   }
@@ -202,6 +205,7 @@ impl EnumVariant {
     }
 
     /// ```
+    /// # use quote::quote;
     /// quote! {
     ///   (
     ///       MyEnum::MyVariant,
@@ -211,7 +215,7 @@ impl EnumVariant {
     ///           did_change: true
     ///       };
     ///
-    ///       let diff = MyEnumDiff::ChangedToAnotherVariant(some_field, another_field);
+    ///       let diff = MyEnumDelta::ChangedToAnotherVariant(some_field, another_field);
     ///
     ///       (diff, macro_hints)
     ///   }
@@ -330,7 +334,7 @@ mod tests {
                   did_change: false
               };
 
-              let diff = MyEnumDiff::FirstVariantNoChange;
+              let diff = MyEnumDelta::FirstVariantNoChange;
 
               (diff, macro_hints)
           }
@@ -367,7 +371,7 @@ mod tests {
                     did_change: true
                 };
 
-                let diff = MyEnumDiff::ChangedToVariantVariant2;
+                let diff = MyEnumDelta::ChangedToVariantVariant2;
 
                 (diff, macro_hints)
             }
@@ -414,7 +418,7 @@ mod tests {
                     did_change: true
                 };
 
-                let diff = MyEnumDiff::ChangedToVariantVariant2(end_field);
+                let diff = MyEnumDelta::ChangedToVariantVariant2(end_field);
 
                 (diff, macro_hints)
             }
@@ -461,7 +465,7 @@ mod tests {
                     did_change: true
                 };
 
-                let diff = MyEnumDiff::ChangedToVariantVariant2(end_field);
+                let diff = MyEnumDelta::ChangedToVariantVariant2(end_field);
 
                 (diff, macro_hints)
             }
@@ -531,10 +535,10 @@ mod tests {
                 let diff1 = start_1.create_delta_towards(&end_1);
 
                 let diff = match (diff0.1.did_change, diff1.1.did_change) {
-                    (false, false) => MyEnumDiff::Variant2NoChange,
-                    (false, true) => MyEnumDiff::Variant2Change_1(diff1.0),
-                    (true, false) => MyEnumDiff::Variant2Change_0(diff0.0),
-                    (true, true) => MyEnumDiff::Variant2Change_0_1(diff0.0, diff1.0),
+                    (false, false) => MyEnumDelta::Variant2NoChange,
+                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.0),
+                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.0, diff1.0),
+                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.0),
                 };
 
                 let did_change = diff0.1.did_change || diff1.1.did_change;
@@ -611,10 +615,10 @@ mod tests {
                 let diff1 = start_field_b.create_delta_towards(&end_field_b);
 
                 let diff = match (diff0.1.did_change, diff1.1.did_change) {
-                    (false, false) => MyEnumDiff::Variant2NoChange,
-                    (false, true) => MyEnumDiff::Variant2Change_1(diff1.0),
-                    (true, false) => MyEnumDiff::Variant2Change_0(diff0.0),
-                    (true, true) => MyEnumDiff::Variant2Change_0_1(diff0.0, diff1.0),
+                    (false, false) => MyEnumDelta::Variant2NoChange,
+                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.0),
+                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.0, diff1.0),
+                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.0),
                 };
 
                 let did_change = diff0.1.did_change || diff1.1.did_change;

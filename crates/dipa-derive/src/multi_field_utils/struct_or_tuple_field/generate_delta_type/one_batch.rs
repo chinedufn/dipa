@@ -26,10 +26,10 @@ impl ParsedFields {
             for idx in change_combinations.iter() {
                 let ty = &self.fields[*idx as usize].ty;
                 changed_delta_tys.push(quote! {
-                    <#ty as dipa::Diffable<'p, #ty>>::Delta
+                    <#ty as dipa::Diffable<'s, 'e, #ty>>::Delta
                 });
                 changed_owned_tys.push(quote! {
-                    <#ty as dipa::Diffable<'static, #ty>>::DeltaOwned
+                    <#ty as dipa::Diffable<'static, 'static, #ty>>::DeltaOwned
                 });
             }
 
@@ -58,7 +58,7 @@ impl ParsedFields {
         quote! {
             #[derive(serde::Serialize, #(#diff_derives),*)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum #delta_name<'p> {
+            enum #delta_name<'s, 'e> {
                 NoChange,
                 #(#ref_variants),*
             }
@@ -107,27 +107,27 @@ mod tests {
         let tokens = parsed_fields.generate_delta_types("MyStruct", &attrs);
 
         let expected = quote! {
-            #[derive(Serialize,)]
+            #[derive(serde::Serialize,)]
             #[allow(non_camel_case_types, missing_docs)]
-            enum MyStructDelta<'p> {
+            enum MyStructDelta<'s, 'e> {
                 NoChange,
-                Change_0(<u16 as dipa::Diffable<'p, u16>>::Delta),
-                Change_1(<u32 as dipa::Diffable<'p, u32>>::Delta),
+                Change_0(<u16 as dipa::Diffable<'s, 'e, u16>>::Delta),
+                Change_1(<u32 as dipa::Diffable<'s, 'e, u32>>::Delta),
                 Change_0_1(
-                    <u16 as dipa::Diffable<'p, u16>>::Delta,
-                    <u32 as dipa::Diffable<'p, u32>>::Delta
+                    <u16 as dipa::Diffable<'s, 'e, u16>>::Delta,
+                    <u32 as dipa::Diffable<'s, 'e, u32>>::Delta
                 )
             }
 
-            #[derive(Deserialize,)]
+            #[derive(serde::Deserialize,)]
             #[allow(non_camel_case_types, missing_docs)]
             enum MyStructDeltaOwned {
                 NoChange,
-                Change_0(<u16 as dipa::Diffable<'static, u16>>::DeltaOwned),
-                Change_1(<u32 as dipa::Diffable<'static, u32>>::DeltaOwned),
+                Change_0(<u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned),
+                Change_1(<u32 as dipa::Diffable<'static, 'static, u32>>::DeltaOwned),
                 Change_0_1(
-                    <u16 as dipa::Diffable<'static, u16>>::DeltaOwned,
-                    <u32 as dipa::Diffable<'static, u32>>::DeltaOwned
+                    <u16 as dipa::Diffable<'static, 'static, u16>>::DeltaOwned,
+                    <u32 as dipa::Diffable<'static, 'static, u32>>::DeltaOwned
                 )
             }
         };

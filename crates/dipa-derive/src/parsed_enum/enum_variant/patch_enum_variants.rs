@@ -41,7 +41,7 @@ impl EnumVariant {
     /// ```
     /// # use quote::quote;
     /// quote! {
-    ///     MyEnumPatch::VariantANoChange => { }
+    ///     MyEnumDeltaOwned::VariantANoChange => { }
     /// };
     /// ```
     fn generate_no_change_block(&self, enum_name: &Ident) -> TokenStream2 {
@@ -57,7 +57,7 @@ impl EnumVariant {
     /// ```
     /// # use quote::quote;
     /// quote! {
-    ///     MyEnumPatch::ChangedToVariantA => {
+    ///     MyEnumDeltaOwned::ChangedToVariantA => {
     ///         *self = MyEnum::VariantA;
     ///     }
     /// };
@@ -81,7 +81,7 @@ impl EnumVariant {
     /// ```
     /// # use quote::quote;
     /// quote! {
-    ///     MyEnumPatch::ChangedToVariantVariantB {
+    ///     MyEnumDeltaOwned::ChangedToVariantVariantB {
     ///         some_field: patch_some_field, patch_another_field
     ///     } => {
     ///         *self = MyEnum::VariantB {
@@ -97,7 +97,7 @@ impl EnumVariant {
     /// ```
     /// # use quote::quote;
     /// quote! {
-    ///     MyEnumPatch::ChangedToVariantVariantC(patch0)  => {
+    ///     MyEnumDeltaOwned::ChangedToVariantVariantC(patch0)  => {
     ///         *self = MyEnum::VariantC(patch0);
     ///     }
     /// };
@@ -122,7 +122,7 @@ impl EnumVariant {
     /// ```
     /// # use quote::quote;
     /// quote! {
-    ///     MyEnumPatch::VariantBChange_0(patch0) => {
+    ///     MyEnumDeltaOwned::VariantBChange_0(patch0) => {
     ///         match self {
     ///             MyEnum::VariantB {
     ///                 some_field: field_some_field, another_field: field_another_field
@@ -132,7 +132,7 @@ impl EnumVariant {
     ///             _ => { panic!("TODO: Return Result::Err") }
     ///         }
     ///     }
-    ///     MyEnumPatch::VariantBChange_1(patch1) => {
+    ///     MyEnumDeltaOwned::VariantBChange_1(patch1) => {
     ///         match self {
     ///             MyEnum::VariantB {
     ///                 some_field: field_some_field, another_field: field_another_field
@@ -142,7 +142,7 @@ impl EnumVariant {
     ///             _ => { panic!("TODO: Return Result::Err") }
     ///         }
     ///     }
-    ///     MyEnumPatch::VariantBChange_0_1(patch0, patch1) => {
+    ///     MyEnumDeltaOwned::VariantBChange_0_1(patch0, patch1) => {
     ///         match self {
     ///             MyEnum::VariantB {
     ///                 some_field: field_some_field, another_field: field_another_field
@@ -225,22 +225,12 @@ mod tests {
     use quote::__private::Span;
     use syn::Type;
 
-    #[test]
-    fn todo() {
-        unimplemented!(
-            r#"
-Write tests for all of the different block kinds. Then go to generate_patch_enum_tokens.rs and
-get that working.
-        "#
-        )
-    }
-
     /// Verify that we generate the proper match block tokens for a variant that has not changed.
     #[test]
     fn variant_no_change() {
         let tokens = variant_a().generate_no_change_block(&enum_name());
 
-        let expected = quote! {MyEnumPatch::VariantANoChange => {}};
+        let expected = quote! {MyEnumDeltaOwned::VariantANoChange => {}};
 
         assert_tokens_eq(&tokens, &expected);
     }
@@ -251,7 +241,7 @@ get that working.
     fn changed_to_no_fields() {
         let tokens = variant_a().generate_changed_to_variant_block_no_fields(&enum_name());
 
-        let expected = quote! {MyEnumPatch::ChangedToVariantVariantA => {
+        let expected = quote! {MyEnumDeltaOwned::ChangedToVariantVariantA => {
            *self = MyEnum::VariantA;
         }};
 
@@ -264,7 +254,7 @@ get that working.
         let tokens = variant_b().generate_changed_to_variant_block_with_fields(&enum_name());
 
         let expected = quote! {
-            MyEnumPatch::ChangedToVariantVariantB(patch_some_field, patch_another_field) => {
+            MyEnumDeltaOwned::ChangedToVariantVariantB(patch_some_field, patch_another_field) => {
                 *self = MyEnum::VariantB {
                     some_field: patch_some_field,
                     another_field: patch_another_field
@@ -281,7 +271,7 @@ get that working.
         let tokens = variant_b().generate_field_changes(&enum_name(), &DipaAttrs::default());
 
         let expected = quote! {
-            MyEnumPatch::VariantBChanged_0(patch0) => {
+            MyEnumDeltaOwned::VariantBChange_0(patch0) => {
                 match self {
                     MyEnum::VariantB {
                         some_field: field_some_field, another_field: field_another_field
@@ -291,7 +281,7 @@ get that working.
                     _ => { panic!("TODO: Return Result::Err") }
                 }
             }
-            MyEnumPatch::VariantBChanged_1(patch1) => {
+            MyEnumDeltaOwned::VariantBChange_1(patch1) => {
                 match self {
                     MyEnum::VariantB {
                         some_field: field_some_field, another_field: field_another_field
@@ -301,7 +291,7 @@ get that working.
                     _ => { panic!("TODO: Return Result::Err") }
                 }
             }
-            MyEnumPatch::VariantBChanged_0_1(patch0, patch1) => {
+            MyEnumDeltaOwned::VariantBChange_0_1(patch0, patch1) => {
                 match self {
                     MyEnum::VariantB {
                         some_field: field_some_field, another_field: field_another_field

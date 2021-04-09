@@ -3,7 +3,7 @@
 Here's a look at the `Diffable` trait.
 
 ```rust
-pub trait Diffable<'p, Other> {
+pub trait Diffable<'s, 'e Other> {
     type Delta;
 
     type DeltaOwned;
@@ -19,7 +19,7 @@ be used to turn your start value (`&self`) into this end value.
 Let's walk through a simple implementation of `Diffable` for an unsigned 128 bit integer.
 
 ```rust
-impl Diffable<'p, i128> for i128 {
+impl Diffable<'s, 'e i128> for i128 {
     // Note, the real implementation does not use a reference here since i128
     // is Copy. This is simply for illustration.
     type Delta = Option<&'a i128>;
@@ -42,7 +42,7 @@ impl Diffable<'p, i128> for i128 {
 }
 ```
 
-The `i128` in `impl Diffable<'p, i128>` is the type that we are diffing our `&self` type against.
+The `i128` in `impl Diffable<'s, 'e i128>` is the type that we are diffing our `&self` type against.
 
 A `Diffable` implementation can diff a type against any other type. The main use case for this is being able
 to diff `T` and `&T`.

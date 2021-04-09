@@ -49,7 +49,7 @@ mod tests {
     fn diff_patch_no_batching_strategy() {
         DipaImplTester {
             label: None,
-            start: NoBatching {
+            start: &mut NoBatching {
                 field_a: 1,
                 field_b: 2,
             },
@@ -68,7 +68,7 @@ mod tests {
 
         DipaImplTester {
             label: None,
-            start: NoBatching {
+            start: &mut NoBatching {
                 field_a: 1,
                 field_b: 2,
             },

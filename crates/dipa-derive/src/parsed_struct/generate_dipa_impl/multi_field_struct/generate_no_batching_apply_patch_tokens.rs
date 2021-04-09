@@ -4,13 +4,13 @@ use syn::Ident;
 use syn::__private::TokenStream2;
 
 impl ParsedStruct {
-    /// ```no_run
-    /// let field0_mut_ref = &mut self.some_field_name;
-    /// let field1_mut_ref = &mut self.another_field_name;
-    ///
-    /// field0_mut_ref.apply_patch(patch.some_field_name);
-    /// field1_mut_ref.fieldb.apply_patch(patch.1);
-    /// ```
+    // ```
+    // let field0_mut_ref = &mut self.some_field_name;
+    // let field1_mut_ref = &mut self.another_field_name;
+    //
+    // field0_mut_ref.apply_patch(patch.some_field_name);
+    // field1_mut_ref.fieldb.apply_patch(patch.1);
+    // ```
     pub(super) fn generate_no_batching_apply_patch_tokens(&self) -> TokenStream2 {
         let field_mut_refs = field_mutable_references(&self.fields);
         let mut apply_patches = vec![];

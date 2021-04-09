@@ -1,9 +1,8 @@
 //! Functions and types to help with code generation for implementation Diffable / Patchable for
 //! enums.
 
-use syn::__private::TokenStream2;
 use syn::Ident;
-
+use syn::__private::TokenStream2;
 
 pub use self::enum_variant::*;
 pub use self::generate_associated_types::*;
@@ -114,7 +113,7 @@ mod test_extras {
         ///     MyVariant { fielda: u16, fieldb: u32 },
         /// }
         /// ```
-        pub fn new_test_one_variant_two_named_fields() -> Self {
+        pub fn _new_test_one_variant_two_named_fields() -> Self {
             ParsedEnum {
                 name: Ident::new("MyEnum", Span::call_site()),
                 variants: vec![EnumVariant {

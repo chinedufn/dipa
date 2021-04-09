@@ -2,17 +2,17 @@ use crate::parsed_struct::ParsedStruct;
 use syn::__private::TokenStream2;
 
 impl ParsedStruct {
-    /// ```no_run
-    /// // Not generated here. Just here to illustrate.
-    /// let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
-    /// let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
-    /// // End not generated here.
-    ///
-    /// let diff = MyStructDelta {
-    ///     fielda: diff0.0,
-    ///     fieldb: diff1.0
-    /// };
-    /// ```
+    // ```
+    // // Not generated here. Just here to illustrate.
+    // let diff0 = self.some_field_name.create_delta_towards(&end_state.some_field_name);
+    // let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
+    // // End not generated here.
+    //
+    // let diff = MyStructDelta {
+    //     fielda: diff0.0,
+    //     fieldb: diff1.0
+    // };
+    // ```
     pub(super) fn generate_no_batching_create_delta_tokens(&self) -> TokenStream2 {
         let delta_name = self.fields.delta_name(&self.name.to_string());
 
