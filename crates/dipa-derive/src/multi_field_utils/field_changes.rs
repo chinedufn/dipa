@@ -59,7 +59,7 @@ impl ChangedFieldIndices {
         self.iter()
             .map(|idx| {
                 let diff = Ident::new(&format!("diff{}", idx), span);
-                
+
                 quote! {
                     #diff.0
                 }

@@ -13,6 +13,7 @@ mod integer;
 mod map;
 mod null;
 mod option;
+mod set;
 mod string;
 mod tuple;
 
