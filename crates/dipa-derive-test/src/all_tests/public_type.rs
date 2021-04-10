@@ -1,8 +1,6 @@
 //! Verify that we can publicly expose types that use the derive macro.
 //! This essentially ensures that we mark the generated associated types as `pub`.
 
-#![allow(warnings)] // TODO: Remove me
-
 #[derive(DiffPatch)]
 pub struct EmptyStruct;
 
@@ -37,6 +35,7 @@ pub struct TupleStructMulti(u32, u64);
 pub enum MyEnum {}
 
 #[derive(DiffPatch)]
+#[allow(dead_code)]
 pub enum MyEnumSingleVariant {
     One,
 }

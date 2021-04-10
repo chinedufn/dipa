@@ -45,7 +45,7 @@ impl ParsedEnum {
         let maybe_lifetime = associated_type.maybe_lifetime();
 
         quote! {
-            #[allow(non_camel_case_types)]
+            #[allow(non_camel_case_types, missing_docs)]
             pub enum #enum_associated_ty#maybe_lifetime {
                 #(#diff_ty_variants),*,
             }
@@ -108,7 +108,7 @@ mod tests {
         );
 
         let expected = quote! {
-            #[allow(non_camel_case_types)]
+            #[allow(non_camel_case_types, missing_docs)]
             pub enum MyEnumDelta<'s, 'e> {
                 OneNoChange,
                 ChangedToVariantOne(&'e u16),
@@ -132,7 +132,7 @@ mod tests {
         );
 
         let expected = quote! {
-            #[allow(non_camel_case_types)]
+            #[allow(non_camel_case_types, missing_docs)]
             pub enum MyEnumDeltaOwned {
                 OneNoChange,
                 ChangedToVariantOne(u16),
