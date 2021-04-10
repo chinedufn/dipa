@@ -1,0 +1,910 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The Dipa Book</title>
+        
+        <meta name="robots" content="noindex" />
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="spacer"></li><li class="chapter-item expanded "><a href="using-derive/index.html"><strong aria-hidden="true">1.</strong> Using Derive</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="using-derive/attributes/index.html"><strong aria-hidden="true">1.1.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="using-derive/space-guarantees/index.html"><strong aria-hidden="true">1.2.</strong> Space Guarantees</a></li><li class="chapter-item expanded "><a href="using-derive/delta-encoding-optimizations/index.html"><strong aria-hidden="true">1.3.</strong> Delta Encoding Optimizations</a></li></ol></li><li class="chapter-item expanded "><a href="diff-performance/index.html"><strong aria-hidden="true">2.</strong> Performance</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="diff-performance/lists/index.html"><strong aria-hidden="true">2.1.</strong> Lists</a></li><li class="chapter-item expanded "><a href="diff-performance/changed-flags/index.html"><strong aria-hidden="true">2.2.</strong> Changed Flags</a></li></ol></li><li class="chapter-item expanded "><a href="custom-diffing/index.html"><strong aria-hidden="true">3.</strong> Custom Delta Encoding</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="custom-diffing/implementing-diffable/index.html"><strong aria-hidden="true">3.1.</strong> Implement Diffable</a></li><li class="chapter-item expanded "><a href="custom-diffing/implementing-patchable/index.html"><strong aria-hidden="true">3.2.</strong> Implement Patchable</a></li><li class="chapter-item expanded "><a href="custom-diffing/testing-your-implementation/index.html"><strong aria-hidden="true">3.3.</strong> Testing Your Implementation</a></li></ol></li><li class="chapter-item expanded "><a href="examples/index.html"><strong aria-hidden="true">4.</strong> Examples</a></li><li class="chapter-item expanded "><a href="feature-flags/index.html"><strong aria-hidden="true">5.</strong> Feature Flags</a></li><li class="chapter-item expanded "><a href="roadmap/index.html"><strong aria-hidden="true">6.</strong> Roadmap</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="roadmap/optimizations/index.html"><strong aria-hidden="true">6.1.</strong> Optimizations</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="internal-design/index.html"><strong aria-hidden="true">7.</strong> Internal Design</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The Dipa Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
+<p>TODO: Use loom's well written introduction as a basis for ours
+https://docs.rs/loom/0.4.1/loom/ . The background then solution
+format is nice.</p>
+<p>Dipa is focused on making it easy to delta encode Rust data structures.</p>
+<p>Traditionally, efficient delta compression of data structures required a fair bit of
+hand written code. As your data structures grew.</p>
+<p>Dipa solves this problem by generating your delta compression code for you.</p>
+<p>No flexibility is lost. In the most advanced cases where you need custom behavior,
+Dipa exposes traits that you can implement for types that have special application specific needs.</p>
+<h2><a class="header" href="#use-cases" id="use-cases">Use Cases</a></h2>
+<p>Some applications that might use Dipa include multiplayer networked games and simulations, real time data views
+or any other application where you're syncing state between a server and one or more clients.</p>
+<p>Note that Dipa itself does not know anything about networks or contain any networking related code.</p>
+<p>Dipa is only focused on enabling the diffing and patching of Rust data structures.</p>
+<h2><a class="header" href="#quick-start" id="quick-start">Quick Start</a></h2>
+<p>The key feature of Dipa is the <code>#[derive(DiffPatch)]</code> macro that allows you to implement delta compression
+without the tedious and hard to maintain process of writing the necessary data structures and logic by hand.</p>
+<p>Here's a quick look at Dipa in action.</p>
+<pre><pre class="playpen"><code class="language-rust">use dipa::DiffPatch;
+
+#[derive(DiffPatch)]
+struct MyStruct {
+    a_field: MyEnum,
+    another_field: i32,
+    one_more: Vec&lt;MyOtherStruct&gt;
+}
+
+#[derive(DiffPatch)]
+enum MyEnum {
+    A(u8),
+    B(u16, Vec&lt;f32&gt;),
+    C { set: HashSet&lt;u128&gt; },
+}
+
+#[derive(DiffPatch)]
+struct MyOtherStruct(u64, BTreeMap&lt;i8, MyEnum&gt;);
+
+fn main () {
+	let old = MyStruct {
+	    a_field: MyEnum::B(308, vec![1., 2.]),
+	    another_field: -10,
+	    one_more: vec![MyOtherStruct(7, BTreeMap::new())]
+	};
+
+	let new =  MyStruct {
+	    a_field: MyEnum::A(10),
+	    another_field: 650,
+	    one_more: vec![MyOtherStruct(567, BTreeMap::new())]
+	};
+
+    let diff = old.create_delta_towards(&amp;new);
+
+    let serialized = bincode::options()
+        .with_varint_encoding()
+        .serialize(&amp;diff)
+        .unwrap();
+
+    // ... Pretend we sent the bytes over a network ...
+
+    let deserialized:
+      &lt;MyStructDiff as dipa::Diffable&lt;'_, MyStructDiff&gt;&gt;::DeltaOwned =
+      bincode::options()
+        .with_varint_encoding()
+        .deserialize(&amp;serialized)
+        .unwrap();
+
+	let mut old = old;
+    old.apply_patch(deserialized);
+
+    // old is now equal to new.
+}
+</code></pre></pre>
+<h1><a class="header" href="#using-derive" id="using-derive">Using Derive</a></h1>
+<p>Dipa provides a derive macro to generate implementations of the <code>Diffable</code> and <code>Patchable</code> traits for
+data structures defined in your crate.</p>
+<p>To enable the macro use the <code>derive</code> feature. Then use <code>#[derive(DiffPatch)]</code> on types that you want to
+be able to delta encode.</p>
+<pre><code class="language-toml"># Cargo.toml
+
+# ...
+
+[dependencies]
+dipa = { version = &quot;0.x&quot;, features = [&quot;derive&quot;] }
+serde = { version = &quot;1&quot;, features = [&quot;derive&quot;] }
+
+# ...
+</code></pre>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span><span class="boring">lib.rs
+</span>
+use dipa::DiffPatch;
+
+#[derive(DiffPatch)]
+struct MyStruct {
+    field_a: MyEnum,
+    field_b: Vec&lt;f64&gt;
+}
+
+#[derive(DiffPatch)]
+struct MyEnum {
+    field: Vec&lt;f64&gt;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#attributes" id="attributes">Attributes</a></h1>
+<p>There are three categories of attributes that can be used with the derive macro. Container, variant and field
+attributes.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+#[dipa(diff_derives = &quot;Debug, Copy, Clone&quot;)]  // &lt;-- this is a container attribute
+struct S {
+    #[dipa(todo_field_attribute_here)]  // &lt;-- this is a field attribute
+    f: i32,
+}
+
+#[derive(DiffPatch)]
+#[dipa(patch_derives = &quot;Debug, Serialize&quot;)]  // &lt;-- this is a container attribute
+enum E {
+    #[dipa(todo_variant_attribute_here)]  // &lt;-- this is a variant attribute
+    A(
+      #[dipa(todo_field_attribute_here)]  // &lt;-- this is a field attribute
+      String
+    ),
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#container-attributes" id="container-attributes">Container Attributes</a></h2>
+<p><code>diff_derives = &quot;SomeDerive, AnotherDerive&quot;</code></p>
+<p>Used to add #[derive(SomeDerive, AnotherDerive)]'s for the delta encoded diff type that dipa generates for your struct or enum.</p>
+<p>This is mainly useful internally so that we can satisfy the necessary trait bounds for using our automatically generated
+<code>Diffable::Delta</code>'s' with the <code>DipaImplTester</code>.</p>
+<hr />
+<p><code>patch_derives = &quot;SomeDerive, AnotherDerive&quot;</code></p>
+<p>Used to add #[derive(SomeDerive, AnotherDerive)]'s for the associated <code>Diffable::DeltaOwned</code> type that dipa generates for your struct or enum.</p>
+<hr />
+<p><code>field_batching_strategy = &quot;...&quot;</code></p>
+<p>At this time this can either be set to <code>one_batch</code>, <code>no_batching</code>. There are other batching strategies planned such as being able to use multiple enums
+each responsible for a few fields, or being able to annotate individual fields in order to indicate which batch of deltas that they should belong to.</p>
+<ul>
+<li>
+<p><code>one_batch</code> - A single enum will be used as the <code>Diffable::Delta</code> type. This enum will be able to represent every possible combination of the struct's fields changing.
+By default this strategy is limited to structs that have 5 fields since as the number of fields grows the number of enum variants grows exponentially.
+The <code>max_fields_per_batch</code> attribute can be used to increase this limit on a per-struct basis.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+#[dipa(field_batching_strategy = &quot;one_batch&quot;)]
+struct MyStruct {
+    field1: u32,
+    field2: u64
+}
+
+// Automatically generated delta would look something like this
+enum MyStructDelta&lt;'d&gt; {
+    NoChange,
+    Change_0(&lt;u32 as dipa::Diffable&lt;'d&gt;::Delta),
+    Change_1(&lt;u64 as dipa::Diffable&lt;'d&gt;::Delta),
+    Change_0_1(
+        &lt;u32 as dipa::Diffable&lt;'d&gt;::Delta,
+        &lt;u64 as dipa::Diffable&lt;'d&gt;::Delta
+    ),
+}
+<span class="boring">}
+</span></code></pre></pre>
+</li>
+<li>
+<p><code>no_batching</code> - The <code>Diffable::Delta</code> type will be a struct with the same number of fields as your original type. This is useful when have too many fields
+for the <code>on_batch</code> strategy. Note that in the future we will introduce other strategies that are likely to better handle large numbers of fields. So this
+is more of a temporary measure.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+#[dipa(field_batching_strategy = &quot;no_batching&quot;)]
+struct MyStruct {
+    field1: u32,
+    field2: u64
+}
+
+// Automatically generated delta would look something like this
+struct MyStructDelta {
+    field1: &lt;u32 as dipa::Diffable&lt;'d&gt;::Delta,
+    field2: &lt;u64 as dipa::Diffable&lt;'d&gt;::Delta,
+}
+<span class="boring">}
+</span></code></pre></pre>
+</li>
+</ul>
+<hr />
+<p><code>max_fields_per_batch = 5</code></p>
+<p>This can used when the <code>field_batching_strategy = &quot;one_batch&quot;</code>.</p>
+<p>By default, the <code>one_batch</code> strategy can only be used with structs or enum that have 5 or fewer fields. The <code>max_fields_per_batch</code> allows you to increase this limit.</p>
+<p>There is a hard cap on how high you can set <code>max_fields_per_batch</code> can be set in order to prevent you from accidentally causing unreasonable compile times. Values above
+7 will lead to a compile time error. In the future we will experiment with different values to see how the compile time trade-offs look.</p>
+<h1><a class="header" href="#space-guarantees" id="space-guarantees">Space Guarantees</a></h1>
+<p>FIXME: Move this documentation to a subchapter within the optimizations chapter where we talk about the one_batch strategy.</p>
+<h2><a class="header" href="#single-byte-no-change-rule" id="single-byte-no-change-rule">Single Byte No Change Rule</a></h2>
+<p>Given a struct or enum type that uses <code>#[dipa(delta_strategy = &quot;one_batch&quot;)]</code>, or any type in the standard library
+that we've implemented the <code>Diffable</code> trait for.</p>
+<p>Its unchanged delta encoding is guaranteed to be serialize-able to a single byte.</p>
+<hr />
+<p>Note that this rule is true for nested data structures. If all nested types properly implement
+<code>Diffable</code> and your root type uses the derive macro, it can be delta encoded down to 1 byte when
+it has not changed.</p>
+<p>Note that this rule applies to enum <strong>fields</strong> not variants. i.e. in <code>MyEnum::A(1, 2, 3)</code>, the
+fields are &quot;1, 2, 3&quot;. This rule applies to enums with any number f variants.</p>
+<p>Your nested types do <strong>not</strong> need to use the <code>one_batch</code> strategy. The strategy that they use does
+not matter for this rule.</p>
+<hr />
+<p>In the following code snippet, all three types can be delta compressed down to a single byte
+when they haven't changed.</p>
+<pre><pre class="playpen"><code class="language-rust">// If this type has not changed its delta can be serialized to
+// a single byte.
+#[derive(DiffPatch)]
+MyStruct {
+    field_a: Vec&lt;f32&gt;,
+    field_b: HashMap&lt;u8, HashSet&lt;MyEnum&gt;&gt;,
+    field_c: AnotherStruct
+}
+
+// If this type has not changed its delta can be serialized to
+// a single byte.
+// Remember: this rule applies to fields, not variants.
+#[derive(DiffPatch, Hash, Eq, Ord)]
+enum MyEnum {
+    A,
+    B([Vec&lt;u8&gt;; 2], i32),
+    C { some_field: i128 },
+    D, E, F, G, H, I, J, K, L, M,
+    N, O, P, Q, R, S, T, U, V, W,
+    X, Y, Z
+}
+
+// If this type has not changed its delta can be serialized to
+// a single byte.
+#[derive(DiffPatch)]
+struct AnotherStruct(i8, u8, MyEnum);
+
+fn main () {
+    let my_struct = make_my_struct();
+    let other = make_my_struct();
+
+    let diff = my_struct.create_diff_towards(&amp;other);
+
+    let serialized: Vec&lt;u8&gt; = bincode::options()
+        .with_varint_encoding()
+        .serialize(&amp;diff)
+        .unwrap();
+
+    // True for all types that properly implement the
+    // Diffable trait.
+    assert_eq!(serialized.len(), 1);
+}
+
+fn make_my_struct () -&gt; MyStruct {
+    let mut hash_set = HashSet::new();
+    hash_set.inset(MyEnum::A);
+
+    let mut field_b = HashMap::new();
+    field_b.insert(200, hash_set);
+
+	MyStruct {
+        field_a: vec![1., 2., 3., 4., 5.],
+        field_b,
+        field_c: AnotherStruct(
+            -1,
+            2,
+            MyEnum::B([vec![6, 7], vec![8]], -3)
+        )
+    }
+}
+</code></pre></pre>
+<h3><a class="header" href="#why-5-fields" id="why-5-fields">Why 5 fields?</a></h3>
+<p>The derive macro generates a <code>Diffable::Delta</code> associated type that is an enum containing every possible combination of changed fields.</p>
+<p>This means that there are <code>2&lt;super&gt;n&lt;/super&gt;</code> enum variants that get generated, where <code>n</code> is the number of fields in your struct or within an
+enum variant. Since this is exponential, it grows quickly.</p>
+<p>For now we choose <code>5</code> as as starting point for the maximum number of fields that we combine into a single <code>Delta</code> enum in this way, but in the future we
+will experiment with larger numbers in order to find the sweet spot where the number is as high as it can be before the potential impact on compile
+times becomes non-negligible.</p>
+<p>We will take real applications that use <code>#[derive(DiffPatch)]</code> on non trivial data structures and benchmark the fresh and incremental compile times as <code>n</code>
+increases.</p>
+<p>Or, perhaps we'll expose feature flags that allow you to increase <code>n</code> yourself. Or better yet a procedural macro attribute that can configure the <code>n</code> value.</p>
+<p>Note that your structs can still have more than 5 fields. They'll just diff to <code>(field_count / 5.0).ceil()</code> bytes when unchanged.</p>
+<p>So, currently, if you have 9 fields in a struct it will diff to 2 bytes when unchanged.</p>
+<h1><a class="header" href="#delta-encoding-optimizations" id="delta-encoding-optimizations">Delta Encoding Optimizations</a></h1>
+<p>This chapter describes the various delta encoding techniques that the derive macro exposes.</p>
+<p>Some of them that are almost always desirable are done by default,
+while others that might have trade-offs can be enabled using the <code>dipa(...)</code> procedural macro attribute.</p>
+<p>This chapter is geared towards those that want to save every single byte possible.</p>
+<p>If you are just getting started you can safely skip this chapter and come back to it later. Nothing here will
+impact the design of your application.</p>
+<p>Note that optimizations that are not yet implemented can be found in the
+<a href="using-derive/delta-encoding-optimizations/../../roadmap/optimizations">Roadmap/Optimizations chapter</a></p>
+<h1><a class="header" href="#performance" id="performance">Performance</a></h1>
+<p>Dipa wants to be useful in real time applications.</p>
+<p>This means that we want the amount of time that it takes to delta encode a data structure should be as low as possible,
+without sacrificing on the focus of generating incredibly tiny diffs.</p>
+<p>The sections in this chapter discuss different diffing performance related topics, and also provide tips on how to
+maximize diffing performance in your own applications.</p>
+<h1><a class="header" href="#lists" id="lists">Lists</a></h1>
+<p>The <code>Diffable</code> implementation for standard library lists such as <code>Vec&lt;T&gt;</code> and <code>[T; N]</code> relies on a
+dynamic programming solution to the <a href="https://en.wikipedia.org/wiki/Longest_common_subsequence_problem">longest common subsequence</a> problem.</p>
+<p>This means that delta encoding lists has a time complexity of <code>O(M * N)</code>, where <code>M</code> and <code>N</code> are
+the lengths of the before and after lists.</p>
+<p>When your lists are small this is unlikely to be a performance bottleneck.</p>
+<p>However, if your application deals with lots of large lists and you have benchmarked that delta encoding
+your lists is a performance bottleneck, consider making use of a <a href="diff-performance/lists/../changed-flags">changed flag</a>.</p>
+<h1><a class="header" href="#changed-flags" id="changed-flags">Changed Flags</a></h1>
+<p>Say you have a real-time application that delta compresses the following type.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+struct MyStruct {
+    water_droplets: Vec&lt;WaterDroplet&gt;
+}
+
+#[derive(DiffPatch)]
+struct WaterDroplet([f32; 3]);
+<span class="boring">}
+</span></code></pre></pre>
+<p>At first you were simulating the Sahara Desert and things were going smoothly.</p>
+<p>Now, however, you're simulating a section of the River Niger and your <code>water_droplets</code> vector
+can sometimes contain over <code>10,000</code> droplets.</p>
+<p>Its currently an ice age, so these droplets don't move around very much and so your
+data structure rarely changes.</p>
+<p>Because delta encoding lists is <code>O(M * N)</code> time complexity where <code>M</code> and <code>N</code> are the lengths
+of the two lists, you'd like to avoid delta encoding this data structure if possible.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use dipa::ChangeFlagged;
+
+#[derive(DiffPatch)]
+struct MyStruct {
+    water_droplets: ChangeFlagged(WaterDroplet)
+}
+
+#[derive(DiffPatch)]
+struct WaterDroplet([f32; 3]);
+<span class="boring">}
+</span></code></pre></pre>
+<p>Now if <code>MyStruct.water_droplets.changed() == false</code> the underlying vectors will not be diffed.</p>
+<p><em>NOTE: ChangeFlagged has not been implemented yet. If you need it please open an issue.</em></p>
+<h1><a class="header" href="#custom-delta-encoding" id="custom-delta-encoding">Custom Delta Encoding</a></h1>
+<p>In most cases, you'll start by using <code>#[derive(DiffPatch)]</code> on your data structure in order to get yourself up and running quickly.</p>
+<p>For complex applications where every byte matters you will eventually run into situations where you can use your knowledge of how your
+application works in order to generate even smaller deltas for your types.</p>
+<p>In this case you can turn to the community to see if there is already a custom implementation that handles what you are after,
+or simply implement <code>Diffable</code> and <code>Patchable</code> yourself.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+struct MyStruct {
+   field_a: Vec&lt;f32&gt;,
+   custom: CustomStruct
+}
+
+// You know things about how you're using CustomStruct that dipa does not,
+// and you want to use that knowledge to control how it gets delta encoded.
+// So, you implement Diffable and Patchable yourself.
+struct CustomStruct { name: String }
+
+impl Diffable&lt;'d, CustomStruct&gt; for CustomStruct {
+  type Delta = MyDelta;
+  type DeltaOwned = MyDeltaOwned;
+
+   // ...
+}
+
+impl Patchable&lt;MyDeltaOwned&gt; for CustomStruct {
+   // ...
+}
+
+#[derive(Serialize)]
+struct MyDelta&lt;'a&gt;(&amp;'a u128, &amp;'a [u8]);
+
+#[derive(Deerialize)]
+struct MyDeltaOwned(u128, Vec&lt;u8&gt;);
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#implementing-diffable" id="implementing-diffable">Implementing Diffable</a></h1>
+<p>Here's a look at the <code>Diffable</code> trait.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>pub trait Diffable&lt;'s, 'e Other&gt; {
+    type Delta;
+
+    type DeltaOwned;
+
+    fn create_delta_towards(&amp;self, end_state: &amp;'p Other)
+      -&gt; CreateDeltaTowardsReturn&lt;Self::Delta&gt;;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>create_delta_towards</code> method takes some end value and generates a delta encoding that can later
+be used to turn your start value (<code>&amp;self</code>) into this end value.</p>
+<p>Let's walk through a simple implementation of <code>Diffable</code> for an unsigned 128 bit integer.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>impl Diffable&lt;'s, 'e i128&gt; for i128 {
+    // Note, the real implementation does not use a reference here since i128
+    // is Copy. This is simply for illustration.
+    type Delta = Option&lt;&amp;'a i128&gt;;
+
+    type DeltaOwned = Option&lt;i128&gt;;
+
+    fn create_delta_towards(&amp;self, end_state: &amp;'p i128) -&gt;
+		CreateDeltaTowardsReturn&lt;Self::Delta&gt; {
+	    let mut hints = MacroOptimizationHints {
+	        did_change: false
+		};
+
+		return if self == end_state {
+		    (None, hints)
+		} else {
+		    hints.did_change = true;
+			(Some(end_state), hints)
+		};
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>i128</code> in <code>impl Diffable&lt;'s, 'e i128&gt;</code> is the type that we are diffing our <code>&amp;self</code> type against.</p>
+<p>A <code>Diffable</code> implementation can diff a type against any other type. The main use case for this is being able
+to diff <code>T</code> and <code>&amp;T</code>.</p>
+<p>The <code>Diffable::Delta</code> associated type is the type of your delta encoding. For simple types like integers
+the implementations that <code>dipa</code> provides use <code>Option&lt;T&gt;</code> as the <code>Delta</code>.</p>
+<p>For more complex types such as <code>Vec&lt;T&gt;</code>, custom data structures are used for the <code>Delta</code>.</p>
+<p>As we see in <code>type Delta = Option&lt;&amp;'a i28&gt;</code> a <code>Delta</code> can borrow values from the <code>Other</code> type in order to avoid
+clones.</p>
+<blockquote>
+<p>NOTE: The real <code>dipa</code> implementation for <code>i128</code> does not use a reference for the delta since <code>i128</code> is a small copy
+type. It simply uses <code>Option&lt;i128&gt;</code>.</p>
+</blockquote>
+<p><code>type DeltaOwned</code> is just the <code>Delta</code> type with all of the reference types replaced with owned types.</p>
+<p>You'll typically serialize to <code>Diffable::Delta</code>, send the bytes across the wire (potentially after further compressing
+them using either a general purpose or custom compression algorithm), and then  deserialize them to the
+<code>Diffable::DeserializeOwned</code> type.</p>
+<p>The <code>did_change</code> is used by the <code>#[derive(DiffPatch)]</code> in the code that it automatically generates for you.
+The <code>Delta</code> that the macro generates for is an enum with different variants that get used based on which
+of those fields within the <code>Diffable</code> type have changed.</p>
+<h1><a class="header" href="#implementing-patchable" id="implementing-patchable">Implementing Patchable</a></h1>
+<p>Here's a look at the <code>Patchable</code> trait.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>pub trait Patchable&lt;P&gt; {
+    fn apply_patch(&amp;mut self, patch: P);
+<span class="boring">}
+</span></code></pre></pre>
+<p><code>P</code> is the delta encoding that was generated by the <code>Diffable.create_delta_towards</code> method.</p>
+<p>Different types will have different patches that need to be applied in
+different ways.</p>
+<p>Let's talk a look at an <code>i128</code>, one of the more trivial <code>Patchable</code> types.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>implement Patchable&lt;Option&lt;i128&gt;&gt; for i128 {
+	fn apply_patch(&amp;mut self, patch: Option&lt;i128&gt;) {
+		if let Some(patch) = patch {
+		    *self = patch;
+		}
+	}
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Here's a slightly more complex example patch function.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>enum CustomPatchExample {
+    Replace(i128),
+    Add(i16)
+}
+
+// This is not how the real implementation for i128 looks.
+implement Patchable&lt;CustomPatchExample&gt; for i128 {
+	fn apply_patch(&amp;mut self, patch: CustomPatchExample) {
+		match patch {
+			CustomPatchExample::Replace(new) =&gt; {
+			    *self = new;
+			}
+			CustomPatchExample::Add(add) =&gt; {
+			    self += add as i128;
+			}
+		}
+	}
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#testing-your-implementation" id="testing-your-implementation">Testing Your Implementation</a></h1>
+<p>By enabling the <code>impl-tester</code> feature, you gain access to machinery that makes it easy to test
+your custom <code>Diffable</code> and <code>Patchable</code> implementations.</p>
+<p>The <code>DipaImplTester</code> will.</p>
+<ol>
+<li>
+<p>Delta encode your provided start and end values.</p>
+</li>
+<li>
+<p>Serialize the delta using <code>bincode</code> with variable integer encoding.</p>
+</li>
+<li>
+<p>Assert that the number of bytes is what you expect.</p>
+</li>
+<li>
+<p>Deserialize the delta back to <code>DeltaOwned</code>.</p>
+</li>
+<li>
+<p>Apply the delta to your original start value.</p>
+</li>
+<li>
+<p>Ensure that your start value now equals your end value.</p>
+</li>
+</ol>
+<pre><code class="language-toml"># Cargo.toml
+
+[dev-dependencies]
+dipa = {version = &quot;0.1&quot;, features = [&quot;impl-tester&quot;]}
+</code></pre>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use dipa::CreateDeltaTowardsReturn;
+
+struct MyStruct {
+    field: u8
+}
+
+enum MyDelta&lt;'a&gt; {
+   New(&amp;'a u8)
+}
+
+enum MyDeltaOwned {
+   New(u8)
+}
+
+impl Diffable&lt;'s, 'e, MyStruct&gt; for MyStruct {
+    type Delta = MyDelta;
+    type DeltaOwned = MyDeltaOwned;
+
+	fn create_delta_towards (&amp;self) -&gt; CreateDeltaTowardsReturn&lt;Self::Delta&gt; {
+	    todo!()
+	}
+}
+
+impl 
+
+#[cfg(test)]
+mod tests {
+    use dipa::DipaImplTester;
+
+    #[test]
+    fn diff_my_struct_changed() {
+        DipaImplTester {
+            label: Some(&quot;Diff MyStruct changed&quot;),
+            start: MyStruct { field: 2 },
+            end: &amp;MyStruct { field: 5 },
+            expected_delta: MyDelta::New(&amp;5),
+            expected_serialized_patch_size: 2,
+			expected_macro_hints: MacroOptimizationHints {
+			    did_change: true
+			},
+        }
+        .test();
+    }
+
+    #[test]
+    fn diff_my_struct_no_change() {
+        DipaImplTester {
+            label: Some(&quot;Diff MyStruct no change&quot;),
+            start: MyStruct { field: 2 },
+            end: &amp;MyStruct { field: 2 },
+            expected_delta: MyDelta::New(&amp;2),
+            expected_serialized_patch_size: 2,
+			expected_macro_hints: MacroOptimizationHints {
+			    did_change: false
+			}
+        }
+        .test();
+    }
+
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#examples" id="examples">Examples</a></h1>
+<p>If someone opens an issue with a question we can add an example and/or a book or documentation change
+that would have answered that question.</p>
+<ol>
+<li>
+<p><code>mkdir examples</code></p>
+</li>
+<li>
+<p>Add examples in that directory. Examples should be added to the cargo workspace.</p>
+</li>
+</ol>
+<h1><a class="header" href="#feature-flags" id="feature-flags">Feature Flags</a></h1>
+<ul>
+<li><code>derive</code></li>
+</ul>
+<p>Enables the <code>#[derive(DiffPatch)]</code> macro.</p>
+<ul>
+<li><code>impl-tester</code></li>
+</ul>
+<p>Exposes the <code>DipaImplTester</code> utility that can be used to <a href="feature-flags/../custom-diffing/testing-your-implementation">test your custom implementations</a>.</p>
+<h1><a class="header" href="#roadmap" id="roadmap">Roadmap</a></h1>
+<p>This chapter contains information about future dipa work.</p>
+<h1><a class="header" href="#optimizations" id="optimizations">Optimizations</a></h1>
+<p>Over time more and more ideas will pop up on how to make the dipa macro perform more delta encoding optimizations.</p>
+<p>This section contains a list of optimizations that we plan to tackle at some point.</p>
+<h2><a class="header" href="#booleans-to-bitflags" id="booleans-to-bitflags">Booleans to Bitflags</a></h2>
+<p>If a struct has two or more boolean fields we can use <a href="https://github.com/bitflags/bitflags">bitflags</a> to pack the diffs into a single integer.</p>
+<p>TODO: Link to corresponding issue</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+struct Foo {
+    fielda: bool,
+    fieldb: bool,
+    fieldc: Vec&lt;u32&gt;,
+    fieldc: bool
+}
+
+// This is just a quick example delta. Needs more planning and design work.
+enum FooDelta {
+    NoChange,
+    Changed_0(BitFlagsU8WithOneBitForEachBoolField),
+    Changed_1(DiffForTheVecu32),
+    Changed_0_1(BitFlagsU8WithOneBitForEachBoolField, DiffForTheVecu32)
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#global-token-information" id="global-token-information">Global Token Information</a></h2>
+<p>Say that you have the following data structures:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DiffPatch)]
+struct Outer {
+    fielda: bool,
+    fieldb: bool,
+    inner: Inner
+}
+
+#[derive(DiffPatch)]
+struct Inner {
+    fieldc: bool,
+    fieldd: bool
+    fielde: HashSet&lt;i8&gt;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>If the derive macro invocations for <code>Outer</code> knew about the structure of <code>Inner</code> then we could generate code such
+that <code>Outer's</code> delta looked like this:</p>
+<pre><code>enum OuterDelta {
+    NoChange,
+    Change_0(Bitflag U8 that is used to represent all four booleans here),
+    // ...
+}
+</code></pre>
+<p>In the above example we are using a single <code>u8</code> bitflag to encode the changes of all of the bools in both <code>Outer</code>
+and <code>Inner</code>.</p>
+<p>We could do further than this as well. If <code>Outer</code> was given a <code>#[dipa(max_fields_per_batch = 6)]</code> attribute, the derive
+macro could generate an <code>OuterDelta</code> that was essentially a <code>Delta6</code> with all of the combinations of the 6 fields.</p>
+<p>There are just two quick examples. There should be other things that we can do when creating a type's delta if we know
+information about its nested types.</p>
+<p>Essentially, knowing about other types that are using the macro would allow us to perform optimizations that
+we could not otherwise.</p>
+<p>One way to make this happen would be to make use of the filesystem, but this would mean that whenever you changed your
+types you would need to build once before all of the right information was cached. No good.</p>
+<p>A better way would be if rustc had support for allowing a procedural macro to execute twice. On the first invocation
+it would simply process all of the tokens and cache the information to <code>env!(OUT_DIR)</code> or something like that.</p>
+<p>Then on the second invocation it could use this cached information in order to apply optimizations like those described
+above.</p>
+<p>This would need more thought and design and an RFC, but it could be an interesting avenue to pursue.</p>
+<h1><a class="header" href="#internal-design" id="internal-design">Internal Design</a></h1>
+<p>TODO;</p>
+<p>Chapters with information about how dipa's macro works.</p>
+<p>This will be useful to</p>
+<ul>
+<li>
+<p>Contributors that want to make changes</p>
+</li>
+<li>
+<p>Developers that want to understand how their delta compression works so that they can make informed decisions
+when optimizing their network traffic.</p>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
