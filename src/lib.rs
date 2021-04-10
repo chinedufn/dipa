@@ -7,6 +7,7 @@ pub use dipa_derive::DiffPatch;
 mod sequence;
 
 mod bool;
+mod cow;
 mod float;
 mod integer;
 mod map;

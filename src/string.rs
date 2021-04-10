@@ -21,6 +21,15 @@ impl Patchable<Vec<SequenceModificationDeltaOwned<u8>>> for String {
     }
 }
 
+impl<'s, 'e> Diffable<'s, 'e, str> for str {
+    type Delta = Vec<SequenceModificationDelta<'e, u8>>;
+    type DeltaOwned = Vec<SequenceModificationDeltaOwned<u8>>;
+
+    fn create_delta_towards(&'s self, end_state: &'e str) -> (Self::Delta, MacroOptimizationHints) {
+        self.as_bytes().create_delta_towards(&end_state.as_bytes())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
