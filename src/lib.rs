@@ -1,3 +1,24 @@
+//! dipa makes it easy to efficiently delta encode Rust data structures.
+//!
+//! # Documentation
+//!
+//! The Dipa Book introduces you to dipa and teaches you how to use it.
+//!
+//! It is available online at https://chinedufn.github.io/dipa/
+//!
+//! You can also view the book offline:
+//!
+//! ```sh,no_run,ignore
+//! # Do this once while online
+//! git clone git@github.com:chinedufn/dipa.git && cd dipa
+//! cargo install mdbook
+//!
+//! # This works offline
+//! ./bin/serve-book.sh
+//! ```
+
+#![deny(missing_docs)]
+
 #[macro_use]
 extern crate serde;
 
@@ -28,6 +49,8 @@ mod dipa_impl_tester;
 pub use self::dipa_impl_tester::DipaImplTester;
 
 /// The type returned by [Diffable.create_delta_towards].
+///
+/// FIXME: Rename to `CreatedDelta {delta: T, did_change: bool}` and delete MacroOptimizationHints.
 pub type CreatePatchTowardsReturn<T> = (T, MacroOptimizationHints);
 
 /// Allows a type to be diffed with another type.
@@ -46,12 +69,16 @@ pub trait Diffable<'s, 'e, Other: ?Sized> {
     ) -> CreatePatchTowardsReturn<Self::Delta>;
 }
 
-/// Allows a type to be patched.
+/// Modifies a type using n a patch.
 ///
-/// A patch is usually the same as [Diffable::Diff], but with owned data instead of references.
+/// You would typically create this patch using [`Diffable.create_delta_towards`].
 ///
-/// You'll typically serialize to a [Diffable::Diff] and then deserialize the patch type,
-/// then apply the patch via [Self.apply_patch].
+/// You'll typically serialize to a [`Diffable::Delta`], send it over a network and then deserialize
+/// to [`Diffable::DeltaOwned`]. Then you would use that owned delta as the patch to apply via
+/// [`Patchable.apply_patch`].
+///
+/// FIXME: This should return a result since it is possible to, for example, accidentally apply a
+///  a patch to the wrong data structure do to a logical bug.
 pub trait Patchable<P> {
     /// Apply a patch.
     fn apply_patch(&mut self, patch: P);
