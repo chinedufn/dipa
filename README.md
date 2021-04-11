@@ -213,4 +213,8 @@ cd dipa
 cargo test --all
 ```
 
+## License
+
+dipa is dual licensed under the [Apache](./LICENSE-APACHE) and [MIT](./LICENSE-MIT) licenses.
+
 [book]: https://chinedufn.github.io/dipa
