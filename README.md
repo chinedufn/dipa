@@ -62,13 +62,14 @@ serde = { version = "1", features = ["derive"] }
 
 ```rust
 use dipa::{DiffPatch};
+use std::borrow::Cow;
 
 #[derive(DiffPatch)]
 struct MyClientState {
     id: u32,
     friends: Option<u8>,
     position: Position,
-    notifications: Vec<String>,
+    notifications: Vec<Cow<&'static, str>>,
 	emotional_state: EmotionalState
 }
 
@@ -80,7 +81,7 @@ struct Position {
 }
 
 #[derive(DiffPatch)]
-struct EmotionalState {
+enum EmotionalState {
     Peace { score: u128 },
     Love(u64),
     Courage(u32),
@@ -91,7 +92,7 @@ fn main() {
         id: 308,
         friends: None,
         position: Position { x: 1., y: 2., z: 3. }
-        notifications: vec!["courage".to_string(), "love".to_string()],
+        notifications: vec![Cow::Borrowed("let"), Cow::Owned("go".to_string())],
         emotional_state: EmotionalState::Love(100),
     };
 
@@ -99,7 +100,7 @@ fn main() {
         id: 308,
         friends: Some(1),
         position: Position { x: 4., y: 2., z: 3. }
-        notifications: vec!["peace".to_string()]
+        notifications: vec![Cow::Borrowed("free")]
         emotional_state: EmotionalState::Peace { score: 10_000 },
     };
 
@@ -112,6 +113,9 @@ fn main() {
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
     let serialized = bin.serialize(&delta).unwrap();
+
+    // ... Pretend you send the data to the client ...
+
     let deserialized: <MyClientState as dipa::Diffable<'_, '_, MyClientState>::DeltaOwned = 
         bin.deserialize(&serialized).unwrap();
 
@@ -143,29 +147,25 @@ struct ClientState {
 
 If the hair length hasn't changed the diff will be a single byte.
 
-However, whenever the client's hair length changed there would be an additional 17\* bytes in the payload to encode the new `u128` value.
+However, whenever the client's hair length changed there would be up to an additional 17\* bytes in the payload to variable integer
+encode the new `u128` value.
 
-But, what if you that it was impossible for a client's hair length to ever change by more than `100` units in between state updates?
+But, what if you knew that it was impossible for a client's hair length to ever change by more than `100` units in between state updates?
 
-And, hair length changes in between almost every time you send new state out to clients.
-
-And, your application requirements mean that saving every byte matters.
+And, your application requirements mean that saving every byte matters and so it is worth your time to customize your hair
+length delta encoding.
 
 In this case, you could go for something like:
 
 ```rust
 #[derive(DiffPatch)]
 struct ClientState {
-    // TODO: dipa should add attributes such as
-    // #[dipa(diff_with = "only_small_changes", patch_with = "only_small_changes")]
-    // In order to enable custom diffing/patching without needing to clutter your data
-    // structures with wrapper types.
-    hair_length: OnlySmallChanges(u128)
+    hair_length: DeltaWithI8(u128)
 }
 
-struct OnlySmallChanges(u128);
+struct DeltaWithI8(u128);
 
-impl<'s, 'e> Diffable<'s, 'e, u128> for OnlySmallChanges {
+impl<'s, 'e> Diffable<'s, 'e, u128> for DeltaWithI8 {
     type Delta = i8;
     type DeltaOwned = Self::Delta;
 
@@ -188,7 +188,7 @@ impl Patchable<i8> for OnlySmallChanges {
 }
 ```
 
-This approach would reduce your changed value payload from 17 bytes down to just 1.
+This approach would reduce hair length delta from 17 bytes down to just a single byte.
 
 \* - _17, not 16, since integers larger than `u8/i8` are wrapped in `Option` by their default `DiffPatch` implementation. This optimizes for the case when the integer does not change since `None` serializes to 1 byte._
 
