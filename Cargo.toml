@@ -1,7 +1,7 @@
 [package]
 name = "dipa"
 version = "0.1.0"
-description = "dipa makes it easy to efficiently delta encode Rust data structures."
+description = "dipa makes it easy to efficiently delta encode large Rust data structures."
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 keywords = ["delta", "encode", "compress", "network", "state", "client", "server"]
