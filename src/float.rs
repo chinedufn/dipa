@@ -1,5 +1,5 @@
+use crate::CreatedDelta;
 use crate::{number_diff_impl_option_wrapped, number_patch_impl_option_wrapped};
-use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
 number_diff_impl_option_wrapped!(f32, f32);
 number_patch_impl_option_wrapped!(f32, Option<f32>);
@@ -11,9 +11,6 @@ number_patch_impl_option_wrapped!(f64, Option<f64>);
 mod tests {
     use super::*;
     use crate::dipa_impl_tester::DipaImplTester;
-    use crate::test_utils::{
-        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
-    };
     use crate::{Diffable, Patchable};
 
     /// We wrap f32 so that we can impl Eq and PartialEq
@@ -27,7 +24,7 @@ mod tests {
         type Delta = Option<f32>;
         type DeltaOwned = Option<f32>;
 
-        fn create_delta_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Delta> {
+        fn create_delta_towards(&self, end_state: &Self) -> CreatedDelta<Self::Delta> {
             self.0.create_delta_towards(&end_state.0)
         }
     }
@@ -42,7 +39,7 @@ mod tests {
         type Delta = Option<f64>;
         type DeltaOwned = Option<f64>;
 
-        fn create_delta_towards(&self, end_state: &Self) -> CreatePatchTowardsReturn<Self::Delta> {
+        fn create_delta_towards(&self, end_state: &Self) -> CreatedDelta<Self::Delta> {
             self.0.create_delta_towards(&end_state.0)
         }
     }
@@ -58,13 +55,13 @@ mod tests {
 
     impl PartialEq for F32TestWrapper {
         fn eq(&self, other: &Self) -> bool {
-            (self.0 - other.0).abs() < std::f32::EPSILON
+            (self.0 - other.0).abs() < f32::EPSILON
         }
     }
 
     impl PartialEq for F64TestWrapper {
         fn eq(&self, other: &Self) -> bool {
-            (self.0 - other.0).abs() < std::f64::EPSILON
+            (self.0 - other.0).abs() < f64::EPSILON
         }
     }
 
@@ -76,7 +73,7 @@ mod tests {
             end: &F32TestWrapper(0.),
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -89,7 +86,7 @@ mod tests {
             end: &F32TestWrapper(5.),
             expected_delta: Some(5.),
             expected_serialized_patch_size: 5,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -102,7 +99,7 @@ mod tests {
             end: &F64TestWrapper(0.),
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -115,7 +112,7 @@ mod tests {
             end: &F64TestWrapper(5.),
             expected_delta: Some(5.),
             expected_serialized_patch_size: 9,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }

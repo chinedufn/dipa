@@ -1,8 +1,8 @@
+use crate::CreatedDelta;
 use crate::{
     number_diff_impl_option_wrapped, number_diff_impl_u8_or_i8, number_patch_impl_mut_u8_or_i8,
     number_patch_impl_option_wrapped, number_patch_impl_u8_or_i8,
 };
-use crate::{CreatePatchTowardsReturn, MacroOptimizationHints};
 
 number_diff_impl_u8_or_i8!(u8, u8);
 number_patch_impl_u8_or_i8!(u8, u8);
@@ -36,9 +36,6 @@ number_patch_impl_option_wrapped!(i128, Option<i128>);
 mod tests_signed {
 
     use crate::dipa_impl_tester::DipaImplTester;
-    use crate::test_utils::{
-        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
-    };
 
     #[test]
     fn diff_patch_u8_same() {
@@ -48,7 +45,7 @@ mod tests_signed {
             end: &0u8,
             expected_delta: 0,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -61,7 +58,7 @@ mod tests_signed {
             end: &2u8,
             expected_delta: 2,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -74,7 +71,7 @@ mod tests_signed {
             end: &0u16,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -87,7 +84,7 @@ mod tests_signed {
             end: &2u16,
             expected_delta: Some(2),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -100,7 +97,7 @@ mod tests_signed {
             end: &0u32,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -113,7 +110,7 @@ mod tests_signed {
             end: &1u32,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -126,7 +123,7 @@ mod tests_signed {
             end: &0u64,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -139,7 +136,7 @@ mod tests_signed {
             end: &1u64,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -152,7 +149,7 @@ mod tests_signed {
             end: &0u128,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -165,7 +162,7 @@ mod tests_signed {
             end: &1u128,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -175,9 +172,6 @@ mod tests_signed {
 mod tests_unsigned {
 
     use crate::dipa_impl_tester::DipaImplTester;
-    use crate::test_utils::{
-        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
-    };
 
     #[test]
     fn diff_patch_i8_same() {
@@ -187,7 +181,7 @@ mod tests_unsigned {
             end: &0i8,
             expected_delta: 0,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -200,7 +194,7 @@ mod tests_unsigned {
             end: &1i8,
             expected_delta: 1,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -213,7 +207,7 @@ mod tests_unsigned {
             end: &0i16,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -226,7 +220,7 @@ mod tests_unsigned {
             end: &2i16,
             expected_delta: Some(2),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -239,7 +233,7 @@ mod tests_unsigned {
             end: &0i32,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -252,7 +246,7 @@ mod tests_unsigned {
             end: &1i32,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -265,7 +259,7 @@ mod tests_unsigned {
             end: &0i64,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -278,7 +272,7 @@ mod tests_unsigned {
             end: &1i64,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -291,7 +285,7 @@ mod tests_unsigned {
             end: &0i128,
             expected_delta: None,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -304,7 +298,7 @@ mod tests_unsigned {
             end: &1i128,
             expected_delta: Some(1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }

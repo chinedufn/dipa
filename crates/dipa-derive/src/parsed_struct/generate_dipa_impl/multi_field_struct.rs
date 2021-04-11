@@ -69,11 +69,10 @@ impl ParsedStruct {
                #field_diffs_statements
                #calculate_delta_tokens
 
-               let macro_hints = dipa::MacroOptimizationHints {
-                   did_change
-               };
-
-              (diff, macro_hints)
+                CreatedDelta {
+                    delta,
+                    did_change,
+                }
             },
             quote! {
                #apply_patch_tokens

@@ -1,23 +1,20 @@
 use crate::sequence::longest_common_subsequence::get_longest_common_subsequence;
 use crate::sequence::SequenceModificationDelta;
-use crate::MacroOptimizationHints;
+use crate::CreatedDelta;
 
 // Tests are in the parent module.
 pub(super) fn delta_towards<'p, T: PartialEq>(
     before: &[T],
     target_state: &'p [T],
-) -> (
-    Vec<SequenceModificationDelta<'p, T>>,
-    MacroOptimizationHints,
-)
+) -> CreatedDelta<Vec<SequenceModificationDelta<'p, T>>>
 where
     &'p T: serde::Serialize,
 {
     if target_state.len() == 0 && before.len() > 0 {
-        return (
-            vec![SequenceModificationDelta::DeleteAll],
-            MacroOptimizationHints { did_change: true },
-        );
+        return CreatedDelta {
+            delta: vec![SequenceModificationDelta::DeleteAll],
+            did_change: true,
+        };
     }
 
     let mut modifications = vec![];
@@ -171,7 +168,10 @@ where
     modifications.reverse();
 
     let did_change = modifications.len() > 0;
-    (modifications, MacroOptimizationHints { did_change })
+    CreatedDelta {
+        delta: modifications,
+        did_change,
+    }
 }
 
 #[derive(Copy, Clone)]

@@ -1,7 +1,7 @@
 use super::Diffable;
 use std::fmt::Debug;
 
-use crate::{MacroOptimizationHints, Patchable};
+use crate::{CreatedDelta, Patchable};
 use bincode::Options;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -21,7 +21,7 @@ pub struct DipaImplTester<
     pub expected_delta: T::Delta,
     /// The size of the patch in bytes when bincoded with variable integer encoding.
     pub expected_serialized_patch_size: usize,
-    pub expected_macro_hints: MacroOptimizationHints,
+    pub expected_did_change: bool,
 }
 
 impl<'s, 'e, T> DipaImplTester<'s, 'e, T>
@@ -41,7 +41,7 @@ where
         // be safe.
         let start = unsafe { &mut *(self.start as *mut T) };
 
-        let (delta, macro_hints) = start.create_delta_towards(self.end);
+        let CreatedDelta { delta, did_change } = start.create_delta_towards(self.end);
 
         assert_eq!(
             delta, self.expected_delta,
@@ -51,7 +51,7 @@ Test Label {:?}
             self.label
         );
 
-        assert_eq!(macro_hints, self.expected_macro_hints);
+        assert_eq!(did_change, self.expected_did_change);
 
         let delta_bytes = bincode::options()
             .with_varint_encoding()

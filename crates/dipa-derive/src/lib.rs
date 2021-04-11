@@ -233,7 +233,7 @@ fn impl_dipa(
         type DeltaOwned = #delta_owned_type;
 
         fn create_delta_towards (&'s self, end_state: &'e #enum_or_struct_name)
-          -> dipa::CreatePatchTowardsReturn<Self::Delta> {
+          -> dipa::CreatedDelta<Self::Delta> {
             #create_delta_inner
         }
      }

@@ -8,21 +8,15 @@ macro_rules! number_diff_impl_option_wrapped {
 
             type DeltaOwned = Option<$num_ty>;
 
-            fn create_delta_towards(
-                &self,
-                end_state: &$other,
-            ) -> CreatePatchTowardsReturn<Self::Delta> {
-                let hint = MacroOptimizationHints {
-                    did_change: self != end_state,
+            fn create_delta_towards(&self, end_state: &$other) -> CreatedDelta<Self::Delta> {
+                let did_change = self != end_state;
+
+                let delta = match *self == *end_state {
+                    true => None,
+                    false => Some(*end_state),
                 };
 
-                (
-                    match *self == *end_state {
-                        true => None,
-                        false => Some(*end_state),
-                    },
-                    hint,
-                )
+                CreatedDelta { delta, did_change }
             }
         }
     };
@@ -51,14 +45,13 @@ macro_rules! number_diff_impl_u8_or_i8 {
 
             type DeltaOwned = $num_ty;
 
-            fn create_delta_towards(
-                &self,
-                end_state: &$other,
-            ) -> CreatePatchTowardsReturn<Self::Delta> {
+            fn create_delta_towards(&self, end_state: &$other) -> CreatedDelta<Self::Delta> {
                 let did_change = *self != *end_state;
-                let hint = MacroOptimizationHints { did_change };
 
-                (*end_state, hint)
+                crate::CreatedDelta {
+                    delta: *end_state,
+                    did_change,
+                }
             }
         }
     };

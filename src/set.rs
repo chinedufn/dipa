@@ -110,7 +110,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{DipaImplTester, MacroOptimizationHints};
+    use crate::DipaImplTester;
     use std::collections::{BTreeSet, HashSet};
 
     /// Verify that we properly handle an unchanged empty HashMap
@@ -122,7 +122,7 @@ mod tests {
             end: &HashSet::new(),
             expected_delta: SetDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
     }
@@ -136,7 +136,7 @@ mod tests {
             end: &vec![1].into_iter().collect(),
             expected_delta: SetDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
     }
@@ -150,7 +150,7 @@ mod tests {
             end: &HashSet::new(),
             expected_delta: SetDelta::RemoveAll,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -164,7 +164,7 @@ mod tests {
             end: &vec![1u32].into_iter().collect(),
             expected_delta: SetDelta::AddOneField(&1),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -178,7 +178,7 @@ mod tests {
             end: &vec![1].into_iter().collect(),
             expected_delta: SetDelta::RemoveOneField(&3),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -195,7 +195,7 @@ mod tests {
                 removed: vec![],
             },
             expected_serialized_patch_size: 5,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -212,7 +212,7 @@ mod tests {
                 removed: vec![&3, &5],
             },
             expected_serialized_patch_size: 5,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

@@ -36,11 +36,11 @@ impl EnumVariant {
         let same_variant = left_variant.to_string() == right_variant.to_string();
 
         if same_variant {
-            if self.fields.is_unit() {
-                return self.block_same_variant_no_data(enum_name);
+            return if self.fields.is_unit() {
+                self.block_same_variant_no_data(enum_name)
             } else {
-                return self.block_same_variant_with_data(enum_name, other, dipa_attrs);
-            }
+                self.block_same_variant_with_data(enum_name, other, dipa_attrs)
+            };
         }
 
         if other.fields.len() == 0 {
@@ -57,19 +57,16 @@ impl EnumVariant {
     ///       MyEnum::MyVariant,
     ///       MyEnum::MyVariant,
     ///   ) => {
-    ///       let macro_hints = dipa::MacroOptimizationHints {
-    ///           did_change: false
-    ///       };
+    ///       let delta = MyEnumDelta::MyVariantNoChange;
     ///
-    ///       let diff = MyEnumDelta::MyVariantNoChange;
-    ///
-    ///       (diff, macro_hints)
+    ///       dipa::CreatedDelta {
+    ///           delta,
+    ///           did_change: false,
+    ///       }
     ///   }
     /// };
     /// ```
     fn block_same_variant_no_data(&self, enum_name: &Ident) -> TokenStream2 {
-        let macro_hints_no_change = self.create_macro_hints_no_change();
-
         let variant = &self.name;
         let variant_no_change = self.variant_no_change();
 
@@ -80,11 +77,10 @@ impl EnumVariant {
                 #enum_name::#variant,
                 #enum_name::#variant,
             ) => {
-                #macro_hints_no_change
-
-                let diff = #diff_ty::#variant_no_change;
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: #diff_ty::#variant_no_change,
+                    did_change: false
+                }
             }
         }
     }
@@ -99,20 +95,19 @@ impl EnumVariant {
     ///       let diff0 = start_some_field.create_delta_towards(&end_some_field);
     ///       let diff1 = start_another.create_delta_towards(&end_another);
     ///
-    ///       let diff = match (diff0.1.did_change, diff1.1.did_change) => {
+    ///       let delta = match (diff0.did_change, diff1.did_change) => {
     ///           (false, false) => MyEnumDelta::AnotherVariantNoChange,
-    ///           (true, false) => MyEnumDelta::AnotherVariantChange_0(diff_0.0),
-    ///           (false, true) => MyEnumDelta::AnotherVariantChange_1(diff_1.0),
-    ///           (true, true) => MyEnumDelta::AnotherVariantChange_0_1(diff_0.0, diff_1.0)
+    ///           (true, false) => MyEnumDelta::AnotherVariantChange_0(diff_0.delta),
+    ///           (false, true) => MyEnumDelta::AnotherVariantChange_1(diff_1.delta),
+    ///           (true, true) => MyEnumDelta::AnotherVariantChange_0_1(diff_0.delta, diff_1.delta)
     ///       };
     ///
-    ///       let did_change = diff_0.1.did_change || diff_1.1.did_change;
+    ///       let did_change = diff_0.did_change || diff_1.did_change;
     ///
-    ///       let macro_hints = dipa::MacroOptimizationHints {
-    ///           did_change
-    ///       };
-    ///
-    ///       (diff, macro_hints)
+    ///       dipa::CreatedDelta {
+    ///           delta,
+    ///           did_change,
+    ///       }
     ///   }
     /// };
     /// ```
@@ -122,8 +117,6 @@ impl EnumVariant {
         other: &EnumVariant,
         dipa_attrs: &DipaAttrs,
     ) -> TokenStream2 {
-        let macro_hints_based_on_did_change = self.create_macro_hints_based_on_did_change();
-
         let variant = &self.name;
 
         let diff_ty = delta_type_name(enum_name);
@@ -150,9 +143,10 @@ impl EnumVariant {
 
                 #match_diff_statements
 
-                #macro_hints_based_on_did_change
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta,
+                    did_change,
+                }
             }
         }
     }
@@ -164,13 +158,10 @@ impl EnumVariant {
     ///       MyEnum::MyVariant,
     ///       MyEnum::AnotherVariant,
     ///   ) => {
-    ///       let macro_hints = dipa::MacroOptimizationHints {
-    ///           did_change: false
-    ///       };
-    ///
-    ///       let diff = MyEnumDelta::ChangedToAnotherVariant;
-    ///
-    ///       (diff, macro_hints)
+    ///       dipa::CreatedDelta {
+    ///           delta: MyEnumDelta::ChangedToAnotherVariant,
+    ///           did_change: false,
+    ///       }
     ///   }
     /// };
     /// ```
@@ -179,8 +170,6 @@ impl EnumVariant {
         enum_name: &Ident,
         other: &EnumVariant,
     ) -> TokenStream2 {
-        let macro_hints_no_change = self.create_macro_hints_changed();
-
         let variant_1 = &self.name;
         let variant_1_fields = self.fields.to_pattern_match_tokens("_");
 
@@ -195,11 +184,10 @@ impl EnumVariant {
                 #enum_name::#variant_1#variant_1_fields,
                 #enum_name::#variant_2,
             ) => {
-                #macro_hints_no_change
-
-                let diff = #diff_ty::#changed_to_variant;
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: #diff_ty::#changed_to_variant,
+                    did_change: true,
+                }
             }
         }
     }
@@ -211,13 +199,10 @@ impl EnumVariant {
     ///       MyEnum::MyVariant,
     ///       MyEnum::AnotherVariant { some_field, another_field },
     ///   ) => {
-    ///       let macro_hints = dipa::MacroOptimizationHints {
-    ///           did_change: true
-    ///       };
-    ///
-    ///       let diff = MyEnumDelta::ChangedToAnotherVariant(some_field, another_field);
-    ///
-    ///       (diff, macro_hints)
+    ///       dipa::CreatedDelta {
+    ///           delta: MyEnumDelta::ChangedToAnotherVariant(some_field, another_field),
+    ///           did_change: true,
+    ///       }
     ///   }
     /// };
     /// ```
@@ -226,8 +211,6 @@ impl EnumVariant {
         enum_name: &Ident,
         other: &EnumVariant,
     ) -> TokenStream2 {
-        let macro_hints_no_change = self.create_macro_hints_changed();
-
         let variant_1 = &self.name;
         let variant_1_pattern_fields = self.fields.to_pattern_match_tokens("_");
 
@@ -245,36 +228,11 @@ impl EnumVariant {
                 #enum_name::#variant_1#variant_1_pattern_fields,
                 #enum_name::#variant_2#variant_2_pattern_fields,
             ) => {
-                #macro_hints_no_change
-
-                let diff = #diff_ty::#changed_to_variant#variant_2_field_values;
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: #diff_ty::#changed_to_variant#variant_2_field_values,
+                    did_change: true,
+                }
             }
-        }
-    }
-
-    fn create_macro_hints_no_change(&self) -> TokenStream2 {
-        quote! {
-          let macro_hints = dipa::MacroOptimizationHints {
-              did_change: false
-          };
-        }
-    }
-
-    fn create_macro_hints_changed(&self) -> TokenStream2 {
-        quote! {
-          let macro_hints = dipa::MacroOptimizationHints {
-              did_change: true
-          };
-        }
-    }
-
-    fn create_macro_hints_based_on_did_change(&self) -> TokenStream2 {
-        quote! {
-          let macro_hints = dipa::MacroOptimizationHints {
-              did_change
-          };
         }
     }
 
@@ -330,13 +288,10 @@ mod tests {
               MyEnum::FirstVariant,
               MyEnum::FirstVariant,
           ) => {
-              let macro_hints = dipa::MacroOptimizationHints {
+              dipa::CreatedDelta {
+                  delta: MyEnumDelta::FirstVariantNoChange,
                   did_change: false
-              };
-
-              let diff = MyEnumDelta::FirstVariantNoChange;
-
-              (diff, macro_hints)
+              }
           }
         };
 
@@ -367,13 +322,10 @@ mod tests {
                 MyEnum::FirstVariant,
                 MyEnum::Variant2,
             ) => {
-                let macro_hints = dipa::MacroOptimizationHints {
-                    did_change: true
-                };
-
-                let diff = MyEnumDelta::ChangedToVariantVariant2;
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: MyEnumDelta::ChangedToVariantVariant2,
+                    did_change: true,
+                }
             }
         };
 
@@ -414,13 +366,10 @@ mod tests {
                 MyEnum::FirstVariant,
                 MyEnum::Variant2 { field: end_field },
             ) => {
-                let macro_hints = dipa::MacroOptimizationHints {
-                    did_change: true
-                };
-
-                let diff = MyEnumDelta::ChangedToVariantVariant2(end_field);
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: MyEnumDelta::ChangedToVariantVariant2(end_field),
+                    did_change: true,
+                }
             }
         };
 
@@ -461,13 +410,10 @@ mod tests {
                 MyEnum::FirstVariant,
                 MyEnum::Variant2(end_field),
             ) => {
-                let macro_hints = dipa::MacroOptimizationHints {
-                    did_change: true
-                };
-
-                let diff = MyEnumDelta::ChangedToVariantVariant2(end_field);
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta: MyEnumDelta::ChangedToVariantVariant2(end_field),
+                    did_change: true,
+                }
             }
         };
 
@@ -534,20 +480,19 @@ mod tests {
                 let diff0 = start_0.create_delta_towards(&end_0);
                 let diff1 = start_1.create_delta_towards(&end_1);
 
-                let diff = match (diff0.1.did_change, diff1.1.did_change) {
+                let delta = match (diff0.did_change, diff1.did_change) {
                     (false, false) => MyEnumDelta::Variant2NoChange,
-                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.0),
-                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.0, diff1.0),
-                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.0),
+                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.delta),
+                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.delta, diff1.delta),
+                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.delta),
                 };
 
-                let did_change = diff0.1.did_change || diff1.1.did_change;
+                let did_change = diff0.did_change || diff1.did_change;
 
-                let macro_hints = dipa::MacroOptimizationHints {
-                    did_change
-                };
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta,
+                    did_change,
+                }
             }
         };
 
@@ -614,20 +559,19 @@ mod tests {
                 let diff0 = start_field_a.create_delta_towards(&end_field_a);
                 let diff1 = start_field_b.create_delta_towards(&end_field_b);
 
-                let diff = match (diff0.1.did_change, diff1.1.did_change) {
+                let delta = match (diff0.did_change, diff1.did_change) {
                     (false, false) => MyEnumDelta::Variant2NoChange,
-                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.0),
-                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.0, diff1.0),
-                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.0),
+                    (true, false) => MyEnumDelta::Variant2Change_0(diff0.delta),
+                    (true, true) => MyEnumDelta::Variant2Change_0_1(diff0.delta, diff1.delta),
+                    (false, true) => MyEnumDelta::Variant2Change_1(diff1.delta),
                 };
 
-                let did_change = diff0.1.did_change || diff1.1.did_change;
+                let did_change = diff0.did_change || diff1.did_change;
 
-                let macro_hints = dipa::MacroOptimizationHints {
-                    did_change
-                };
-
-                (diff, macro_hints)
+                dipa::CreatedDelta {
+                    delta,
+                    did_change,
+                }
             }
         };
 

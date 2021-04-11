@@ -67,7 +67,7 @@ mod tests {
             end: &MyStruct { field: 5 },
             expected_delta: MyDelta::New(&5),
             expected_serialized_patch_size: 2,
-			did_change: true
+			expected_did_change: true
         }
         .test();
     }
@@ -80,7 +80,7 @@ mod tests {
             end: &MyStruct { field: 2 },
             expected_delta: MyDelta::New(&2),
             expected_serialized_patch_size: 2,
-			did_change: false
+			expected_did_change: false
         }
         .test();
     }

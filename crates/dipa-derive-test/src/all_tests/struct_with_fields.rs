@@ -5,7 +5,7 @@
 //! possible change/no-change combination for structs with 4+ fields. Instead, for structs with
 //! 4+ fields we simply verify that they compile when annotated with `#[derive(Dipa)]`.
 
-use dipa::{DipaImplTester, MacroOptimizationHints};
+use dipa::DipaImplTester;
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct OneField {
@@ -82,7 +82,7 @@ fn structs_with_one_field() {
         end: &OneField { field1: 30 },
         expected_delta: 30,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -92,7 +92,7 @@ fn structs_with_one_field() {
         end: &OneField { field1: 1 },
         expected_delta: 1,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -102,7 +102,7 @@ fn structs_with_one_field() {
         end: &OneFieldTuple(30),
         expected_delta: 30,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -112,7 +112,7 @@ fn structs_with_one_field() {
         end: &OneFieldTuple(1),
         expected_delta: 1,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 }
@@ -132,7 +132,7 @@ fn structs_with_two_fields() {
         },
         expected_delta: TwoFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -148,7 +148,7 @@ fn structs_with_two_fields() {
         },
         expected_delta: TwoFieldsDelta::Change_0(50),
         expected_serialized_patch_size: 2,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -164,7 +164,7 @@ fn structs_with_two_fields() {
         },
         expected_delta: TwoFieldsDelta::Change_1(Some(50)),
         expected_serialized_patch_size: 3,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -180,7 +180,7 @@ fn structs_with_two_fields() {
         },
         expected_delta: TwoFieldsDelta::Change_0_1(10, Some(50)),
         expected_serialized_patch_size: 4,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -192,7 +192,7 @@ fn structs_with_two_fields() {
         end: &TwoFieldsTuple(2, 2),
         expected_delta: TwoFieldsTupleDelta::NoChange,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -202,7 +202,7 @@ fn structs_with_two_fields() {
         end: &TwoFieldsTuple(50, 2),
         expected_delta: TwoFieldsTupleDelta::Change_0(50),
         expected_serialized_patch_size: 2,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -212,7 +212,7 @@ fn structs_with_two_fields() {
         end: &TwoFieldsTuple(2, 50),
         expected_delta: TwoFieldsTupleDelta::Change_1(Some(50)),
         expected_serialized_patch_size: 3,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -222,7 +222,7 @@ fn structs_with_two_fields() {
         end: &TwoFieldsTuple(10, 50),
         expected_delta: TwoFieldsTupleDelta::Change_0_1(10, Some(50)),
         expected_serialized_patch_size: 4,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 }
@@ -244,7 +244,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::NoChange,
         expected_serialized_patch_size: 1,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -262,7 +262,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_0(5),
         expected_serialized_patch_size: 2,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -280,7 +280,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_1(Some(5)),
         expected_serialized_patch_size: 3,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -298,7 +298,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_2(Some(5)),
         expected_serialized_patch_size: 3,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -316,7 +316,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_0_1(5, Some(6)),
         expected_serialized_patch_size: 4,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -334,7 +334,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_0_2(5, Some(6)),
         expected_serialized_patch_size: 4,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
     DipaImplTester {
@@ -351,7 +351,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_1_2(Some(5), Some(6)),
         expected_serialized_patch_size: 5,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 
@@ -369,7 +369,7 @@ fn structs_with_three_fields() {
         },
         expected_delta: ThreeFieldsDelta::Change_0_1_2(5, Some(6), Some(7)),
         expected_serialized_patch_size: 6,
-        expected_macro_hints: MacroOptimizationHints { did_change: true },
+        expected_did_change: true,
     }
     .test();
 }

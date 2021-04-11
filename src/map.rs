@@ -160,7 +160,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{DipaImplTester, MacroOptimizationHints};
+    use crate::DipaImplTester;
     use std::collections::{BTreeMap, HashMap};
 
     /// Verify that we properly handle an unchanged empty HashMap
@@ -172,7 +172,7 @@ mod tests {
             end: &HashMap::new(),
             expected_delta: MapDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
     }
@@ -186,7 +186,7 @@ mod tests {
             end: &vec![(1, 2)].into_iter().collect(),
             expected_delta: MapDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
     }
@@ -200,7 +200,7 @@ mod tests {
             end: &HashMap::new(),
             expected_delta: MapDelta::RemoveAll,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -214,7 +214,7 @@ mod tests {
             end: &vec![(1u32, 2u64)].into_iter().collect(),
             expected_delta: MapDelta::AddOneField(&1, &2),
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -230,7 +230,7 @@ mod tests {
             end: &vec![(1, 2)].into_iter().collect(),
             expected_delta: MapDelta::RemoveOneField(&3),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -246,7 +246,7 @@ mod tests {
             end: &vec![(1, 2), (3, 9)].into_iter().collect(),
             expected_delta: MapDelta::ChangeOneField(&3, Some(9)),
             expected_serialized_patch_size: 4,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -264,7 +264,7 @@ mod tests {
                 changed: vec![],
             },
             expected_serialized_patch_size: 8,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -284,7 +284,7 @@ mod tests {
                 changed: vec![],
             },
             expected_serialized_patch_size: 6,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }
@@ -304,7 +304,7 @@ mod tests {
                 changed: vec![(&1, Some(15)), (&3, Some(16))],
             },
             expected_serialized_patch_size: 10,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

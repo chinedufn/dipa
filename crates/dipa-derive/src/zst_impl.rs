@@ -7,12 +7,12 @@ pub(super) fn create_zst_impl(enum_or_struct_name: &Ident) -> TokenStream2 {
         enum_or_struct_name,
         quote! {()},
         quote! {()},
-        quote! {(
-         (),
-         dipa::MacroOptimizationHints {
-             did_change: false
-         }
-        )},
+        quote! {
+            dipa::CreatedDelta {
+                delta: (),
+                did_change: false
+            }
+        },
         quote! {},
     )
 }

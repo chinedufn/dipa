@@ -26,7 +26,7 @@ struct NoBatchingManyFields {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dipa::{DipaImplTester, MacroOptimizationHints};
+    use dipa::DipaImplTester;
 
     /// Verify that the delta types for a struct with no field batching are properly created.
     /// The no_batching strategy creates a delta struct with one field per original field, so
@@ -62,7 +62,7 @@ mod tests {
                 field_b: None,
             },
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -81,7 +81,7 @@ mod tests {
                 field_b: Some(16),
             },
             expected_serialized_patch_size: 4,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

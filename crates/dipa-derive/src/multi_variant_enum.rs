@@ -241,10 +241,10 @@ fn no_data_diff_match(enum_name: &syn::Ident, variants: &[EnumVariant]) -> Token
 
             diff_match_branches.push(quote! {
                 (Self::#variant_name_1, Self::#variant_name_2) => {
-                    let hints = dipa::MacroOptimizationHints {
-                        did_change: #did_change
-                    };
-                    (Self::#variant_name_2, hints)
+                    dipa::CreatedDelta {
+                        delta: Self::#variant_name_2,
+                        did_change: #did_change,
+                    }
                 }
             });
         }

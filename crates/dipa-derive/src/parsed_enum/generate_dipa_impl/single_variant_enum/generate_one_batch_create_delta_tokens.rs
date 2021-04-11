@@ -66,16 +66,15 @@ impl ParsedEnum {
 
                     let did_change = #(#did_change_tokens)||*;
 
-                    let diff = match (#(#did_change_tokens),*) {
+                    let delta = match (#(#did_change_tokens),*) {
                         (#(#all_false),*) => #delta_type_name::NoChange,
                         #(#match_blocks)*
                     };
 
-                    let macro_hints = dipa::MacroOptimizationHints {
-                        did_change
-                    };
-
-                    (diff, macro_hints)
+                    dipa::CreatedDelta {
+                        delta,
+                        did_change,
+                    }
                 }
             }
         }
@@ -112,7 +111,7 @@ impl ParsedEnum {
                 let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
 
                 quote! {
-                    #diff_idx_ident.1.did_change
+                    #diff_idx_ident.did_change
                 }
             })
             .collect()
@@ -143,20 +142,19 @@ mod tests {
                     let diff0 = start_0.create_delta_towards(&end_0);
                     let diff1 = start_1.create_delta_towards(&end_1);
 
-                    let did_change = diff0.1.did_change || diff1.1.did_change;
+                    let did_change = diff0.did_change || diff1.did_change;
 
-                    let diff = match (diff0.1.did_change, diff1.1.did_change) {
+                    let delta = match (diff0.did_change, diff1.did_change) {
                         (false, false) => MyEnumDelta::NoChange,
-                        (true, false) => MyEnumDelta::Change_0(diff0.0),
-                        (false, true) => MyEnumDelta::Change_1(diff1.0),
-                        (true, true) => MyEnumDelta::Change_0_1(diff0.0, diff1.0),
+                        (true, false) => MyEnumDelta::Change_0(diff0.delta),
+                        (false, true) => MyEnumDelta::Change_1(diff1.delta),
+                        (true, true) => MyEnumDelta::Change_0_1(diff0.delta, diff1.delta),
                     };
 
-                    let macro_hints = dipa::MacroOptimizationHints {
-                        did_change
-                    };
-
-                    (diff, macro_hints)
+                    dipa::CreatedDelta {
+                        delta,
+                        did_change,
+                    }
                 }
             }
         };

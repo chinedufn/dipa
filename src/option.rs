@@ -1,4 +1,4 @@
-use crate::{Diffable, MacroOptimizationHints, Patchable};
+use crate::{CreatedDelta, Diffable, Patchable};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt::{Debug, Formatter};
@@ -12,10 +12,7 @@ where
     type Delta = OptionDelta<'s, 'e, T>;
     type DeltaOwned = OptionDeltaOwned<'s, 'e, T>;
 
-    fn create_delta_towards(
-        &'s self,
-        end_state: &'e Option<T>,
-    ) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&'s self, end_state: &'e Option<T>) -> CreatedDelta<Self::Delta> {
         let diff = match (self, end_state) {
             (None, None) => OptionDelta::NoChange,
             (None, Some(new)) => OptionDelta::OuterChange(Some(new)),
@@ -24,8 +21,8 @@ where
             (Some(old), Some(new)) => {
                 let diff = old.create_delta_towards(new);
 
-                if diff.1.did_change {
-                    OptionDelta::InnerChange(diff.0)
+                if diff.did_change {
+                    OptionDelta::InnerChange(diff.delta)
                 } else {
                     OptionDelta::NoChange
                 }
@@ -37,9 +34,10 @@ where
             _ => true,
         };
 
-        let hint = MacroOptimizationHints { did_change };
-
-        (diff, hint)
+        CreatedDelta {
+            delta: diff,
+            did_change,
+        }
     }
 }
 
@@ -142,7 +140,7 @@ mod tests {
             end: &None,
             expected_delta: OptionDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -152,7 +150,7 @@ mod tests {
             end: &Some(1u32),
             expected_delta: OptionDelta::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -162,7 +160,7 @@ mod tests {
             end: &Some(5u32),
             expected_delta: OptionDelta::InnerChange(Some(5)),
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -172,7 +170,7 @@ mod tests {
             end: &None,
             expected_delta: OptionDelta::OuterChange(None),
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -182,7 +180,7 @@ mod tests {
             end: &Some(1u32),
             expected_delta: OptionDelta::OuterChange(Some(&1u32)),
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

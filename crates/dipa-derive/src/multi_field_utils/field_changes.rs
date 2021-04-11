@@ -54,14 +54,14 @@ impl ChangedFieldIndices {
             .collect()
     }
 
-    /// diff0.0, diff2.0, diff5.0
+    /// diff0.delta, diff2.delta, diff5.delta
     pub fn diffs(&self, span: Span) -> Vec<TokenStream2> {
         self.iter()
             .map(|idx| {
                 let diff = Ident::new(&format!("diff{}", idx), span);
 
                 quote! {
-                    #diff.0
+                    #diff.delta
                 }
             })
             .collect()

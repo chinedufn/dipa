@@ -1,4 +1,4 @@
-use crate::{Diffable, MacroOptimizationHints, Patchable};
+use crate::{CreatedDelta, Diffable, Patchable};
 use std::borrow::{Borrow, Cow};
 
 impl<'s, 'e, 'a, T> Diffable<'s, 'e, Cow<'a, T>> for Cow<'a, T>
@@ -10,10 +10,7 @@ where
     type Delta = <T as Diffable<'s, 'e, T>>::Delta;
     type DeltaOwned = <T as Diffable<'s, 'e, T>>::DeltaOwned;
 
-    fn create_delta_towards(
-        &'s self,
-        end_state: &'e Cow<'a, T>,
-    ) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&'s self, end_state: &'e Cow<'a, T>) -> CreatedDelta<Self::Delta> {
         let inner_self: &T = self.borrow();
 
         inner_self.create_delta_towards(end_state.borrow())
@@ -35,7 +32,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::sequence::SequenceModificationDelta;
-    use crate::{DipaImplTester, MacroOptimizationHints};
+    use crate::DipaImplTester;
     use std::borrow::Cow;
 
     /// Verify that we can diff and batch Cow's
@@ -50,7 +47,7 @@ mod tests {
             end: &Cow::Owned(hello_static.to_string()),
             expected_delta: vec![],
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -60,7 +57,7 @@ mod tests {
             end: &Cow::Borrowed(hello_static),
             expected_delta: vec![],
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -70,7 +67,7 @@ mod tests {
             end: &Cow::Borrowed(hello_static),
             expected_delta: vec![],
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -80,7 +77,7 @@ mod tests {
             end: &Cow::Owned(hello_static.to_string()),
             expected_delta: vec![],
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -90,7 +87,7 @@ mod tests {
             end: &Cow::Owned(empty_static.to_string()),
             expected_delta: vec![SequenceModificationDelta::DeleteAll],
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -100,7 +97,7 @@ mod tests {
             end: &Cow::Borrowed(empty_static),
             expected_delta: vec![SequenceModificationDelta::DeleteAll],
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -110,7 +107,7 @@ mod tests {
             end: &Cow::Borrowed(empty_static),
             expected_delta: vec![SequenceModificationDelta::DeleteAll],
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -120,7 +117,7 @@ mod tests {
             end: &Cow::Owned(empty_static.to_string()),
             expected_delta: vec![SequenceModificationDelta::DeleteAll],
             expected_serialized_patch_size: 2,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

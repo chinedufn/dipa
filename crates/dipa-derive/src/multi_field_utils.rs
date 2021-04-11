@@ -68,13 +68,13 @@ pub fn fields_unnamed_to_vec_fields(fields: &FieldsUnnamed) -> Vec<StructOrTuple
 // // End not included.
 //
 // quote! {
-//     let diff = match (diff0.1.did_change, diff1.1.did_change) {
+//     let delta = match (diff0.did_change, diff1.did_change) {
 //         (false, false) => MyTypeDelta::NoChange,
-//         (true, false) => MyTypeDelta::Change_0(diff0.0),
-//         (false, true) => MyTypeDelta::Change_1(diff1.0),
-//         (true, true) => MyTypeDelta::Change_0_1(diff0.0, diff1.0)
+//         (true, false) => MyTypeDelta::Change_0(diff0.delta),
+//         (false, true) => MyTypeDelta::Change_1(diff1.delta),
+//         (true, true) => MyTypeDelta::Change_0_1(diff0.delta, diff1.delta)
 //     };
-//     let did_change = match (diff0.1.did_change, diff1.1.did_change) {
+//     let did_change = match (diff0.did_change, diff1.did_change) {
 //         (false, false) => false,
 //         _ => true
 //     };
@@ -96,11 +96,11 @@ pub fn make_match_diff_tokens(
     let mut did_change_tokens = vec![];
     for (idx, f) in fields.iter().enumerate() {
         let diff_ident = Ident::new(&format!("diff{}", idx), f.span);
-        did_change_tokens.push(quote! { #diff_ident.1.did_change });
+        did_change_tokens.push(quote! { #diff_ident.did_change });
     }
 
     let tokens = quote! {
-        let diff = match (#(#did_change_tokens),*) {
+        let delta = match (#(#did_change_tokens),*) {
             #(#match_diff_inner_tokens)*
         };
         let did_change = #(#did_change_tokens)||*;
@@ -192,7 +192,7 @@ fn make_match_diff_inner_tokens(
             changed_keys += &format!("_{}", idx);
 
             let diff_ident = Ident::new(&format!("diff{}", idx), span);
-            changed_diffs.push(quote! {#diff_ident.0});
+            changed_diffs.push(quote! {#diff_ident.delta});
         }
 
         let changed_keys = Ident::new(&format!("{}{}", change_prefix, changed_keys), span);

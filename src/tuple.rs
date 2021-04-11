@@ -1,5 +1,5 @@
 use crate::delta_n::{Delta2, DeltaOwned2};
-use crate::{Diffable, MacroOptimizationHints, Patchable};
+use crate::{CreatedDelta, Diffable, Patchable};
 
 // TODO: 3-tuple and 4-tuple implementations. Similar to 2-tuple just with more fields.
 //  We already generate code like this in dipa-derive so we can probably look to re-use that
@@ -11,24 +11,20 @@ impl<'s, 'e, A: Diffable<'s, 'e, A>, B: Diffable<'s, 'e, B>> Diffable<'s, 'e, (A
     type DeltaOwned =
         DeltaOwned2<<A as Diffable<'s, 'e, A>>::DeltaOwned, <B as Diffable<'s, 'e, B>>::DeltaOwned>;
 
-    fn create_delta_towards(
-        &'s self,
-        end_state: &'e (A, B),
-    ) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&'s self, end_state: &'e (A, B)) -> CreatedDelta<Self::Delta> {
         let diff0 = self.0.create_delta_towards(&end_state.0);
         let diff1 = self.1.create_delta_towards(&end_state.1);
 
-        let did_change = diff0.1.did_change || diff1.1.did_change;
-        let hints = MacroOptimizationHints { did_change };
+        let did_change = diff0.did_change || diff1.did_change;
 
-        let diff = match (diff0.1.did_change, diff1.1.did_change) {
+        let delta = match (diff0.did_change, diff1.did_change) {
             (false, false) => Delta2::NoChange,
-            (true, false) => Delta2::Change_0(diff0.0),
-            (false, true) => Delta2::Change_1(diff1.0),
-            (true, true) => Delta2::Change_0_1(diff0.0, diff1.0),
+            (true, false) => Delta2::Change_0(diff0.delta),
+            (false, true) => Delta2::Change_1(diff1.delta),
+            (true, true) => Delta2::Change_0_1(diff0.delta, diff1.delta),
         };
 
-        (diff, hints)
+        CreatedDelta { delta, did_change }
     }
 }
 
@@ -79,7 +75,7 @@ mod tests {
             end: &(1u16, 2u32),
             expected_delta: Delta2::NoChange,
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -89,7 +85,7 @@ mod tests {
             end: &(5u16, 2u32),
             expected_delta: Delta2::Change_0(Some(5)),
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -99,7 +95,7 @@ mod tests {
             end: &(1u16, 6u32),
             expected_delta: Delta2::Change_1(Some(6)),
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
 
@@ -109,7 +105,7 @@ mod tests {
             end: &(5u16, 6u32),
             expected_delta: Delta2::Change_0_1(Some(5), Some(6)),
             expected_serialized_patch_size: 5,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

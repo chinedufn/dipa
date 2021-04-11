@@ -3,7 +3,7 @@ macro_rules! set_impl {
     ($map_ty:ty, $module:ident, $($additional_key_bounds:tt)*) => {
         mod $module {
             use super::{SetDelta, SetDeltaOwned};
-            use crate::{Diffable, MacroOptimizationHints, Patchable};
+            use crate::{CreatedDelta, Diffable, Patchable};
             use std::hash::Hash;
 
             type SetAssociatedDeltaOwned<'s, 'e, K> =
@@ -19,12 +19,15 @@ macro_rules! set_impl {
                 fn create_delta_towards(
                     &'s self,
                     end_state: &'e $map_ty,
-                ) -> (Self::Delta, MacroOptimizationHints) {
+                ) -> CreatedDelta<Self::Delta> {
                     let mut did_change = false;
 
                     if end_state.len() == 0 && self.len() > 0 {
                         let delta = SetDelta::RemoveAll;
-                        return (delta, MacroOptimizationHints { did_change: true });
+                        return CreatedDelta {
+                            delta,
+                            did_change: true,
+                        };
                     }
 
                     let mut delta = SetDelta::NoChange;
@@ -66,7 +69,10 @@ macro_rules! set_impl {
                         delta = SetDelta::RemoveOneField(fields_to_remove[0]);
                     }
 
-                    (delta, MacroOptimizationHints { did_change })
+                    CreatedDelta {
+                        delta,
+                        did_change,
+                    }
                 }
             }
 

@@ -1,4 +1,4 @@
-use dipa::{DipaImplTester, MacroOptimizationHints};
+use dipa::DipaImplTester;
 
 #[derive(Debug, DiffPatch, Eq, PartialEq, Serialize)]
 struct UnitStruct;
@@ -31,7 +31,7 @@ fn zst() {
         end: &UnitStruct,
         expected_delta: expected_diff,
         expected_serialized_patch_size,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -41,7 +41,7 @@ fn zst() {
         end: &EmptyStruct {},
         expected_delta: expected_diff,
         expected_serialized_patch_size,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -51,7 +51,7 @@ fn zst() {
         end: &EmptyTupleStruct {},
         expected_delta: expected_diff,
         expected_serialized_patch_size,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 
@@ -61,7 +61,7 @@ fn zst() {
         end: &SingleFieldEnum::Foo,
         expected_delta: expected_diff,
         expected_serialized_patch_size,
-        expected_macro_hints: MacroOptimizationHints { did_change: false },
+        expected_did_change: false,
     }
     .test();
 }

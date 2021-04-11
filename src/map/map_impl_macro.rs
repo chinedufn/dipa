@@ -3,7 +3,7 @@ macro_rules! map_impl {
     ($map_ty:ty, $module:ident, $($additional_key_bounds:tt)*) => {
         mod $module {
             use super::{MapDelta, MapDeltaOwned};
-            use crate::{Diffable, MacroOptimizationHints, Patchable};
+            use crate::{CreatedDelta, Diffable, Patchable};
             use serde::{Serialize, de::DeserializeOwned};
             use std::hash::Hash;
 
@@ -23,12 +23,15 @@ macro_rules! map_impl {
                 fn create_delta_towards(
                     &'s self,
                     end_state: &'e $map_ty,
-                ) -> (Self::Delta, MacroOptimizationHints) {
+                ) -> CreatedDelta<Self::Delta> {
                     let mut did_change = false;
 
                     if end_state.len() == 0 && self.len() > 0 {
                         let delta = MapDelta::RemoveAll;
-                        return (delta, MacroOptimizationHints { did_change: true });
+                        return CreatedDelta {
+                            delta,
+                            did_change: true
+                        };
                     }
 
                     let mut delta = MapDelta::NoChange;
@@ -44,11 +47,11 @@ macro_rules! map_impl {
                                 fields_to_remove.push(key);
                             }
                             Some(end) => {
-                                let (diff, hints) = start.create_delta_towards(end);
+                                let CreatedDelta {delta, did_change: changed} = start.create_delta_towards(end);
 
-                                if hints.did_change {
+                                if changed {
                                     did_change = true;
-                                    fields_changed.push((key, diff));
+                                    fields_changed.push((key, delta));
                                 }
                             }
                         }
@@ -87,7 +90,10 @@ macro_rules! map_impl {
                         delta = MapDelta::ChangeOneField(change.0, change.1);
                     }
 
-                    (delta, MacroOptimizationHints { did_change })
+                    CreatedDelta {
+                        delta,
+                        did_change
+                    }
                 }
             }
 

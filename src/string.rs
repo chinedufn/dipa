@@ -1,11 +1,11 @@
 use crate::sequence::{SequenceModificationDelta, SequenceModificationDeltaOwned};
-use crate::{Diffable, MacroOptimizationHints, Patchable};
+use crate::{CreatedDelta, Diffable, Patchable};
 
 impl<'s, 'e> Diffable<'s, 'e, String> for String {
     type Delta = Vec<SequenceModificationDelta<'e, u8>>;
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<u8>>;
 
-    fn create_delta_towards(&self, end_state: &'e String) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&self, end_state: &'e String) -> CreatedDelta<Self::Delta> {
         self.as_bytes().create_delta_towards(&end_state.as_bytes())
     }
 }
@@ -25,14 +25,13 @@ impl<'s, 'e> Diffable<'s, 'e, str> for str {
     type Delta = Vec<SequenceModificationDelta<'e, u8>>;
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<u8>>;
 
-    fn create_delta_towards(&'s self, end_state: &'e str) -> (Self::Delta, MacroOptimizationHints) {
+    fn create_delta_towards(&'s self, end_state: &'e str) -> CreatedDelta<Self::Delta> {
         self.as_bytes().create_delta_towards(&end_state.as_bytes())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::sequence::SequenceModificationDelta;
     use crate::DipaImplTester;
 
@@ -46,7 +45,7 @@ mod tests {
             expected_delta: vec![],
             // 1 for vec length
             expected_serialized_patch_size: 1,
-            expected_macro_hints: MacroOptimizationHints { did_change: false },
+            expected_did_change: false,
         }
         .test();
 
@@ -57,7 +56,7 @@ mod tests {
             expected_delta: vec![SequenceModificationDelta::DeleteOne { index: 2 }],
             // 1 for vec length, 1 for variant, 1 for index
             expected_serialized_patch_size: 3,
-            expected_macro_hints: MacroOptimizationHints { did_change: true },
+            expected_did_change: true,
         }
         .test();
     }

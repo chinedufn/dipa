@@ -1,6 +1,6 @@
 use crate::sequence::sequence_apply_patch::apply_patch;
 use crate::sequence::sequence_delta_patch_towards::delta_towards;
-use crate::{CreatePatchTowardsReturn, Diffable, Patchable};
+use crate::{CreatedDelta, Diffable, Patchable};
 use serde::Serialize;
 
 mod longest_common_subsequence;
@@ -16,7 +16,7 @@ where
 
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
 
-    fn create_delta_towards(&self, end_state: &'e Self) -> CreatePatchTowardsReturn<Self::Delta> {
+    fn create_delta_towards(&self, end_state: &'e Self) -> CreatedDelta<Self::Delta> {
         delta_towards(self, end_state)
     }
 }
@@ -36,7 +36,7 @@ where
 
     type DeltaOwned = Vec<SequenceModificationDeltaOwned<T>>;
 
-    fn create_delta_towards(&self, end_state: &'e [T]) -> CreatePatchTowardsReturn<Self::Delta> {
+    fn create_delta_towards(&self, end_state: &'e [T]) -> CreatedDelta<Self::Delta> {
         delta_towards(self, end_state)
     }
 }
@@ -165,9 +165,6 @@ pub enum SequenceModificationDeltaOwned<T> {
 mod tests {
     use super::*;
     use crate::dipa_impl_tester::DipaImplTester;
-    use crate::test_utils::{
-        macro_optimization_hint_did_change, macro_optimization_hint_unchanged,
-    };
     use bincode::Options;
 
     /// 1 byte for the u8 length of the Vec that holds all of the patch operations
@@ -183,7 +180,7 @@ mod tests {
             expected_delta: vec![],
             // No change, none variant is one byte
             expected_serialized_patch_size: 1,
-            expected_macro_hints: macro_optimization_hint_unchanged(),
+            expected_did_change: false,
         }
         .test();
     }
@@ -200,7 +197,7 @@ mod tests {
             end: &vec![0u8, 1, 2],
             expected_delta: vec![SequenceModificationDelta::DeleteLast],
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -220,7 +217,7 @@ mod tests {
                 start_index: 3,
             }],
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -237,7 +234,7 @@ mod tests {
             end: &vec![1u8, 2],
             expected_delta: vec![SequenceModificationDelta::DeleteFirst],
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -257,7 +254,7 @@ mod tests {
                 end_index: 1,
             }],
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -279,7 +276,7 @@ mod tests {
                 SequenceModificationDelta::DeleteAllBeforeIncluding { end_index: 1 },
             ],
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -298,7 +295,7 @@ mod tests {
             end: &vec![1u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -322,7 +319,7 @@ mod tests {
             end: &vec![1u8, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -341,7 +338,7 @@ mod tests {
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -362,7 +359,7 @@ mod tests {
             end: &vec![1u8, 2u8, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -386,7 +383,7 @@ mod tests {
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -411,7 +408,7 @@ mod tests {
             end: &vec![1u8, 2, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -430,7 +427,7 @@ mod tests {
             end: &vec![1u8, 2, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -451,7 +448,7 @@ mod tests {
             end: &vec![1u8, 2, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -471,7 +468,7 @@ mod tests {
             end: &vec![2u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -496,7 +493,7 @@ mod tests {
             end: &vec![5u8, 6, 3, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -516,7 +513,7 @@ mod tests {
             end: &vec![1u8, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -541,7 +538,7 @@ mod tests {
             end: &vec![1u8, 2, 5, 6],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -562,7 +559,7 @@ mod tests {
             end: &vec![1u8, 4, 3],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -589,7 +586,7 @@ mod tests {
             end: &vec![1u8, 6, 7, 5],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -617,7 +614,7 @@ mod tests {
             end: &vec![1u8, 5, 6, 4],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
@@ -636,7 +633,7 @@ mod tests {
             end: &vec![],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
-            expected_macro_hints: macro_optimization_hint_did_change(),
+            expected_did_change: true,
         }
         .test();
     }
