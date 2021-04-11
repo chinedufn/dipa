@@ -27,6 +27,17 @@ It is only focused on delta encoding._
 
 [The Dipa Book][book] will introduce you to the library and teach you how to use it.
 
+It is also available offline:
+
+```sh
+# Do this once while online
+git clone git@github.com:chinedufn/dipa.git && cd dipa
+cargo install mdbook
+
+# This works offline
+./bin/serve-book.sh
+```
+
 ## Quickstart
 
 <details>
