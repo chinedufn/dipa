@@ -8,9 +8,9 @@ impl ParsedStruct {
     // let diff1 = self.another_field_name.create_delta_towards(&end_state.another_field_name);
     // // End not generated here.
     //
-    // let diff = MyStructDelta {
-    //     fielda: diff0.0,
-    //     fieldb: diff1.0
+    // let delta = MyStructDelta {
+    //     fielda: diff0.delta,
+    //     fieldb: diff1.delta
     // };
     // ```
     pub(super) fn generate_no_batching_create_delta_tokens(&self) -> TokenStream2 {
@@ -22,12 +22,12 @@ impl ParsedStruct {
             let diff_idx = format_ident!("diff{}", idx);
 
             fields.push(quote! {
-                #field_name: #diff_idx.0
+                #field_name: #diff_idx.delta
             })
         }
 
         quote! {
-            let diff = #delta_name {
+            let delta = #delta_name {
                 #(#fields),*
             };
         }
@@ -68,9 +68,9 @@ mod tests {
         let tokens = parsed_struct.generate_no_batching_create_delta_tokens();
 
         let expected = quote! {
-            let diff = MyStructDelta {
-                fielda: diff0.0,
-                fieldb: diff1.0
+            let delta = MyStructDelta {
+                fielda: diff0.delta,
+                fieldb: diff1.delta
             };
         };
 

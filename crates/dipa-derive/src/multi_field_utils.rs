@@ -181,7 +181,7 @@ fn make_match_diff_inner_tokens(
         //   "Change_0_2_5"
         let mut changed_keys = "Change".to_string();
 
-        // vec![diff0.0, diff2.0, diff5.0]
+        // vec![diff0.delta, diff2.delta, diff5.delta]
         let mut changed_diffs = vec![];
 
         for (idx, _bool) in bools

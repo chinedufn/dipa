@@ -69,7 +69,7 @@ impl ParsedStruct {
                #field_diffs_statements
                #calculate_delta_tokens
 
-                CreatedDelta {
+                dipa::CreatedDelta {
                     delta,
                     did_change,
                 }
