@@ -23,9 +23,9 @@ you want to reduce the network traffic required to keep clients up to date with 
 _Note that **dipa does not know anything about networks and has no networking code**.
 It is only focused on delta encoding._
 
-## [The Dipa Book][book]
+## [The dipa Book][book]
 
-[The Dipa Book][book] will introduce you to the library and teach you how to use it.
+[The dipa Book][book] will introduce you to the library and teach you how to use it.
 
 It is also available offline:
 

@@ -1,6 +1,6 @@
 # Performance
 
-Dipa wants to be useful in real time applications.
+dipa wants to be useful in real time applications.
 
 This means that we want the amount of time that it takes to delta encode a data structure should be as low as possible,
 without sacrificing on the focus of generating incredibly tiny diffs.

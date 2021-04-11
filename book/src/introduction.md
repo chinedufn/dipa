@@ -4,31 +4,31 @@ TODO: Use loom's well written introduction as a basis for ours
 https://docs.rs/loom/0.4.1/loom/ . The background then solution
 format is nice.
 
-Dipa is focused on making it easy to delta encode Rust data structures.
+dipa is focused on making it easy to delta encode Rust data structures.
 
 Traditionally, efficient delta compression of data structures required a fair bit of
 hand written code. As your data structures grew.
 
-Dipa solves this problem by generating your delta compression code for you.
+dipa solves this problem by generating your delta compression code for you.
 
 No flexibility is lost. In the most advanced cases where you need custom behavior,
-Dipa exposes traits that you can implement for types that have special application specific needs.
+dipa exposes traits that you can implement for types that have special application specific needs.
 
 ## Use Cases
 
-Some applications that might use Dipa include multiplayer networked games and simulations, real time data views
+Some applications that might use dipa include multiplayer networked games and simulations, real time data views
 or any other application where you're syncing state between a server and one or more clients.
 
-Note that Dipa itself does not know anything about networks or contain any networking related code.
+Note that dipa itself does not know anything about networks or contain any networking related code.
 
-Dipa is only focused on enabling the diffing and patching of Rust data structures.
+dipa is only focused on enabling the diffing and patching of Rust data structures.
 
 ## Quick Start
 
-The key feature of Dipa is the `#[derive(DiffPatch)]` macro that allows you to implement delta compression
+The key feature of dipa is the `#[derive(DiffPatch)]` macro that allows you to implement delta compression
 without the tedious and hard to maintain process of writing the necessary data structures and logic by hand.
 
-Here's a quick look at Dipa in action.
+Here's a quick look at dipa in action.
 
 ```rust
 use dipa::DiffPatch;

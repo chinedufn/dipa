@@ -1,6 +1,6 @@
 # Using Derive
 
-Dipa provides a derive macro to generate implementations of the `Diffable` and `Patchable` traits for
+dipa provides a derive macro to generate implementations of the `Diffable` and `Patchable` traits for
 data structures defined in your crate.
 
 To enable the macro use the `derive` feature. Then use `#[derive(DiffPatch)]` on types that you want to
