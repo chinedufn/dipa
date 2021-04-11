@@ -1,4 +1,4 @@
-# dipa [![Actions Status](https://github.com/chinedufn/dipa/workflows/test/badge.svg)](https://github.com/chinedufn/dipa/actions) [![docs](https://docs.rs/dipa/badge.svg)](https://docs.rs/dipa)
+# dipa [![Actions Status](https://github.com/chinedufn/dipa/workflows/ci/badge.svg)](https://github.com/chinedufn/dipa/actions) [![docs](https://docs.rs/dipa/badge.svg)](https://docs.rs/dipa)
 
 > dipa makes it easy to efficiently delta encode Rust data structures.
 
