@@ -193,16 +193,21 @@ enum MyDeltaOwned {
    New(u8)
 }
 
-impl Diffable&lt;'s, 'e, MyStruct&gt; for MyStruct {
+impl&lt;'s,'e&gt; Diffable&lt;'s, 'e, MyStruct&gt; for MyStruct {
     type Delta = MyDelta;
     type DeltaOwned = MyDeltaOwned;
 
-	fn create_delta_towards (&amp;self) -&gt; CreateDeltaTowardsReturn&lt;Self::Delta&gt; {
+	fn create_delta_towards (&amp;self, &amp;end_state) -&gt; CreateDeltaTowardsReturn&lt;Self::Delta&gt; {
 	    todo!()
 	}
 }
 
-impl 
+type MyStructPatch&lt;'s, 'e&gt; = &lt;MyStruct as Diffable&lt;'s, 'e, MyStruct&gt;;
+impl&lt;'s, 'e&gt; Patchable&lt;MyStructPatch&lt;'s, 'e'&gt;&gt; for MyStruct {
+	fn apply_patch (&amp;mut self, patch: MyStructPatch&lt;'s, 'e&gt;) {
+	    todo!()
+	}
+}
 
 #[cfg(test)]
 mod tests {
@@ -212,13 +217,11 @@ mod tests {
     fn diff_my_struct_changed() {
         DipaImplTester {
             label: Some(&quot;Diff MyStruct changed&quot;),
-            start: MyStruct { field: 2 },
+            start: &amp;mut MyStruct { field: 2 },
             end: &amp;MyStruct { field: 5 },
             expected_delta: MyDelta::New(&amp;5),
             expected_serialized_patch_size: 2,
-			expected_macro_hints: MacroOptimizationHints {
-			    did_change: true
-			},
+			did_change: true
         }
         .test();
     }
@@ -227,17 +230,14 @@ mod tests {
     fn diff_my_struct_no_change() {
         DipaImplTester {
             label: Some(&quot;Diff MyStruct no change&quot;),
-            start: MyStruct { field: 2 },
+            start: &amp;mut MyStruct { field: 2 },
             end: &amp;MyStruct { field: 2 },
             expected_delta: MyDelta::New(&amp;2),
             expected_serialized_patch_size: 2,
-			expected_macro_hints: MacroOptimizationHints {
-			    did_change: false
-			}
+			did_change: false
         }
         .test();
     }
-
 }
 <span class="boring">}
 </span></code></pre></pre>
