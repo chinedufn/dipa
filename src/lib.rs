@@ -17,8 +17,6 @@
 //! ./bin/serve-book.sh
 //! ```
 
-#![deny(missing_docs)]
-
 #[macro_use]
 extern crate serde;
 
