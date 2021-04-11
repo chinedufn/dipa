@@ -11,7 +11,7 @@
 
   <!-- TOOD: Rename diff -> delta-encode -->
 - [Performance](./diff-performance/README.md)
-  - [Lists](./diff-performance/lists/README.md)
+  - [Sequences](./diff-performance/sequences/README.md)
   - [Changed Flags](./diff-performance/changed-flags/README.md)
 
   <!-- TOOD: Rename diffing -> delta-encoding -->

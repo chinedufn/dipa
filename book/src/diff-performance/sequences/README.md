@@ -1,6 +1,6 @@
-# Lists
+# Sequences
 
-The `Diffable` implementation for standard library lists such as `Vec<T>` and `[T; N]` relies on a
+The `Diffable` implementation for standard library sequences such as `Vec<T>` and `[T; N]` relies on a
 dynamic programming solution to the [longest common subsequence][lcs] problem.
 
 This means that delta encoding lists has a time complexity of `O(M * N)`, where `M` and `N` are

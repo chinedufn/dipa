@@ -125,7 +125,7 @@ pub fn field_diff_statements(fields: &[StructOrTupleField]) -> TokenStream2 {
             let diff_idx_ident = Ident::new(&format!("diff{}", field_idx), field_name.span());
 
             quote! {
-            #diff_idx_ident.1.did_change
+            #diff_idx_ident.did_change
             }
         })
         .collect();
