@@ -1,8 +1,36 @@
 # Introduction
 
+> dipa makes it easy to efficiently delta encode large Rust data structures.
+
 TODO: Use loom's well written introduction as a basis for ours
 https://docs.rs/loom/0.4.1/loom/ . The background then solution
 format is nice.
+
+---
+
+OLD INTRO:
+
+dipa's code generation makes it possible to create very tiny diffs between very large data structures.
+
+dipa's generated delta compression code is optimized in ways that would be unfeasible to maintain
+if done by hand, such as generating enums to encode every possible combination of whether or not some set
+of fields has changed (up to a compile time enforced limit since this is approach has exponential complexity) (ADD A LINK TO BOOK),
+or using the individual bits in a single integer to delta encode multiple boolean fields (LINK TO ISSUE HERE).
+
+You can annotate your types with `#[derive(DiffPatch)]` in order to automatically generate
+highly space optimized diffing and patching code, or in the most sensitive cases
+where you need custom behavior you can instead implement the `Diffable` and `Patchable` traits yourself.
+
+You might make use of dipa as the underlying delta compression machinery in any application where
+you want to reduce the network traffic required to keep clients up to date with state from a server such as:
+
+- Multiplayer networked games and simulations
+
+- Real time client side views into server side data
+
+
+
+--
 
 dipa is focused on making it easy to delta encode Rust data structures.
 

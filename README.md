@@ -1,27 +1,32 @@
 # dipa [![Actions Status](https://github.com/chinedufn/dipa/workflows/ci/badge.svg)](https://github.com/chinedufn/dipa/actions) [![docs](https://docs.rs/dipa/badge.svg)](https://docs.rs/dipa)
 
-> dipa makes it easy to efficiently delta encode Rust data structures.
+> dipa makes it easy to efficiently delta encode large Rust data structures.
 
-dipa's code generation makes it possible to create very tiny diffs between very large data structures.
+In some applications, the data that you are sending to the client is often almost exactly the same as the data
+that you last sent to them.
 
-dipa's generated delta compression code is optimized in ways that would be unfeasible to maintain
-if done by hand, such as generating enums to encode every possible combination of whether or not some set
-of fields has changed (up to a compile time enforced limit since this is approach has exponential complexity) (ADD A LINK TO BOOK),
-or using the individual bits in a single integer to delta encode multiple boolean fields (LINK TO ISSUE HERE).
+Rather than repeatedly sending nearly identical state objects to a client, an application might calculate
+what has changed since the last time data was sent and then only send down those changes.
 
-You can annotate your types with `#[derive(DiffPatch)]` in order to automatically generate
-highly space optimized diffing and patching code, or in the most sensitive cases
-where you need custom behavior you can instead implement the `Diffable` and `Patchable` traits yourself.
+This approach can dramatically reduce both your and your users' bandwidth requirements and network traffic
+costs.
 
-You might make use of dipa as the underlying delta compression machinery in any application where
-you want to reduce the network traffic required to keep clients up to date with state from a server such as:
+The process of determining what has changed between two instances of a data structure is known as delta encoding.
 
-- Multiplayer networked games and simulations
+Historically, delta encoding code would become more and more difficult to maintain as your application's
+data structures grew more and more complex.
 
-- Real time client side views into server side data
+This made it a tedious optimization reserved for only the most bandwidth sensitive applications, such as networked
+games.
+
+dipa eliminates the maintainability challenges of efficient delta encoding code by generating all of the code for you.
+
+dipa is designed to generate very tiny diffs by default. In the most sensitive cases where you have application specific
+knowledge about your data structures that could help you generate even tinier diffs, you can implement the traits
+for that type yourself and let dipa's derive macro take care of the rest.
 
 _Note that **dipa does not know anything about networks and has no networking code**.
-It is only focused on delta encoding._
+It is only focused on encoding deltas, not transmitting them._
 
 ## [The dipa Book][book]
 

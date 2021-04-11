@@ -1,4 +1,4 @@
-//! dipa makes it easy to efficiently delta encode Rust data structures.
+//! dipa makes it easy to efficiently delta encode large Rust data structures.
 //!
 //! # Documentation
 //!
