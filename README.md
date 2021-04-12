@@ -160,6 +160,8 @@ length delta encoding.
 In this case, you could go for something like:
 
 ```rust
+use dipa::{CreatedDelta, Diffable, Patchable};
+
 #[derive(DiffPatch)]
 struct ClientState {
     hair_length: DeltaWithI8(u128)
@@ -171,15 +173,11 @@ impl<'s, 'e> Diffable<'s, 'e, u128> for DeltaWithI8 {
     type Delta = i8;
     type DeltaOwned = Self::Delta;
 
-    fn create_delta_towards(&self, end_state: &u128) -> dipa::CreatedDelta<Self::Delta> {
-        let hints = MacroOptimizationHints {
-            did_change: self.0 != *end_state,
-        };
-
-        (
-            self.0 - *end_state,
-            hints,
-        )
+    fn create_delta_towards(&self, end_state: &u128) -> CreatedDelta<Self::Delta> {
+		CreatedDelta {
+		    delta: self.0 - *end_state,
+		    did_change: self.0 != *end_state,
+		}
     }
 }
 
