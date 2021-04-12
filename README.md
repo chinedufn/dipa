@@ -45,6 +45,8 @@ cargo install mdbook
 
 ## Quickstart
 
+The easiest way to get started with dipa is by using the `#[derive(DiffPatch)]` macro. Here's a quick peek.
+
 <details>
 <summary>
 Click to show Cargo.toml.
