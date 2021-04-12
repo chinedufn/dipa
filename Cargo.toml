@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "dipa makes it easy to efficiently delta encode large Rust data structures."
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
-keywords = ["delta", "encode", "compress", "network", "state", "client", "server"]
+keywords = ["delta", "encode", "compress", "client", "server"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/dipa"
 
