@@ -1,10 +1,14 @@
 //! dipa makes it easy to efficiently delta encode large Rust data structures.
 //!
+//! # Repository
+//!
+//! The source code is available at [https://github.com/chinedufn/dipa]
+//!
 //! # Documentation
 //!
 //! The Dipa Book introduces you to dipa and teaches you how to use it.
 //!
-//! It is available online at https://chinedufn.github.io/dipa/
+//! It is available online at [https://chinedufn.github.io/dipa/]
 //!
 //! You can also view the book offline:
 //!

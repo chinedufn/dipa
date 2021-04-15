@@ -9,7 +9,7 @@ pub trait Diffable<'s, 'e Other> {
     type DeltaOwned;
 
     fn create_delta_towards(&self, end_state: &'p Other)
-      -> CreateDeltaTowardsReturn<Self::Delta>;
+      -> CreatedDelta<Self::Delta>;
 }
 ```
 
@@ -27,17 +27,20 @@ impl Diffable<'s, 'e i128> for i128 {
     type DeltaOwned = Option<i128>;
 
     fn create_delta_towards(&self, end_state: &'p i128) ->
-		CreateDeltaTowardsReturn<Self::Delta> {
-	    let mut hints = MacroOptimizationHints {
-	        did_change: false
+		CreatedDelta<Self::Delta> {
+	    let mut did_change = false;
+
+		let delta = if self == end_state {
+            None
+		} else {
+		    did_change = true;
+		    Some(end_state)
 		};
 
-		return if self == end_state {
-		    (None, hints)
-		} else {
-		    hints.did_change = true;
-			(Some(end_state), hints)
-		};
+		CreatedDelta {
+		    delta,
+		    did_change,
+		}
     }
 }
 ```

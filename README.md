@@ -163,27 +163,80 @@ In this case, you could go for something like:
 use dipa::{CreatedDelta, Diffable, Patchable};
 
 #[derive(DiffPatch)]
+// Debug + PartialEq are used by DipaImplTester
+#[cfg_attr(test, derive(Debug, PartialEq))]
 struct ClientState {
-    hair_length: DeltaWithI8(u128)
+    hair_length: DeltaWithI8,
 }
 
+// Debug + PartialEq are used by DipaImplTester
+#[cfg_attr(test, derive(Debug, PartialEq))]
 struct DeltaWithI8(u128);
 
-impl<'s, 'e> Diffable<'s, 'e, u128> for DeltaWithI8 {
+impl<'s, 'e> Diffable<'s, 'e, DeltaWithI8> for DeltaWithI8 {
     type Delta = i8;
     type DeltaOwned = Self::Delta;
 
-    fn create_delta_towards(&self, end_state: &u128) -> CreatedDelta<Self::Delta> {
-		CreatedDelta {
-		    delta: self.0 - *end_state,
-		    did_change: self.0 != *end_state,
-		}
+    fn create_delta_towards(&self, end_state: &Self) -> CreatedDelta<Self::Delta> {
+        let delta = if self.0 >= end_state.0 {
+            (self.0 - end_state.0) as i8 * -1
+        } else {
+            (end_state.0 - self.0) as i8
+        };
+
+        CreatedDelta {
+            delta,
+            did_change: self.0 != end_state.0,
+        }
     }
 }
 
-impl Patchable<i8> for OnlySmallChanges {
+impl Patchable<i8> for DeltaWithI8 {
     fn apply_patch(&mut self, patch: i8) {
-        self.0 += patch;
+        if patch >= 0 {
+            self.0 += patch as u128;
+        } else {
+            self.0 -= (-1 * patch) as u128;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dipa::DipaImplTester;
+
+    #[test]
+    fn delta_with_i8() {
+        DipaImplTester {
+            label: Some("Unchanged DeltaWithI8"),
+            start: &mut DeltaWithI8(300),
+            end: &DeltaWithI8(300),
+            expected_delta: 0,
+            expected_serialized_patch_size: 1,
+            expected_did_change: false,
+        }
+        .test();
+
+        DipaImplTester {
+            label: Some("Increase DeltaWithI8"),
+            start: &mut DeltaWithI8(5_000),
+            end: &DeltaWithI8(5_050),
+            expected_delta: 50,
+            expected_serialized_patch_size: 1,
+            expected_did_change: true,
+        }
+        .test();
+
+        DipaImplTester {
+            label: Some("Decrease DeltaWithI8"),
+            start: &mut DeltaWithI8(400),
+            end: &DeltaWithI8(320),
+            expected_delta: -80,
+            expected_serialized_patch_size: 1,
+            expected_did_change: true,
+        }
+        .test();
     }
 }
 ```
