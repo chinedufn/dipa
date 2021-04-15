@@ -567,7 +567,7 @@ struct MyDeltaOwned(u128, Vec&lt;u8&gt;);
     type DeltaOwned;
 
     fn create_delta_towards(&amp;self, end_state: &amp;'p Other)
-      -&gt; CreateDeltaTowardsReturn&lt;Self::Delta&gt;;
+      -&gt; CreatedDelta&lt;Self::Delta&gt;;
 }
 <span class="boring">}
 </span></code></pre></pre>
@@ -585,17 +585,20 @@ be used to turn your start value (<code>&amp;self</code>) into this end value.</
     type DeltaOwned = Option&lt;i128&gt;;
 
     fn create_delta_towards(&amp;self, end_state: &amp;'p i128) -&gt;
-		CreateDeltaTowardsReturn&lt;Self::Delta&gt; {
-	    let mut hints = MacroOptimizationHints {
-	        did_change: false
+		CreatedDelta&lt;Self::Delta&gt; {
+	    let mut did_change = false;
+
+		let delta = if self == end_state {
+            None
+		} else {
+		    did_change = true;
+		    Some(end_state)
 		};
 
-		return if self == end_state {
-		    (None, hints)
-		} else {
-		    hints.did_change = true;
-			(Some(end_state), hints)
-		};
+		CreatedDelta {
+		    delta,
+		    did_change,
+		}
     }
 }
 <span class="boring">}
