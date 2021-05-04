@@ -72,7 +72,7 @@ struct MyClientState {
     friends: Option<u8>,
     position: Position,
     notifications: Vec<Cow<&'static, str>>,
-	emotional_state: EmotionalState
+    emotional_state: EmotionalState
 }
 
 #[derive(DiffPatch)]
@@ -84,7 +84,7 @@ struct Position {
 
 #[derive(DiffPatch)]
 enum EmotionalState {
-    Peace { score: u128 },
+    Peace { calibration: u128 },
     Love(u64),
     Courage(u32),
 }
@@ -103,17 +103,17 @@ fn main() {
         friends: Some(1),
         position: Position { x: 4., y: 2., z: 3. }
         notifications: vec![Cow::Borrowed("free")]
-        emotional_state: EmotionalState::Peace { score: 10_000 },
+        emotional_state: EmotionalState::Peace { calibration: 10_000 },
     };
 
     let delta = old_client_state.create_delta_towards(&new_client_state);
-
-    let bin = bincode::options().with_varint_encoding();
 
     // Consider using bincode to serialize your diffs on the server side.
     // You can then send them over the wire and deserialize them on the client side.
     //
     // For the tiniest diffs, be sure to use variable integer encoding.
+    let bin = bincode::options().with_varint_encoding();
+
     let serialized = bin.serialize(&delta).unwrap();
 
     // ... Pretend you send the data to the client ...
@@ -149,7 +149,7 @@ struct ClientState {
 
 If the hair length hasn't changed the diff will be a single byte.
 
-However, whenever the client's hair length changed there would be up to an additional 17\* bytes in the payload to variable integer
+However, whenever the client's hair length changes there will be up to an additional 17\* bytes in the payload to variable integer
 encode the new `u128` value.
 
 But, what if you knew that it was impossible for a client's hair length to ever change by more than `100` units in between state updates?
@@ -163,13 +163,15 @@ In this case, you could go for something like:
 use dipa::{CreatedDelta, Diffable, Patchable};
 
 #[derive(DiffPatch)]
-// Debug + PartialEq are used by DipaImplTester
+// Debug + PartialEq are used by DipaImplTester below.
+// They are not required otherwise.
 #[cfg_attr(test, derive(Debug, PartialEq))]
 struct ClientState {
     hair_length: DeltaWithI8,
 }
 
-// Debug + PartialEq are used by DipaImplTester
+// Debug + PartialEq are used by DipaImplTester below.
+// They are not required otherwise.
 #[cfg_attr(test, derive(Debug, PartialEq))]
 struct DeltaWithI8(u128);
 
