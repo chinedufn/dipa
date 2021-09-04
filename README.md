@@ -90,7 +90,7 @@ enum EmotionalState {
 }
 
 fn main() {
-    let old_client_state = MyClientState {
+    let mut old_client_state = MyClientState {
         id: 308,
         friends: None,
         position: Position { x: 1., y: 2., z: 3. }
@@ -106,7 +106,7 @@ fn main() {
         emotional_state: EmotionalState::Peace { calibration: 10_000 },
     };
 
-    let delta = old_client_state.create_delta_towards(&new_client_state);
+    let delta_created = old_client_state.create_delta_towards(&new_client_state);
 
     // Consider using bincode to serialize your diffs on the server side.
     // You can then send them over the wire and deserialize them on the client side.
@@ -114,11 +114,11 @@ fn main() {
     // For the tiniest diffs, be sure to use variable integer encoding.
     let bin = bincode::options().with_varint_encoding();
 
-    let serialized = bin.serialize(&delta).unwrap();
+    let serialized = bin.serialize(&delta_created.delta).unwrap();
 
     // ... Pretend you send the data to the client ...
 
-    let deserialized: <MyClientState as dipa::Diffable<'_, '_, MyClientState>::DeltaOwned = 
+    let deserialized: <MyClientState as dipa::Diffable<'_, '_, MyClientState>>::DeltaOwned = 
         bin.deserialize(&serialized).unwrap();
 
     old_client_state.apply_patch(deserialized);
