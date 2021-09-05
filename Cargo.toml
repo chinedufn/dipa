@@ -23,6 +23,12 @@ dipa-derive = {optional = true, version = "0.1", path = "./crates/dipa-derive"}
 
 [dev-dependencies]
 bincode = "1.3"
+serde_derive = "1"
+serde = "1"
+quickcheck = "0.8"
+quickcheck_macros = "0.8"
+quickcheck_derive = "0.3"
+rand = "0.6"
 
 [workspace]
 members = [
