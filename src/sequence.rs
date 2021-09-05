@@ -60,7 +60,7 @@ where
     ReplaceOne { index: usize, new: &'a T },
 
     // TODO: Heavily optimize small sequences. So we want operations like
-    //  DeleteFirst, DeleteSecond ... DeleteTenth ... ReplaceThird ... etc.
+    //  DeleteFirst, DeleteSecond ... DeleteFifth ... ReplaceThird ... etc.
     /// Delete the first item in the sequence
     DeleteFirst,
     /// Delete the last item in the sequence
@@ -90,6 +90,10 @@ where
     /// Replace many items in the sequence when we are adding and removing the same number of
     /// values.
     ReplaceManySameAmountAddedAndRemoved { index: usize, new: &'a [T] },
+
+    /// Replace all of the values in the old sequence with the values in the new sequence.
+    /// Useful when there is no overlap between the start and end sequence.
+    ReplaceAll { new: &'a [T] },
 
     /// Delete all items
     DeleteAll,
@@ -148,6 +152,9 @@ pub enum SequenceModificationDeltaOwned<T> {
     /// Replace many items in the sequence when we are adding and removing the same number of
     /// values.
     ReplaceManySameAmountAddedAndRemoved { index: usize, new: Vec<T> },
+
+    /// Replace all of the values in the old sequence with the values in the new sequence.
+    ReplaceAll { new: Vec<T> },
 
     /// Delete all items
     DeleteAll,
@@ -317,6 +324,48 @@ mod tests {
             label: None,
             start: &mut vec![1u8, 2, 3, 4],
             end: &vec![1u8, 4],
+            expected_delta: expected_patch,
+            expected_serialized_patch_size,
+            expected_did_change: true,
+        }
+        .test();
+    }
+
+    /// Verify that we properly go from an empty vec to one item in the vec.
+    #[test]
+    fn insert_one_into_empty_vec() {
+        let expected_patch = vec![SequenceModificationDelta::ReplaceAll { new: &[1] }];
+
+        // 1 for the one variant in the vec
+        // 1 for len of items vector
+        // 1 for the two u8's
+        let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 1;
+
+        DipaImplTester {
+            label: None,
+            start: &mut vec![],
+            end: &vec![1u8],
+            expected_delta: expected_patch,
+            expected_serialized_patch_size,
+            expected_did_change: true,
+        }
+        .test();
+    }
+
+    /// Verify that we properly go from an empty vec to 2 items in the vec.
+    #[test]
+    fn insert_many_into_empty_vec() {
+        let expected_patch = vec![SequenceModificationDelta::ReplaceAll { new: &[1, 2] }];
+
+        // 1 for the one variant in the vec
+        // 1 for len of items vector
+        // 2 for the two u8's
+        let expected_serialized_patch_size = BASE_PATCH_BYTES + 1 + 1 + 2;
+
+        DipaImplTester {
+            label: None,
+            start: &mut vec![],
+            end: &vec![1u8, 2],
             expected_delta: expected_patch,
             expected_serialized_patch_size,
             expected_did_change: true,

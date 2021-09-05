@@ -110,6 +110,9 @@ pub(super) fn apply_patch<'p, T>(
             SequenceModificationDeltaOwned::DeleteAll => {
                 receiver.clear();
             }
+            SequenceModificationDeltaOwned::ReplaceAll { new } => {
+                *receiver = new;
+            }
         };
     }
 }

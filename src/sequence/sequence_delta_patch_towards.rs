@@ -17,6 +17,13 @@ where
         };
     }
 
+    if before.len() == 0 && target_state.len() > 0 {
+        return CreatedDelta {
+            delta: vec![SequenceModificationDelta::ReplaceAll { new: target_state }],
+            did_change: true,
+        };
+    }
+
     let mut modifications = vec![];
 
     let lcs = get_longest_common_subsequence(before, target_state);
